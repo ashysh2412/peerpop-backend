@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { supabaseEnv } from "./env";
 
 // Routes that need a signed-in user. Everything else is public.
-const PROTECTED_PREFIXES = ["/home", "/settings", "/network", "/notifications"];
+const PROTECTED_PREFIXES = ["/home", "/onboarding", "/settings", "/network", "/notifications"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
