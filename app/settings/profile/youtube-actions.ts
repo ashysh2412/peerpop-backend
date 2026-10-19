@@ -5,6 +5,10 @@ import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
 import { checkVerification, startVerification } from "@/lib/youtube/verify";
 
+// Error text can echo request headers, so hide anything shaped like a key.
+const redact = (text: string) =>
+  text.replace(/sb_(secret|publishable)_\S+/g, "[key hidden]").replace(/AIza\S+/g, "[key hidden]").replace(/"[^"]{20,}"/g, "[hidden]");
+
 /** A short, non-secret hint about what failed, so problems can be diagnosed from a screenshot. */
 function failure(err: unknown): FormState {
   let hint = "unknown";
@@ -14,7 +18,7 @@ function failure(err: unknown): FormState {
     const { code, message } = err as { code?: string; message?: string };
     hint = `database ${code || ""} ${message || ""}`.trim();
   }
-  return { message: `Something went wrong. Please try again. (${hint.slice(0, 120)})` };
+  return { message: `Something went wrong. Please try again. (${redact(hint).slice(0, 120)})` };
 }
 
 export async function startYouTubeVerification(_prev: FormState, form: FormData): Promise<FormState> {

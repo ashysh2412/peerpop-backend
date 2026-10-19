@@ -20,7 +20,7 @@ export type Channel = {
 };
 
 async function get<T>(path: string, params: Record<string, string>): Promise<T> {
-  const key = process.env.YOUTUBE_API_KEY;
+  const key = process.env.YOUTUBE_API_KEY?.replace(/\s+/g, "");
   if (!key) throw new YouTubeError("Missing YOUTUBE_API_KEY.");
   const res = await fetch(`${BASE}/${path}?${new URLSearchParams({ ...params, key })}`, { cache: "no-store" });
   if (!res.ok) {
