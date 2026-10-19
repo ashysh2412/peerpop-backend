@@ -5,7 +5,13 @@ import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
 import { checkVerification, startVerification } from "@/lib/youtube/verify";
 
-const TRY_AGAIN = "Something went wrong talking to YouTube. Please try again.";
+/** A short, non-secret hint about what failed, so problems can be diagnosed from a screenshot. */
+function failure(err: unknown): FormState {
+  let hint = "unknown";
+  if (err instanceof Error) hint = err.message;
+  else if (err && typeof err === "object" && "code" in err) hint = `database ${String(err.code)}`;
+  return { message: `Something went wrong. Please try again. (${hint.slice(0, 120)})` };
+}
 
 export async function startYouTubeVerification(_prev: FormState, form: FormData): Promise<FormState> {
   const { user } = await requireUser("/settings/profile");
@@ -18,7 +24,7 @@ export async function startYouTubeVerification(_prev: FormState, form: FormData)
     return { ok: true, message: result.message };
   } catch (err) {
     console.error("startYouTubeVerification", err);
-    return { message: TRY_AGAIN };
+    return failure(err);
   }
 }
 
@@ -30,7 +36,7 @@ export async function checkYouTubeVerification(): Promise<FormState> {
     return result;
   } catch (err) {
     console.error("checkYouTubeVerification", err);
-    return { message: TRY_AGAIN };
+    return failure(err);
   }
 }
 

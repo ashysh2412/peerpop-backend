@@ -23,7 +23,12 @@ async function get<T>(path: string, params: Record<string, string>): Promise<T> 
   const key = process.env.YOUTUBE_API_KEY;
   if (!key) throw new YouTubeError("Missing YOUTUBE_API_KEY.");
   const res = await fetch(`${BASE}/${path}?${new URLSearchParams({ ...params, key })}`, { cache: "no-store" });
-  if (!res.ok) throw new YouTubeError(`YouTube ${path} failed with ${res.status}`);
+  if (!res.ok) {
+    // Google explains failures in error.errors[0].reason, like keyInvalid or quotaExceeded.
+    const body = (await res.json().catch(() => null)) as { error?: { errors?: { reason?: string }[] } } | null;
+    const reason = body?.error?.errors?.[0]?.reason ?? "unknown";
+    throw new YouTubeError(`YouTube ${path} failed with ${res.status} (${reason})`);
+  }
   return res.json() as Promise<T>;
 }
 
