@@ -5,7 +5,7 @@ import { findChannel, recentVideos, type Channel } from "./api";
 import { parseChannelUrl } from "./channel-url";
 import { averageViews, growth30d, uploadsPerWeek } from "./stats";
 
-type Admin = ReturnType<typeof createAdminClient>;
+export type Admin = ReturnType<typeof createAdminClient>;
 type Result = { ok: true; message: string } | { ok: false; message: string };
 
 const CODE_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
@@ -104,8 +104,11 @@ export async function checkVerification(userId: string): Promise<Result> {
   return { ok: true, message: "Your channel is verified. You can remove the code from your description now." };
 }
 
-/** Saves today's snapshot and recomputes the numbers shown on the profile (about 3 quota units). */
-export async function recordStats(admin: Admin, accountId: string, channel: Channel) {
+/**
+ * Saves today's snapshot and recomputes the numbers shown on the profile
+ * (2 quota units on top of the channels.list call). Returns whether it worked.
+ */
+export async function recordStats(admin: Admin, accountId: string, channel: Channel): Promise<boolean> {
   const now = new Date();
   const today = now.toISOString().slice(0, 10);
   try {
@@ -141,8 +144,10 @@ export async function recordStats(admin: Admin, accountId: string, channel: Chan
       .from("platform_accounts")
       .update({ last_fetch_at: now.toISOString(), last_fetch_error: null })
       .eq("id", accountId);
+    return true;
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await admin.from("platform_accounts").update({ last_fetch_error: message.slice(0, 500) }).eq("id", accountId);
+    return false;
   }
 }

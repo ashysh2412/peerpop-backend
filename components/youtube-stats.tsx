@@ -16,6 +16,14 @@ export function growthLabel(stats: AccountStats) {
   return `${sign}${compactNumber(Math.abs(stats.growth_30d_abs))}${pct} in 30 days`;
 }
 
+export function updatedLabel(iso: string, now = Date.now()) {
+  const hours = Math.floor((now - Date.parse(iso)) / 3600000);
+  if (hours < 1) return "just now";
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.floor(hours / 24);
+  return days === 1 ? "yesterday" : `${days} days ago`;
+}
+
 /** Verified YouTube numbers, as a small definition list. */
 export function YouTubeStats({ stats }: { stats: AccountStats }) {
   const rows: [string, string][] = [
@@ -25,13 +33,16 @@ export function YouTubeStats({ stats }: { stats: AccountStats }) {
     ["Growth", growthLabel(stats)],
   ];
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-      {rows.map(([label, value]) => (
-        <div key={label}>
-          <dt className="text-zinc-500">{label}</dt>
-          <dd className="font-medium">{value}</dd>
-        </div>
-      ))}
-    </dl>
+    <div className="flex flex-col gap-2">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+        {rows.map(([label, value]) => (
+          <div key={label}>
+            <dt className="text-zinc-500">{label}</dt>
+            <dd className="font-medium">{value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="text-xs text-zinc-500">Updated {updatedLabel(stats.computed_at)} · from YouTube</p>
+    </div>
   );
 }

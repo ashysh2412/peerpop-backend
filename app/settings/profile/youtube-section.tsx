@@ -5,7 +5,12 @@ import { FormMessage, SubmitButton, inputClass, secondaryButton } from "@/compon
 import { YouTubeStats } from "@/components/youtube-stats";
 import type { FormState, OwnYouTube } from "@/lib/profile/types";
 import { Card } from "./sections";
-import { checkYouTubeVerification, removeYouTubeChannel, startYouTubeVerification } from "./youtube-actions";
+import {
+  checkYouTubeVerification,
+  refreshYouTubeNow,
+  removeYouTubeChannel,
+  startYouTubeVerification,
+} from "./youtube-actions";
 
 export function YouTubeSection({ account }: { account: OwnYouTube | undefined }) {
   if (account?.source === "verified") return <Verified account={account} />;
@@ -84,6 +89,7 @@ function PendingCode({ account }: { account: OwnYouTube }) {
 }
 
 function Verified({ account }: { account: OwnYouTube }) {
+  const [state, refreshAction] = useActionState<FormState>(refreshYouTubeNow, {});
   return (
     <Card title="YouTube">
       <p className="flex items-center gap-2 font-medium">
@@ -97,6 +103,10 @@ function Verified({ account }: { account: OwnYouTube }) {
       ) : (
         <p className="text-sm text-zinc-500">Your numbers will appear after the next refresh.</p>
       )}
+      <form action={refreshAction} className="flex items-center gap-4">
+        <SubmitButton pendingText="Updating…">Refresh now</SubmitButton>
+        <FormMessage state={state} />
+      </form>
       <form
         action={removeYouTubeChannel}
         onSubmit={(e) => {

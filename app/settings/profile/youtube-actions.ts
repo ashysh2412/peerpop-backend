@@ -3,6 +3,8 @@
 import { refresh } from "next/cache";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { MANUAL_REFRESH_MS, refreshAccount } from "@/lib/youtube/refresh";
 import { checkVerification, startVerification } from "@/lib/youtube/verify";
 
 // Error text can echo request headers, so hide anything shaped like a key.
@@ -52,4 +54,28 @@ export async function removeYouTubeChannel() {
   const { supabase, user } = await requireUser("/settings/profile");
   await supabase.from("platform_accounts").delete().eq("user_id", user.id).eq("platform", "youtube");
   refresh();
+}
+
+export async function refreshYouTubeNow(): Promise<FormState> {
+  const { user } = await requireUser("/settings/profile");
+  try {
+    const admin = createAdminClient();
+    const { data: account } = await admin
+      .from("platform_accounts")
+      .select("id, external_id, last_fetch_at")
+      .eq("user_id", user.id)
+      .eq("platform", "youtube")
+      .eq("source", "verified")
+      .maybeSingle();
+    if (!account?.external_id) return { message: "Verify your channel first." };
+    if (account.last_fetch_at && Date.now() - Date.parse(account.last_fetch_at) < MANUAL_REFRESH_MS) {
+      return { message: "Your numbers were updated in the last 6 hours. Try again later." };
+    }
+    const ok = await refreshAccount(admin, account);
+    refresh();
+    return ok ? { ok: true, message: "Numbers updated." } : { message: "Couldn't reach YouTube. Try again later." };
+  } catch (err) {
+    console.error("refreshYouTubeNow", err);
+    return failure(err);
+  }
 }
