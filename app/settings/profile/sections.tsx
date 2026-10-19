@@ -16,7 +16,7 @@ import {
   setPhoto,
 } from "./actions";
 
-function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+export function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
     <section className="flex flex-col gap-5 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800">
       <div>

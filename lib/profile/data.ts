@@ -1,7 +1,7 @@
 import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import type { Contacts, PlatformAccount, Profile, ProfileVideo } from "./types";
+import type { AccountStats, Contacts, OwnYouTube, PlatformAccount, Profile, ProfileVideo } from "./types";
 
 const PROFILE_COLUMNS =
   "user_id, handle, display_name, photo_path, bio, city_slug, niches, skills, languages, open_to_collab, is_listed";
@@ -32,20 +32,30 @@ export async function getProfileByHandle(supabase: Client, handle: string) {
   return data as Profile | null;
 }
 
+const PLATFORM_COLUMNS = "id, user_id, platform, handle, url, source, self_followers, self_avg_views, self_updated_at";
+const STATS_COLUMNS =
+  "account_id, followers, followers_hidden, avg_views_last10, uploads_per_week, growth_30d_abs, growth_30d_pct, computed_at";
+
+/** Attaches computed stats to verified accounts. */
+async function withStats<T extends PlatformAccount>(supabase: Client, accounts: T[]): Promise<T[]> {
+  const ids = accounts.filter((a) => a.source === "verified").map((a) => a.id);
+  if (ids.length === 0) return accounts;
+  const { data } = await supabase.from("account_stats").select(STATS_COLUMNS).in("account_id", ids);
+  const byId = new Map((data ?? []).map(({ account_id, ...stats }) => [account_id as string, stats as AccountStats]));
+  return accounts.map((a) => ({ ...a, stats: byId.get(a.id) ?? null }));
+}
+
 export async function getOwnPlatforms(supabase: Client, userId: string) {
   const { data } = await supabase
     .from("platform_accounts")
-    .select("id, user_id, platform, handle, url, source, self_followers, self_avg_views, self_updated_at")
+    .select(`${PLATFORM_COLUMNS}, verification_code`)
     .eq("user_id", userId);
-  return (data ?? []) as PlatformAccount[];
+  return withStats(supabase, (data ?? []) as OwnYouTube[]);
 }
 
 export async function getPublicPlatforms(supabase: Client, userId: string) {
-  const { data } = await supabase
-    .from("public_platform_accounts")
-    .select("id, user_id, platform, handle, url, source, self_followers, self_avg_views, self_updated_at")
-    .eq("user_id", userId);
-  return (data ?? []) as PlatformAccount[];
+  const { data } = await supabase.from("public_platform_accounts").select(PLATFORM_COLUMNS).eq("user_id", userId);
+  return withStats(supabase, (data ?? []) as PlatformAccount[]);
 }
 
 export async function getVideos(supabase: Client, userId: string) {

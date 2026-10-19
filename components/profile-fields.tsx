@@ -94,7 +94,7 @@ export function LinkFields({ platforms, errors }: { platforms: PlatformAccount[]
       <Field
         label="YouTube channel"
         name="youtube_url"
-        hint={ytVerified ? "Verified. Contact us to change it." : "Like youtube.com/@yourname. You can verify it later."}
+        hint={ytVerified ? "Verified. To change it, remove it under Verify your YouTube channel." : "Like youtube.com/@yourname. You can verify it in settings."}
         error={errors?.youtube_url}
       >
         <input

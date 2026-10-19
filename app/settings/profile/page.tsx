@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { getOwnContacts, getOwnPlatforms, getProfileById, getVideos, requireUser } from "@/lib/profile/data";
 import { ContactsSection, LinksSection, PhotoSection, ProfileSection, VideosSection } from "./sections";
+import { YouTubeSection } from "./youtube-section";
 
 export const metadata: Metadata = { title: "Edit profile · Peerpop" };
 
@@ -38,6 +39,7 @@ async function Settings() {
       <PhotoSection userId={user.id} photoPath={profile.photo_path} />
       <ProfileSection profile={profile} />
       <VideosSection videos={videos} />
+      <YouTubeSection account={platforms.find((p) => p.platform === "youtube")} />
       <LinksSection platforms={platforms} />
       <ContactsSection contacts={contacts} />
     </>

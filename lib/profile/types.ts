@@ -24,7 +24,21 @@ export type PlatformAccount = {
   self_followers: number | null;
   self_avg_views: number | null;
   self_updated_at: string | null;
+  stats?: AccountStats | null;
 };
+
+export type AccountStats = {
+  followers: number | null;
+  followers_hidden: boolean;
+  avg_views_last10: number | null;
+  uploads_per_week: number | null;
+  growth_30d_abs: number | null;
+  growth_30d_pct: number | null;
+  computed_at: string;
+};
+
+/** The owner's view of their YouTube row while verifying. */
+export type OwnYouTube = PlatformAccount & { verification_code: string | null };
 
 export type ProfileVideo = {
   id: string;

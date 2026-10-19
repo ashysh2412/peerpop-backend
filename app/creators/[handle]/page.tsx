@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { VideoEmbed } from "@/components/video-embed";
+import { YouTubeStats } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { compactNumber } from "@/lib/format";
 import { avatarUrl } from "@/lib/profile/avatar";
@@ -158,6 +159,11 @@ function PlatformCard({ account }: { account: PlatformAccount }) {
         )}
       </span>
       <span className="text-sm text-zinc-500">{account.handle ?? account.url?.replace(/^https:\/\/(www\.)?/, "")}</span>
+      {verified && account.stats && (
+        <div className="mt-2">
+          <YouTubeStats stats={account.stats} />
+        </div>
+      )}
       {!verified && followers && (
         <span className="text-sm">
           {followers} followers
