@@ -18,6 +18,16 @@ Stack: Next.js (App Router, TypeScript, Tailwind) + Supabase (Postgres, Auth, St
 
 Email magic links work out of the box. For **Continue with Google**, enable the Google provider under **Authentication > Sign In / Providers** with a Google OAuth client ID and secret.
 
+## Database
+
+The schema lives in `supabase/migrations/`. To set up a Supabase project, open **SQL Editor > New query**, paste the contents of each migration file in order, and click **Run**. (With the Supabase CLI, `supabase db push` does the same.)
+
+The security rules are tested in `supabase/tests/`. They need a Postgres server:
+
+```bash
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres npm run test:db
+```
+
 ## Deploy (Vercel)
 
 1. Import this repo at https://vercel.com/new.
@@ -31,6 +41,7 @@ npm run lint
 npm run typecheck
 npm test
 npm run build
+npm run test:db   # needs Postgres, see above
 ```
 
-CI runs all four on every pull request.
+CI runs all of these on every pull request.
