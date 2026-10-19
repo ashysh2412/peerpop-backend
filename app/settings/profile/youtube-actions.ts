@@ -9,7 +9,11 @@ import { checkVerification, startVerification } from "@/lib/youtube/verify";
 function failure(err: unknown): FormState {
   let hint = "unknown";
   if (err instanceof Error) hint = err.message;
-  else if (err && typeof err === "object" && "code" in err) hint = `database ${String(err.code)}`;
+  else if (err && typeof err === "object") {
+    // Supabase errors are plain objects with a code and a message.
+    const { code, message } = err as { code?: string; message?: string };
+    hint = `database ${code || ""} ${message || ""}`.trim();
+  }
   return { message: `Something went wrong. Please try again. (${hint.slice(0, 120)})` };
 }
 
