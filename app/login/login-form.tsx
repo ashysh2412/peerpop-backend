@@ -11,6 +11,8 @@ type Status =
 
 export function LoginForm({ next }: { next: string }) {
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [usePassword, setUsePassword] = useState(false);
   const [status, setStatus] = useState<Status>({ kind: "idle" });
 
   const callbackUrl = () =>
@@ -29,6 +31,13 @@ export function LoginForm({ next }: { next: string }) {
     e.preventDefault();
     setStatus({ kind: "sending" });
     const supabase = createClient();
+    if (usePassword) {
+      // For accounts that have a password (no email needed, so no email limits).
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) return setStatus({ kind: "error", message: error.message });
+      window.location.assign(next);
+      return;
+    }
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: callbackUrl() },
@@ -74,12 +83,41 @@ export function LoginForm({ next }: { next: string }) {
           placeholder="you@example.com"
           className="h-11 rounded-lg border border-zinc-300 bg-transparent px-3 dark:border-zinc-700"
         />
+        {usePassword && (
+          <>
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <input
+              id="password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="h-11 rounded-lg border border-zinc-300 bg-transparent px-3 dark:border-zinc-700"
+            />
+          </>
+        )}
         <button
           type="submit"
           disabled={status.kind === "sending"}
           className="h-11 rounded-full bg-violet-600 font-medium text-white hover:bg-violet-700 disabled:opacity-60"
         >
-          {status.kind === "sending" ? "Sending…" : "Email me a sign-in link"}
+          {status.kind === "sending"
+            ? usePassword
+              ? "Signing in…"
+              : "Sending…"
+            : usePassword
+              ? "Sign in"
+              : "Email me a sign-in link"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setUsePassword(!usePassword)}
+          className="text-sm text-zinc-500 hover:underline"
+        >
+          {usePassword ? "Email me a link instead" : "Sign in with a password instead"}
         </button>
       </form>
 
