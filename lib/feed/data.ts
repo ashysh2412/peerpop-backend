@@ -119,3 +119,19 @@ export async function getPhotosBy(supabase: Client, authorId: string, limit = 12
     .limit(limit);
   return (data ?? []) as Photo[];
 }
+
+export type StarterSteps = { photo: boolean; video: boolean; post: boolean; connections: number };
+
+/** How far a new creator is with setting up: the "Get started" card on Home. */
+export async function getStarterSteps(supabase: Client, me: { user_id: string; photo_path: string | null }): Promise<StarterSteps> {
+  const [{ count: videos }, { count: posts }, { count: connections }] = await Promise.all([
+    supabase.from("profile_videos").select("id", { count: "exact", head: true }).eq("user_id", me.user_id),
+    supabase.from("posts").select("id", { count: "exact", head: true }).eq("author_id", me.user_id),
+    supabase
+      .from("connections")
+      .select("from_user", { count: "exact", head: true })
+      .or(`from_user.eq.${me.user_id},to_user.eq.${me.user_id}`)
+      .eq("status", "accepted"),
+  ]);
+  return { photo: !!me.photo_path, video: (videos ?? 0) > 0, post: (posts ?? 0) > 0, connections: connections ?? 0 };
+}
