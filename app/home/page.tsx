@@ -39,7 +39,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const { supabase, user } = await requireUser("/home");
   const profile = await getProfileById(supabase, user.id);
   if (!profile) redirect("/onboarding");
-  const { before, tab } = await searchParams;
+  const { before, tab, welcome } = await searchParams;
   const showCollabs = tab === "collabs";
   const cursor = !showCollabs && typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
@@ -65,6 +65,11 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                 <p className="font-hand text-xl font-bold text-brand">Creators to meet, and what they&apos;re making.</p>
               </div>
             </div>
+            {welcome && (
+              <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
+                🎉 <span className="font-semibold">You&apos;re in, {firstName}!</span> Say hello with your first post, or tap a creator below to connect.
+              </p>
+            )}
             <CreatorStories me={profile} people={people} />
             {requests > 0 && (
               <Link

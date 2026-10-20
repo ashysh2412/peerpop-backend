@@ -15,11 +15,14 @@ export function PhotoUpload({
   userId,
   initialPath,
   name,
+  fallbackUrl,
   onUploaded,
 }: {
   userId: string;
   initialPath: string | null;
   name: string;
+  /** Shown until something is uploaded, like the photo from Google sign-in. */
+  fallbackUrl?: string | null;
   onUploaded?: (path: string | null) => Promise<{ ok?: boolean; message?: string } | void>;
 }) {
   const [path, setPath] = useState(initialPath);
@@ -51,7 +54,12 @@ export function PhotoUpload({
   return (
     <div className="flex items-center gap-4">
       <div className="relative h-20 w-20 overflow-hidden rounded-full bg-sunken">
-        {url && <Image src={url} alt="Profile photo" fill sizes="80px" className="object-cover" />}
+        {url ? (
+          <Image src={url} alt="Profile photo" fill sizes="80px" className="object-cover" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element -- an outside URL next/image isn't set up for
+          fallbackUrl && <img src={fallbackUrl} alt="Profile photo" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
+        )}
       </div>
       <div className="flex flex-col gap-2">
         <input type="hidden" name={name} value={path ?? ""} />
@@ -67,7 +75,7 @@ export function PhotoUpload({
           }}
         />
         <button type="button" disabled={busy} onClick={() => input.current?.click()} className={secondaryButton}>
-          {busy ? "Uploading…" : url ? "Change photo" : "Add a photo"}
+          {busy ? "Uploading…" : url || fallbackUrl ? "Change photo" : "Add a photo"}
         </button>
         {error && <p className="text-sm text-red-600">{error}</p>}
       </div>

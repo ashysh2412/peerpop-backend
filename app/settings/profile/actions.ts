@@ -4,6 +4,8 @@ import { refresh } from "next/cache";
 import { redirect } from "next/navigation";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
+import { importGooglePhoto, isGooglePhotoUrl } from "@/lib/profile/google-photo";
+import { withSuffix } from "@/lib/profile/handle";
 import { saveLinks } from "@/lib/profile/save-links";
 import type { FormState } from "@/lib/profile/types";
 import { validateContacts, validateLinks, validateProfile } from "@/lib/profile/validate";
@@ -25,23 +27,31 @@ export async function completeOnboarding(_prev: FormState, form: FormData): Prom
   }
 
   const photo = form.get("photo_path");
-  const photo_path = typeof photo === "string" && isOwnAvatarPath(photo, user.id) ? photo : null;
+  let photo_path = typeof photo === "string" && isOwnAvatarPath(photo, user.id) ? photo : null;
+  if (!photo_path && form.get("use_google_photo") === "on") {
+    const google = user.user_metadata?.avatar_url ?? user.user_metadata?.picture;
+    if (isGooglePhotoUrl(google)) photo_path = await importGooglePhoto(supabase, user.id, google);
+  }
 
-  const { error } = await supabase
-    .from("creator_profiles")
-    .insert({ user_id: user.id, photo_path, ...profile.data });
-  if (isUniqueViolation(error)) {
+  // A handle we suggested gets a few digits added when it's taken; one the creator typed doesn't.
+  const autoHandle = form.get("handle_auto") === "1";
+  let handle = profile.data.handle;
+  for (let attempt = 0; ; attempt++) {
+    const { error } = await supabase.from("creator_profiles").insert({ user_id: user.id, photo_path, ...profile.data, handle });
+    if (!error) break;
+    if (!isUniqueViolation(error)) return { message: "Couldn't save your profile. Please try again." };
     // Either the handle is taken, or this user already has a profile.
     const { data: mine } = await supabase.from("creator_profiles").select("handle").eq("user_id", user.id).maybeSingle();
     if (mine) redirect(`/creators/${mine.handle}`);
-    return { errors: HANDLE_TAKEN };
+    if (!autoHandle || attempt >= 4) return { errors: HANDLE_TAKEN };
+    handle = withSuffix(profile.data.handle);
   }
-  if (error) return { message: "Couldn't save your profile. Please try again." };
 
-  const linkError = await saveLinks(supabase, user.id, links.data);
+  const hasLinks = Object.values(links.data).some((v) => v !== null);
+  const linkError = hasLinks ? await saveLinks(supabase, user.id, links.data) : null;
   if (linkError) return { message: "Your profile was saved, but your links weren't. Add them in settings." };
 
-  redirect(`/creators/${profile.data.handle}?welcome=1`);
+  redirect("/home?welcome=1");
 }
 
 export async function saveProfile(_prev: FormState, form: FormData): Promise<FormState> {
