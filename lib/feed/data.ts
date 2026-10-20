@@ -85,7 +85,11 @@ export async function getComments(supabase: Client, postId: string) {
 export type Suggestion = { user_id: string; handle: string; display_name: string; photo_path: string | null; city_slug: string | null };
 
 /** Listed creators in your city or sharing a niche, that you aren't connected to or waiting on yet. */
-export async function getSuggestions(supabase: Client, me: { user_id: string; city_slug: string | null; niches: string[] }) {
+export async function getSuggestions(
+  supabase: Client,
+  me: { user_id: string; city_slug: string | null; niches: string[] },
+  limit = 5,
+) {
   const { data: links } = await supabase
     .from("connections")
     .select("from_user, to_user")
@@ -99,5 +103,5 @@ export async function getSuggestions(supabase: Client, me: { user_id: string; ci
   let query = supabase.from("creator_profiles").select("user_id, handle, display_name, photo_path, city_slug").eq("is_listed", true);
   if (ors) query = query.or(ors);
   const { data } = await query.order("updated_at", { ascending: false }).limit(30);
-  return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, 5);
+  return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }

@@ -19,8 +19,8 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
-    <article className="card flex flex-col gap-3 p-4 sm:p-5">
-      <header className="flex items-center gap-3">
+    <article className="card flex flex-col gap-3 overflow-hidden rounded-3xl pt-4 sm:pt-5">
+      <header className="flex items-center gap-3 px-4 sm:px-5">
         <Link href={`/creators/${post.author_handle}`}>
           <Avatar path={post.author_photo} name={post.author_name} size={44} />
         </Link>
@@ -50,31 +50,33 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         )}
       </header>
 
-      <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>
+      <p className="px-4 text-[15px] leading-relaxed break-words whitespace-pre-wrap sm:px-5">{post.body}</p>
 
       {post.image_path && (
-        <div className="relative -mx-4 aspect-[4/3] overflow-hidden bg-sunken sm:mx-0 sm:rounded-xl">
-          <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 768px) 640px, 100vw" className="object-cover" />
+        <div className="relative aspect-[4/5] max-h-[640px] w-full overflow-hidden bg-sunken">
+          <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-cover" />
         </div>
       )}
       {video ? (
-        <VideoEmbed
-          video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
-        />
+        <div className="px-4 sm:px-5">
+          <VideoEmbed
+            video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
+          />
+        </div>
       ) : (
         post.link_url && (
           <a
             href={post.link_url}
             target="_blank"
             rel="noreferrer nofollow"
-            className="truncate rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm font-medium text-brand hover:underline"
+            className="mx-4 truncate rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm font-medium text-brand hover:underline sm:mx-5"
           >
             {post.link_url.replace(/^https?:\/\//, "")}
           </a>
         )
       )}
 
-      <footer className="-mx-2 -mb-1 flex items-center gap-1 border-t border-line pt-2">
+      <footer className="flex items-center gap-1 px-2 pb-2 sm:px-3">
         {me ? (
           <LikeButton postId={post.id} liked={post.liked_by_me} count={post.like_count} />
         ) : (

@@ -24,7 +24,7 @@ function currentTime() {
 
 export default function CreatorPage({ params, searchParams }: PageProps<"/creators/[handle]">) {
   return (
-    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:py-8">
+    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-7 px-4 py-6 sm:py-10">
       <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Creator params={params} searchParams={searchParams} />
       </Suspense>
@@ -63,6 +63,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
 
   const city = profile.city_slug ? labelFor(CITIES, profile.city_slug) : null;
   const verified = platforms.some((p) => p.source === "verified");
+  const stats = headlineStats(platforms);
 
   return (
     <>
@@ -76,18 +77,19 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
         </p>
       )}
 
-      <header className="card overflow-hidden">
-        <div className="h-28 bg-brand-gradient sm:h-36" />
-        <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:px-6">
-          <div className="-mt-12 shrink-0 self-start rounded-full ring-4 ring-card sm:-mt-14">
-            <Avatar path={profile.photo_path} name={profile.display_name} size={112} />
+      <header className="flex flex-col items-center gap-5 pt-2 text-center sm:flex-row sm:items-start sm:gap-7 sm:text-left">
+        <div className="shrink-0 rounded-full bg-brand-gradient p-[3px]">
+          <div className="rounded-full bg-surface p-[3px]">
+            <Avatar path={profile.photo_path} name={profile.display_name} size={128} />
           </div>
-          <div className="flex min-w-0 flex-1 flex-col gap-1 sm:pb-1">
-            <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight">
+        </div>
+        <div className="flex min-w-0 flex-1 flex-col items-center gap-3 sm:items-start">
+          <div className="flex flex-col items-center gap-1 sm:items-start">
+            <h1 className="flex items-center gap-1.5 text-3xl font-extrabold tracking-tight">
               <span className="truncate">{profile.display_name}</span>
-              {verified && <BadgeCheck size={22} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
+              {verified && <BadgeCheck size={24} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
             </h1>
-            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+            <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted sm:justify-start">
               <span>@{profile.handle}</span>
               {city && (
                 <span className="flex items-center gap-1">
@@ -96,12 +98,40 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
               )}
               {mutual > 0 && (
                 <span className="flex items-center gap-1">
-                  <Users size={14} /> {mutual} mutual {mutual === 1 ? "connection" : "connections"}
+                  <Users size={14} /> {mutual} mutual
                 </span>
               )}
+              {profile.open_to_collab && <span className="chip-green">Open to collab</span>}
             </p>
           </div>
-          <div className="sm:pb-1">
+
+          {/* What they can do comes first: it's what collaborators look for. */}
+          {profile.skills.length > 0 && (
+            <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
+              {profile.skills.map((s) => (
+                <span key={s} className="rounded-full bg-brand px-3.5 py-1.5 text-[13px] font-semibold text-white">
+                  {labelFor(SKILLS, s)}
+                </span>
+              ))}
+            </div>
+          )}
+          {(profile.niches.length > 0 || profile.languages.length > 0) && (
+            <p className="flex flex-wrap justify-center gap-1.5 sm:justify-start">
+              {profile.niches.map((n) => (
+                <span key={n} className="chip-brand px-3 py-1 text-[13px]">
+                  {labelFor(NICHES, n)}
+                </span>
+              ))}
+              {profile.languages.map((l) => (
+                <span key={l} className="chip px-3 py-1 text-[13px]">
+                  {labelFor(LANGUAGES, l)}
+                </span>
+              ))}
+            </p>
+          )}
+          {profile.bio && <p className="max-w-xl leading-relaxed whitespace-pre-line">{profile.bio}</p>}
+
+          <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
             {user && !isMe && (
               <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />
             )}
@@ -117,60 +147,28 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
             )}
           </div>
         </div>
-        {(profile.open_to_collab || profile.niches.length > 0 || profile.bio) && (
-          <div className="flex flex-col gap-3 border-t border-line px-5 py-4 sm:px-6">
-            {profile.bio && <p className="leading-relaxed whitespace-pre-line">{profile.bio}</p>}
-            <div className="flex flex-wrap gap-1.5">
-              {profile.open_to_collab && <span className="chip-green px-3 py-1.5 text-[13px]">Open to collab</span>}
-              {profile.niches.map((n) => (
-                <span key={n} className="chip px-3 py-1.5 text-[13px]">
-                  {labelFor(NICHES, n)}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
       </header>
+
+      {stats.length > 0 && (
+        <dl className="grid grid-cols-3 divide-x divide-line rounded-3xl border border-line bg-card py-4">
+          {stats.map(([label, value, isVerified]) => (
+            <div key={label} className="flex flex-col items-center gap-0.5 px-2 text-center">
+              <dd className="flex items-center gap-1 text-xl font-extrabold tracking-tight sm:text-2xl">
+                {value}
+                {isVerified && <BadgeCheck size={16} className="text-brand" aria-label="Verified" />}
+              </dd>
+              <dt className="text-xs font-medium text-muted">{label}</dt>
+            </div>
+          ))}
+        </dl>
+      )}
 
       {contact && <ContactBox name={profile.display_name} contact={contact} />}
 
-      {platforms.length > 0 && (
-        <section className="grid gap-4 sm:grid-cols-2">
-          {platforms.map((p) => (
-            <PlatformCard key={p.id} account={p} />
-          ))}
-        </section>
-      )}
-
-      {collabs.length > 0 && (
-        <section className="card flex flex-col gap-3 p-5 sm:p-6">
-          <h2 className="text-lg font-bold">Open collabs</h2>
-          <ul className="flex flex-col gap-2">
-            {collabs.map((c) => (
-              <li key={c.id}>
-                <Link href={`/collabs/${c.id}`} className="flex items-center gap-3 rounded-xl border border-line p-3.5 transition hover:border-brand/30 hover:bg-card-hover">
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
-                    <Handshake size={20} />
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate font-semibold">{c.title}</span>
-                    <span className="block truncate text-xs text-muted">
-                      Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
-                      {c.city_slug && ` · ${labelFor(CITIES, c.city_slug)}`}
-                    </span>
-                  </span>
-                  <ChevronRight size={18} className="text-muted" />
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {videos.length > 0 && (
-        <section className="card flex flex-col gap-4 p-5 sm:p-6">
-          <h2 className="text-lg font-bold">Videos</h2>
-          <div className="grid gap-4 sm:grid-cols-2">
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Work</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
             {videos.map((v) => (
               <figure key={v.id} className="flex flex-col gap-2">
                 <VideoEmbed video={v} />
@@ -181,36 +179,56 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
         </section>
       )}
 
-      {(profile.skills.length > 0 || profile.languages.length > 0) && (
-        <section className="card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
-          {profile.skills.length > 0 && (
-            <div>
-              <h2 className="mb-2 text-sm font-semibold text-muted">Skills</h2>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.skills.map((s) => (
-                  <span key={s} className="chip-brand px-3 py-1.5 text-[13px]">
-                    {labelFor(SKILLS, s)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-          {profile.languages.length > 0 && (
-            <div>
-              <h2 className="mb-2 text-sm font-semibold text-muted">Languages</h2>
-              <div className="flex flex-wrap gap-1.5">
-                {profile.languages.map((l) => (
-                  <span key={l} className="chip px-3 py-1.5 text-[13px]">
-                    {labelFor(LANGUAGES, l)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+      {collabs.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Open collabs</h2>
+          {collabs.map((c) => (
+            <Link key={c.id} href={`/collabs/${c.id}`} className="card-link flex items-center gap-3 p-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                <Handshake size={20} />
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold">{c.title}</span>
+                <span className="block truncate text-xs text-muted">
+                  Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
+                  {c.city_slug && ` · ${labelFor(CITIES, c.city_slug)}`}
+                </span>
+              </span>
+              <ChevronRight size={18} className="text-muted" />
+            </Link>
+          ))}
+        </section>
+      )}
+
+      {platforms.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-bold">Channels</h2>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {platforms.map((p) => (
+              <PlatformCard key={p.id} account={p} />
+            ))}
+          </div>
         </section>
       )}
     </>
   );
+}
+
+/** The three numbers shown under the name, from the verified channel when there is one. */
+function headlineStats(platforms: PlatformAccount[]): [string, string, boolean][] {
+  const main = platforms.find((p) => p.source === "verified" && p.stats) ?? platforms.find((p) => p.self_followers !== null);
+  if (!main) return [];
+  const v = main.source === "verified" && main.stats ? main.stats : null;
+  const followers = v ? (v.followers_hidden ? "Hidden" : compactNumber(v.followers)) : compactNumber(main.self_followers);
+  const views = v ? compactNumber(v.avg_views_last10) : compactNumber(main.self_avg_views);
+  const uploads = v?.uploads_per_week ?? null;
+  return [
+    [main.platform === "youtube" ? "Subscribers" : "Followers", followers ?? "–", !!v],
+    ["Avg views", views ?? "–", !!v && views !== null],
+    uploads !== null
+      ? ["Videos a week", uploads >= 1 ? String(uploads) : `${Math.round(uploads * 4)}/mo`, true]
+      : ["Platforms", String(platforms.length), false],
+  ];
 }
 
 const PLATFORM_STYLE = {

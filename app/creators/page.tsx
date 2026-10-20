@@ -26,7 +26,7 @@ export default function CreatorsPage({ searchParams }: PageProps<"/creators">) {
     <main className="page flex flex-col gap-6">
       <div>
         <h1 className="page-title">Find creators</h1>
-        <p className="mt-1 text-muted">Search by city, niche and audience size. Verified numbers come straight from YouTube.</p>
+        <p className="mt-1 text-muted">Tap a niche to start. Verified numbers come straight from YouTube.</p>
       </div>
       <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Search searchParams={searchParams} />
@@ -54,22 +54,43 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
     filters.langs.length;
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[280px_1fr]">
-      {/* Phones get the filters folded away; wide screens keep them in a sidebar. */}
-      <details className="card group lg:hidden">
-        <summary className="flex cursor-pointer list-none items-center gap-2 p-4 font-semibold [&::-webkit-details-marker]:hidden">
-          <SlidersHorizontal size={18} /> Filters
-          {active > 0 && <span className="chip-brand py-0.5">{active}</span>}
-          <span className="ml-auto text-sm font-medium text-muted group-open:hidden">Show</span>
-          <span className="ml-auto hidden text-sm font-medium text-muted group-open:inline">Hide</span>
-        </summary>
-        <div className="border-t border-line p-4">
-          <Filters filters={filters} />
-        </div>
-      </details>
-      <aside className="card hidden p-5 lg:sticky lg:top-24 lg:block">
-        <Filters filters={filters} />
-      </aside>
+    <div className="flex flex-col gap-5">
+      {/* Quick picks as chips; everything else folds into "More filters". */}
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+        <QuickChip href={`/creators${toQueryString(filters, { niches: [], page: 1 })}`} on={filters.niches.length === 0}>
+          All
+        </QuickChip>
+        {NICHES.map(([value, label]) => {
+          const on = filters.niches.includes(value);
+          return (
+            <QuickChip key={value} href={`/creators${toQueryString(filters, { niches: on ? [] : [value], page: 1 })}`} on={on}>
+              {label}
+            </QuickChip>
+          );
+        })}
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <QuickChip href={`/creators${toQueryString(filters, { collab: !filters.collab, page: 1 })}`} on={filters.collab} outline>
+          Open to collab
+        </QuickChip>
+        <QuickChip href={`/creators${toQueryString(filters, { verified: !filters.verified, page: 1 })}`} on={filters.verified} outline>
+          Verified only
+        </QuickChip>
+        <details className="group relative">
+          <summary className="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
+            <SlidersHorizontal size={15} /> More filters
+            {active > 0 && <span className="chip-brand py-0 text-[11px]">{active}</span>}
+          </summary>
+          <div className="card absolute left-0 z-30 mt-2 w-[min(92vw,360px)] p-5 shadow-xl">
+            <Filters filters={filters} />
+          </div>
+        </details>
+        {total > 0 && (
+          <span className="ml-auto text-sm font-medium text-muted">
+            {total} {total === 1 ? "creator" : "creators"}
+          </span>
+        )}
+      </div>
 
       <section className="flex flex-col gap-4">
         {error ? (
@@ -85,10 +106,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
           </div>
         ) : (
           <>
-            <p className="text-sm font-medium text-muted">
-              {total} {total === 1 ? "creator" : "creators"}
-            </p>
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:grid-cols-4">
               {rows.map((r) => (
                 <CreatorCard
                   key={r.user_id}
@@ -118,6 +136,19 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         )}
       </section>
     </div>
+  );
+}
+
+function QuickChip({ href, on, outline, children }: { href: string; on: boolean; outline?: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className={`flex h-9 shrink-0 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition ${
+        on ? "bg-ink text-card" : outline ? "border border-line bg-card text-ink hover:bg-sunken" : "bg-sunken text-ink hover:bg-line"
+      }`}
+    >
+      {children}
+    </Link>
   );
 }
 
