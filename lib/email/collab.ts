@@ -40,3 +40,41 @@ export async function emailCollabAccepted(postId: string, authorId: string, user
   });
   await sendEmail({ to: found.to, subject, ...body });
 }
+
+/**
+ * Emails creators who have a skill the new collab needs. The bell alerts come
+ * from the database; this only emails the closest matches, at most 50, and
+ * skips anyone already told about another collab in the last day.
+ */
+export async function emailNewCollab(postId: string, siteUrl: string) {
+  const admin = createAdminClient();
+  const { data: post } = await admin
+    .from("collab_posts")
+    .select("title, author_id, roles_needed, author:creator_profiles!collab_posts_author_id_fkey(display_name)")
+    .eq("id", postId)
+    .maybeSingle();
+  const author = (post?.author as unknown as { display_name: string } | null)?.display_name;
+  if (!post || !author || !post.roles_needed.length) return;
+
+  const { data: alerted } = await admin.from("notifications").select("user_id").eq("kind", "collab_new").eq("entity_id", postId);
+  const ids = (alerted ?? []).map((n) => n.user_id as string);
+  if (!ids.length) return;
+  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+  const [{ data: matches }, { data: recent }] = await Promise.all([
+    admin.from("creator_profiles").select("user_id").in("user_id", ids).overlaps("skills", post.roles_needed).limit(50),
+    admin.from("notifications").select("user_id").eq("kind", "collab_new").neq("entity_id", postId).gt("created_at", since).in("user_id", ids),
+  ]);
+  const skip = new Set((recent ?? []).map((n) => n.user_id as string));
+  const recipients = (matches ?? []).map((m) => m.user_id as string).filter((id) => !skip.has(id));
+
+  const subject = `New collab: ${post.title}`;
+  const body = simpleEmail({
+    lead: `${author} posted a collab on Peerpop that needs your skills: "${post.title}".`,
+    button: { text: "See the collab", url: `${siteUrl}/collabs/${postId}` },
+    reason: "You're getting this because your Peerpop profile lists a skill this collab needs.",
+  });
+  for (const id of recipients) {
+    const { data } = await admin.auth.admin.getUserById(id);
+    if (data?.user?.email) await sendEmail({ to: data.user.email, subject, ...body });
+  }
+}

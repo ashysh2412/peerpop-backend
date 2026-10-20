@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
 import { validateCollab } from "@/lib/collabs/validate";
-import { emailCollabAccepted, emailCollabInterest } from "@/lib/email/collab";
+import { emailCollabAccepted, emailCollabInterest, emailNewCollab } from "@/lib/email/collab";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
 
@@ -39,6 +39,8 @@ export async function createCollab(_prev: FormState, form: FormData): Promise<Fo
     if (error?.code === "42501") return { message: "Turn on \"Show my profile in search\" in Edit profile to post a collab." };
     return { message: TRY_AGAIN };
   }
+  const site = await siteUrl();
+  after(() => emailNewCollab(data.id, site));
   redirect(`/collabs/${data.id}`);
 }
 
