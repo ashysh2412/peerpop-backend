@@ -1,8 +1,11 @@
 @import "tailwindcss";
 
+/* Peerpop is always light, even when the device is in dark mode. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /*
  * Peerpop design tokens. Pages use the semantic names (surface, card, line,
- * ink, muted, brand) so light and dark mode change in one place.
+ * ink, muted, brand) so the palette changes in one place.
  */
 :root {
   --surface: #faf7f4;
@@ -23,26 +26,6 @@
   --glow-2: rgba(194,58,107,0.12);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --surface: #120f0d;
-    --card: #1b1715;
-    --card-hover: #221d1a;
-    --sunken: #26201d;
-    --line: #352d28;
-    --ink: #f6f1ed;
-    --muted: #a89c94;
-    --brand: #ff7a4d;
-    --brand-hover: #ff9670;
-    --brand-soft: #3a1f15;
-    --brand-ink: #ffd9cb;
-    --grad-1: #ff8a4c;
-    --grad-2: #e4572e;
-    --grad-3: #c23a6b;
-    --glow-1: rgba(255,122,77,0.14);
-    --glow-2: rgba(194,58,107,0.12);
-  }
-}
 
 @theme inline {
   --color-surface: var(--surface);
@@ -58,6 +41,10 @@
   --color-brand-ink: var(--brand-ink);
   --font-sans: var(--font-jakarta);
   --font-mono: var(--font-geist-mono);
+}
+
+html {
+  color-scheme: light;
 }
 
 body {
