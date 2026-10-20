@@ -61,7 +61,7 @@ export function ChipGroup({
               defaultChecked={selected.includes(value)}
               className="peer sr-only"
             />
-            <span className="inline-flex h-9 items-center rounded-full border-2 border-ink bg-card px-4 text-sm font-semibold text-ink transition select-none hover:bg-pop-yellow/40 peer-checked:bg-pop-lilac peer-checked:shadow-[2px_2px_0_var(--ink)] peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40">
+            <span className="inline-flex h-9 items-center rounded-full border border-line bg-card px-4 text-sm font-medium text-muted transition select-none hover:border-brand/40 hover:text-ink peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:text-brand-ink peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40">
               {text}
             </span>
           </label>
