@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 
 // Tints the browser bar on phones to match the page background.
 export const viewport: Viewport = {
-  themeColor: "#faf7f4",
+  themeColor: "#f5f7fb",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

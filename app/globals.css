@@ -8,22 +8,22 @@
  * ink, muted, brand) so the palette changes in one place.
  */
 :root {
-  --surface: #faf7f4;
+  --surface: #f5f7fb;
   --card: #ffffff;
-  --card-hover: #fdfbf9;
-  --sunken: #f4efea;
-  --line: #ebe4dd;
-  --ink: #1f1a17;
-  --muted: #776c64;
-  --brand: #e4572e;
-  --brand-hover: #c9461f;
-  --brand-soft: #fdede7;
-  --brand-ink: #8a2c12;
-  --grad-1: #ff8a4c;
-  --grad-2: #e4572e;
-  --grad-3: #c23a6b;
-  --glow-1: rgba(228,87,46,0.16);
-  --glow-2: rgba(194,58,107,0.12);
+  --card-hover: #fafbfd;
+  --sunken: #eef2f7;
+  --line: #e2e8f0;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --brand: #1570ef;
+  --brand-hover: #0f5fd6;
+  --brand-soft: #e8f1fe;
+  --brand-ink: #0b4aa8;
+  --grad-1: #38bdf8;
+  --grad-2: #1570ef;
+  --grad-3: #4f46e5;
+  --glow-1: rgba(21,112,239,0.14);
+  --glow-2: rgba(56,189,248,0.14);
 }
 
 

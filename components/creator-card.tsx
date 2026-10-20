@@ -25,12 +25,12 @@ export type CreatorRow = {
 
 // Creators without a photo get one of these, picked from their handle so it stays the same.
 const TILES = [
-  "from-orange-400 to-rose-500",
-  "from-amber-300 to-orange-500",
-  "from-rose-400 to-fuchsia-600",
-  "from-teal-400 to-sky-600",
-  "from-sky-400 to-indigo-600",
-  "from-lime-400 to-emerald-600",
+  "from-sky-400 to-blue-600",
+  "from-cyan-400 to-sky-600",
+  "from-blue-400 to-indigo-600",
+  "from-indigo-400 to-violet-600",
+  "from-teal-400 to-cyan-600",
+  "from-sky-300 to-indigo-500",
 ];
 
 function tileFor(handle: string) {
