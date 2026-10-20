@@ -11,8 +11,9 @@ export const metadata: Metadata = { title: "Notifications · Peerpop" };
 
 type Notification = {
   id: string;
-  kind: "connection_request" | "connection_accepted" | "collab_interest" | "collab_accepted";
+  kind: "connection_request" | "connection_accepted" | "collab_interest" | "collab_accepted" | "post_like" | "post_comment";
   actor_id: string | null;
+  entity_id: string | null;
   read_at: string | null;
   created_at: string;
 };
@@ -24,6 +25,8 @@ const TEXT: Record<Notification["kind"], string> = {
   connection_accepted: "accepted your connection request",
   collab_interest: "is interested in your collab",
   collab_accepted: "accepted you for their collab",
+  post_like: "liked your post",
+  post_comment: "commented on your post",
 };
 
 function currentTime() {
@@ -45,7 +48,7 @@ async function Notifications() {
   const { supabase, user } = await requireUser("/notifications");
   const { data } = await supabase
     .from("notifications")
-    .select("id, kind, actor_id, read_at, created_at")
+    .select("id, kind, actor_id, entity_id, read_at, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(50);
@@ -58,7 +61,7 @@ async function Notifications() {
   // A request that was withdrawn and sent again shows once, as the latest.
   const seen = new Set<string>();
   const shown = items.filter((n) => {
-    const key = `${n.kind}:${n.actor_id}`;
+    const key = `${n.kind}:${n.actor_id}:${n.kind.startsWith("post_") ? n.entity_id : ""}`;
     if (!n.actor_id || !byId.has(n.actor_id) || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -80,7 +83,12 @@ async function Notifications() {
       {shown.map((n) => {
         const actor = byId.get(n.actor_id!)!;
         const photo = avatarUrl(actor.photo_path);
-        const href = n.kind === "connection_request" ? "/network?tab=received" : `/creators/${actor.handle}`;
+        const href =
+          n.kind === "connection_request"
+            ? "/network?tab=received"
+            : n.kind.startsWith("post_") && n.entity_id
+              ? `/posts/${n.entity_id}`
+              : `/creators/${actor.handle}`;
         return (
           <li key={n.id}>
             <Link

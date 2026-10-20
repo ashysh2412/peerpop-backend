@@ -43,6 +43,9 @@ async function AccountLinks() {
   ]);
   return (
     <>
+      <Link href="/home" className={link}>
+        Home
+      </Link>
       <Link href="/notifications" className={`${link} relative`} aria-label="Notifications">
         🔔
         {!!unread && (
