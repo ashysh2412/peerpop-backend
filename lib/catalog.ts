@@ -25,10 +25,24 @@ export const SKILLS = [
   ["voiceover", "Voiceover"],
 ] as const;
 
+// Marathi, Hindi and English first (most creators in Pune), then A to Z.
+// Keep in sync with the lang enum (see the 20261020030000 migration).
 export const LANGUAGES = [
   ["marathi", "Marathi"],
   ["hindi", "Hindi"],
   ["english", "English"],
+  ["assamese", "Assamese"],
+  ["bengali", "Bengali"],
+  ["bhojpuri", "Bhojpuri"],
+  ["gujarati", "Gujarati"],
+  ["kannada", "Kannada"],
+  ["konkani", "Konkani"],
+  ["malayalam", "Malayalam"],
+  ["odia", "Odia"],
+  ["punjabi", "Punjabi"],
+  ["tamil", "Tamil"],
+  ["telugu", "Telugu"],
+  ["urdu", "Urdu"],
 ] as const;
 
 // Major Indian cities, A to Z. Keep in sync with the cities table (see the

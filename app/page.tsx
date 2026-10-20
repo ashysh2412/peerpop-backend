@@ -187,7 +187,7 @@ function SearchMock() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-2 rounded-2xl border-2 border-ink px-4 py-3 text-sm text-muted">
-        <Search size={16} /> Anchors in Pune who speak Marathi
+        <Search size={16} /> Anchors in Pune who shoot in Marathi
       </div>
       <div className="flex flex-wrap gap-1.5">
         {["Pune", "Anchor", "Marathi", "Open to collab"].map((c, i) => (
@@ -414,7 +414,7 @@ export default function LandingPage() {
           eyebrow="discover"
           title="Find the right creator in seconds"
           text="Filter by city, niche, skill, language and audience size. Every result shows real numbers, so you know who you're talking to."
-          points={["181 Indian cities, starting with Pune", "Filter by Marathi, Hindi or English", "See who is open to collab right now"]}
+          points={["181 Indian cities, starting with Pune", "Filter by the language they shoot in", "See who is open to collab right now"]}
           note="found you!"
           visual={<SearchMock />}
         />
