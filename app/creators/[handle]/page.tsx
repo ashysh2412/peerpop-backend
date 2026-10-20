@@ -90,7 +90,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
         </div>
         <div className="flex min-w-0 flex-1 flex-col items-center gap-3 sm:items-start">
           <div className="flex flex-col items-center gap-1 sm:items-start">
-            <h1 className="flex items-center gap-1.5 text-3xl font-extrabold tracking-tight">
+            <h1 className="flex items-center gap-1.5 text-3xl font-semibold tracking-tight">
               <span className="truncate">{profile.display_name}</span>
               {verified && <BadgeCheck size={24} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
             </h1>
@@ -158,7 +158,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
         <dl className="grid grid-cols-3 divide-x divide-line rounded-3xl border border-line bg-card py-4">
           {stats.map(([label, value, isVerified]) => (
             <div key={label} className="flex flex-col items-center gap-0.5 px-2 text-center">
-              <dd className="flex items-center gap-1 text-xl font-extrabold tracking-tight sm:text-2xl">
+              <dd className="flex items-center gap-1 text-xl font-semibold tracking-tight sm:text-2xl">
                 {value}
                 {isVerified && <BadgeCheck size={16} className="text-brand" aria-label="Verified" />}
               </dd>

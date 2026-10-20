@@ -15,7 +15,7 @@ export function CollabCall({ collab }: { collab: Collab }) {
         <p className="flex items-center gap-2 text-xs font-bold tracking-wide text-brand uppercase">
           <Handshake size={15} /> Collab call
         </p>
-        <h3 className="text-xl leading-snug font-extrabold tracking-tight">{collab.title}</h3>
+        <h3 className="text-xl leading-snug font-semibold tracking-tight">{collab.title}</h3>
         <div className="flex flex-wrap gap-1.5">
           {collab.roles_needed.map((r) => (
             <span key={r} className="chip-brand">

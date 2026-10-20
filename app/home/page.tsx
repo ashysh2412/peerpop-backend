@@ -28,31 +28,29 @@ export default function HomePage({ searchParams }: PageProps<"/home">) {
   );
 }
 
+/** Collabs that fit you first: your city or a skill you have, then everything else. */
+function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string | null; skills: string[] }) {
+  const fit = (c: Collab) => (c.city_slug && c.city_slug === me.city_slug ? 1 : 0) + (c.roles_needed.some((r) => me.skills.includes(r)) ? 1 : 0);
+  return collabs.filter((c) => c.author_id !== me.user_id).sort((a, b) => fit(b) - fit(a));
+}
+
 async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) {
   const { supabase, user } = await requireUser("/home");
   const profile = await getProfileById(supabase, user.id);
   if (!profile) redirect("/onboarding");
-  const { before } = await searchParams;
-  const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
+  const { before, tab } = await searchParams;
+  const showCollabs = tab === "collabs";
+  const cursor = !showCollabs && typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
   const [posts, requests, people, { collabs }] = await Promise.all([
-    getFeed(supabase, cursor),
+    showCollabs ? Promise.resolve([] as FeedPost[]) : getFeed(supabase, cursor),
     countReceived(supabase, user.id),
-    getSuggestions(supabase, profile, 12),
-    cursor ? Promise.resolve({ collabs: [] as Collab[] }) : listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
+    cursor ? Promise.resolve([]) : getSuggestions(supabase, profile, 12),
+    listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
   ]);
   const firstName = profile.display_name.split(" ")[0];
-  const calls = collabs.filter((c) => c.author_id !== user.id).slice(0, 3);
-
-  // A collab call after every third post, so open collabs stay in view.
-  const items: ({ kind: "post"; post: FeedPost } | { kind: "collab"; collab: Collab })[] = [];
-  posts.forEach((post, i) => {
-    items.push({ kind: "post", post });
-    const call = (i + 1) % 3 === 0 ? calls[(i + 1) / 3 - 1] : undefined;
-    if (call) items.push({ kind: "collab", collab: call });
-  });
-  if (posts.length < 3 && calls[0]) items.push({ kind: "collab", collab: calls[0] });
+  const open = rankCollabs(collabs, profile);
 
   return (
     <div className="mx-auto flex w-full max-w-[620px] flex-col gap-5">
@@ -60,12 +58,9 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         <>
           <div className="flex items-end justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight">Hey {firstName} 👋</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">Hey {firstName} 👋</h1>
               <p className="text-sm text-muted">Creators to meet, and what they&apos;re making.</p>
             </div>
-            <Link href="/collabs/new" className="btn-secondary btn-sm">
-              <Plus size={15} /> Collab
-            </Link>
           </div>
           <CreatorStories me={profile} people={people} />
           {requests > 0 && (
@@ -78,34 +73,66 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
               <ArrowRight size={16} />
             </Link>
           )}
-          <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />
+          <nav className="tabs sticky top-[72px] z-20 w-full shadow-sm">
+            <Link href="/home" className={`flex-1 text-center ${showCollabs ? "tab" : "tab-active"}`}>
+              Feed
+            </Link>
+            <Link href="/home?tab=collabs" className={`flex flex-1 items-center justify-center gap-1.5 ${showCollabs ? "tab-active" : "tab"}`}>
+              Collabs
+              {open.length > 0 && (
+                <span className={`rounded-full px-1.5 text-[11px] font-bold ${showCollabs ? "bg-card text-ink" : "bg-brand text-white"}`}>{open.length}</span>
+              )}
+            </Link>
+          </nav>
         </>
       )}
 
-      {posts.length === 0 && (
-        <div className="empty">
-          {cursor ? (
-            "You're all caught up."
+      {showCollabs ? (
+        <>
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-muted">Open collabs, the ones that fit you first.</p>
+            <Link href="/collabs/new" className="btn-primary btn-sm">
+              <Plus size={15} /> Post a collab
+            </Link>
+          </div>
+          {open.length === 0 ? (
+            <div className="empty">
+              <span className="text-4xl">🤝</span>
+              <p className="font-semibold text-ink">No open collabs yet</p>
+              <p className="max-w-sm text-sm">Be the first: post what you&apos;re planning and who you need.</p>
+            </div>
           ) : (
-            <>
-              <span className="text-4xl">✨</span>
-              <p className="font-semibold text-ink">Your feed is quiet</p>
-              <p className="max-w-sm text-sm">Share your first update, or tap a creator above to connect. Their posts will show up here.</p>
-            </>
+            open.map((c) => <CollabCall key={c.id} collab={c} />)
           )}
-        </div>
-      )}
-      {items.map((item) =>
-        item.kind === "post" ? (
-          <PostCard key={item.post.id} post={item.post} me={user.id} now={now} />
-        ) : (
-          <CollabCall key={item.collab.id} collab={item.collab} />
-        ),
-      )}
-      {posts.length === FEED_PAGE && (
-        <Link href={`/home?before=${encodeURIComponent(posts[posts.length - 1].created_at)}`} className="btn-secondary self-center">
-          Show older posts
-        </Link>
+          <Link href="/collabs" className="btn-secondary self-center">
+            Search all collabs
+          </Link>
+        </>
+      ) : (
+        <>
+          {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
+          {posts.length === 0 && (
+            <div className="empty">
+              {cursor ? (
+                "You're all caught up."
+              ) : (
+                <>
+                  <span className="text-4xl">✨</span>
+                  <p className="font-semibold text-ink">Your feed is quiet</p>
+                  <p className="max-w-sm text-sm">Share your first update, or tap a creator above to connect. Their posts will show up here.</p>
+                </>
+              )}
+            </div>
+          )}
+          {posts.map((post) => (
+            <PostCard key={post.id} post={post} me={user.id} now={now} />
+          ))}
+          {posts.length === FEED_PAGE && (
+            <Link href={`/home?before=${encodeURIComponent(posts[posts.length - 1].created_at)}`} className="btn-secondary self-center">
+              Show older posts
+            </Link>
+          )}
+        </>
       )}
     </div>
   );

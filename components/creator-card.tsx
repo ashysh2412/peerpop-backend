@@ -49,7 +49,7 @@ export function CreatorCard({ row, viewer }: { row: CreatorRow; viewer: Connecti
         {photo ? (
           <Image src={photo} alt={row.display_name} fill sizes="(min-width: 1024px) 280px, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-7xl font-extrabold text-white/90">
+          <span className="flex h-full w-full items-center justify-center text-7xl font-semibold text-white/90">
             {row.display_name.charAt(0).toUpperCase()}
           </span>
         )}

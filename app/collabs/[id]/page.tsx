@@ -73,7 +73,7 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
           </div>
           <span className={open ? "chip-green" : "chip"}>{open ? "Open" : "Closed"}</span>
         </div>
-        <h1 className="text-2xl leading-tight font-extrabold tracking-tight sm:text-3xl">{collab.title}</h1>
+        <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">{collab.title}</h1>
         <p className="leading-relaxed whitespace-pre-wrap">{collab.description}</p>
         <dl className="grid grid-cols-[110px_1fr] gap-x-4 gap-y-3 rounded-xl bg-sunken p-4 text-sm">
           {details

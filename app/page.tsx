@@ -41,7 +41,7 @@ export default function LandingPage() {
             <span className="chip-brand self-start px-3 py-1.5 text-[13px]">
               <Sparkles size={14} /> Now live in Pune
             </span>
-            <h1 className="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
+            <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
               Where Indian creators{" "}
               <span className="bg-brand-gradient bg-clip-text text-transparent">
                 find their next collab
@@ -106,7 +106,7 @@ export default function LandingPage() {
       <section className="mx-auto w-full max-w-6xl px-4 pb-8">
         <div className="flex flex-col items-start gap-5 rounded-3xl bg-brand-gradient p-8 text-white sm:flex-row sm:items-center sm:p-10">
           <div className="flex-1">
-            <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Your next collab is one connection away.</h2>
+            <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">Your next collab is one connection away.</h2>
             <p className="mt-2 text-white/80">Set up your profile in two minutes. Sign in with Google or email.</p>
           </div>
           <Link href="/login" className="btn btn-lg bg-white text-brand-ink hover:bg-white/90">

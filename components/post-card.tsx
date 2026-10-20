@@ -20,7 +20,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
-    <article className="flex flex-col gap-3 border-b border-line pt-5 pb-2">
+    <article className="card flex flex-col gap-3 rounded-3xl p-4 pb-2 sm:p-5 sm:pb-2">
       <header className="flex items-center gap-3">
         <Link href={`/creators/${post.author_handle}`}>
           <Avatar path={post.author_photo} name={post.author_name} size={44} />
@@ -54,7 +54,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
       {linkToPost ? <ExpandableText text={post.body} /> : <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>}
 
       {post.image_path && (
-        <div className="relative aspect-[4/5] max-h-[680px] w-full overflow-hidden rounded-3xl bg-sunken">
+        <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken">
           <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-cover" />
         </div>
       )}
@@ -78,7 +78,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         )
       )}
 
-      <footer className="-mx-3 flex items-center gap-1">
+      <footer className="-mx-2 flex items-center gap-1 border-t border-line pt-1.5">
         {me ? (
           <LikeButton postId={post.id} liked={post.liked_by_me} count={post.like_count} />
         ) : (
