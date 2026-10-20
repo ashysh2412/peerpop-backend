@@ -6,6 +6,7 @@ import { CITIES, labelFor } from "@/lib/catalog";
 import { POST_IMAGE_BUCKET, type FeedPost } from "@/lib/feed/data";
 import { parseVideoUrl } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
+import { ExpandableText } from "./expandable-text";
 import { LikeButton } from "./like-button";
 import { VideoEmbed } from "./video-embed";
 import { updatedLabel } from "./youtube-stats";
@@ -50,7 +51,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         )}
       </header>
 
-      <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>
+      {linkToPost ? <ExpandableText text={post.body} /> : <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>}
 
       {post.image_path && (
         <div className="relative aspect-[4/5] max-h-[680px] w-full overflow-hidden rounded-3xl bg-sunken">
@@ -60,7 +61,8 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
       {video ? (
         <div>
           <VideoEmbed
-            video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
+            compact={linkToPost}
+          video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
           />
         </div>
       ) : (

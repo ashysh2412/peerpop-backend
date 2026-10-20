@@ -189,11 +189,11 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
               <p className="max-w-sm text-sm">Paste YouTube or Instagram links. They play right here, so collaborators can see your work.</p>
             </Link>
           )}
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {videos.map((v) => (
               <figure key={v.id} className="flex flex-col gap-2">
                 <VideoEmbed video={v} />
-                {v.title && <figcaption className="text-sm font-medium text-muted">{v.title}</figcaption>}
+                {v.title && <figcaption className="line-clamp-2 text-xs font-medium text-muted">{v.title}</figcaption>}
               </figure>
             ))}
           </div>
