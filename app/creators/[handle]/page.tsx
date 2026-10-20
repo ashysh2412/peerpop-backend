@@ -1,16 +1,19 @@
 import type { Metadata } from "next";
-import { BadgeCheck, ChevronRight, Handshake, MapPin, Pencil, Plus, Users } from "lucide-react";
+import { BadgeCheck, ChevronRight, Handshake, ImagePlus, MapPin, Pencil, Plus, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
 import { ContactBox } from "@/components/contact-box";
+import { postImageUrl } from "@/components/post-card";
 import { ConnectPanel } from "@/components/connect-panel";
 import { VideoEmbed } from "@/components/video-embed";
 import { YouTubeStats } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { getOpenCollabsBy } from "@/lib/collabs/data";
 import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/connections/data";
+import { getPhotosBy } from "@/lib/feed/data";
 import { compactNumber } from "@/lib/format";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
 import type { PlatformAccount } from "@/lib/profile/types";
@@ -41,6 +44,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
   const [
     platforms,
     videos,
+    photos,
     collabs,
     {
       data: { user },
@@ -48,6 +52,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
   ] = await Promise.all([
     getPublicPlatforms(supabase, profile.user_id),
     getVideos(supabase, profile.user_id),
+    getPhotosBy(supabase, profile.user_id),
     getOpenCollabsBy(supabase, profile.user_id, new Date(currentTime()).toISOString()),
     supabase.auth.getUser(),
   ]);
@@ -192,6 +197,37 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
               </figure>
             ))}
           </div>
+        </section>
+      )}
+
+      {(photos.length > 0 || isMe) && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold">Photos</h2>
+            {isMe && photos.length > 0 && (
+              <Link href="/home#compose" className="btn-secondary btn-sm">
+                <ImagePlus size={15} /> Add photo
+              </Link>
+            )}
+          </div>
+          {isMe && photos.length === 0 && (
+            <Link href="/home#compose" className="empty transition hover:border-brand/40">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+                <ImagePlus size={22} />
+              </span>
+              <p className="font-semibold text-ink">Add photos of your work</p>
+              <p className="max-w-sm text-sm">Post a photo from Home and it shows up here too, so collaborators can see your style.</p>
+            </Link>
+          )}
+          {photos.length > 0 && (
+            <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-2xl sm:gap-1.5">
+              {photos.map((ph) => (
+                <Link key={ph.id} href={`/posts/${ph.id}`} className="relative aspect-square overflow-hidden bg-sunken">
+                  <Image src={postImageUrl(ph.image_path)} alt="" fill sizes="(min-width: 768px) 250px, 33vw" className="object-cover transition duration-300 hover:scale-105" />
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
       )}
 

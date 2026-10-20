@@ -105,3 +105,17 @@ export async function getSuggestions(
   const { data } = await query.order("updated_at", { ascending: false }).limit(30);
   return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }
+
+export type Photo = { id: string; image_path: string };
+
+/** A creator's latest posts that have a photo, for the grid on their profile. */
+export async function getPhotosBy(supabase: Client, authorId: string, limit = 12) {
+  const { data } = await supabase
+    .from("posts")
+    .select("id, image_path")
+    .eq("author_id", authorId)
+    .not("image_path", "is", null)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as Photo[];
+}
