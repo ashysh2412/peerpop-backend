@@ -1,7 +1,8 @@
-import { ArrowRight, BadgeCheck, Bell, Check, ChevronDown, Handshake, Lock, MapPin, Search, Sparkles, UserPlus, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, Bell, Check, ChevronDown, Handshake, Lock, MapPin, Search, UserPlus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Reveal } from "@/components/reveal";
 import { NICHES, SKILLS } from "@/lib/catalog";
 
 // Free photos from Unsplash (unsplash.com/license). Names and numbers are made-up examples, not real accounts.
@@ -100,7 +101,7 @@ function Feature({
 }) {
   return (
     <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
-      <div className={`flex flex-col gap-4 ${flip ? "lg:order-2" : ""}`}>
+      <Reveal from={flip ? "right" : "left"} className={`flex flex-col gap-4 ${flip ? "lg:order-2" : ""}`}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <h3 className="text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">{title}</h3>
         <p className="text-lg leading-relaxed text-muted">{text}</p>
@@ -114,11 +115,13 @@ function Feature({
             </li>
           ))}
         </ul>
-      </div>
-      <div className={`relative ${flip ? "lg:order-1" : ""}`} aria-hidden>
-        <div className="bg-brand-gradient absolute -inset-4 -z-10 rounded-[2.5rem] opacity-10 blur-2xl" />
-        <div className="rounded-[2rem] border border-line bg-surface p-5 sm:p-8">{visual}</div>
-      </div>
+      </Reveal>
+      <Reveal from={flip ? "left" : "right"} delay={120} className={`relative ${flip ? "lg:order-1" : ""}`}>
+        <div aria-hidden>
+          <div className="bg-brand-gradient animate-glow absolute -inset-4 -z-10 rounded-[2.5rem] blur-2xl" />
+          <div className="rounded-[2rem] border border-line bg-surface p-5 transition duration-500 hover:-translate-y-1 hover:shadow-2xl sm:p-8">{visual}</div>
+        </div>
+      </Reveal>
     </div>
   );
 }
@@ -290,10 +293,17 @@ export default function LandingPage() {
         <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-4 pt-14 pb-20 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col gap-6">
             <span className="chip-brand self-start px-3 py-1.5 text-[13px]">
-              <Sparkles size={14} /> Now live in Pune · free for creators
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+              </span>
+              Now live in Pune · free for creators
             </span>
             <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
-              Where creators <span className="bg-brand-gradient bg-clip-text text-transparent">find their next collab</span>
+              Where creators{" "}
+              <span className="animate-shimmer bg-[linear-gradient(90deg,var(--grad-1),var(--grad-2),var(--grad-3),var(--grad-2),var(--grad-1))] bg-[length:200%_auto] bg-clip-text text-transparent">
+                find their next collab
+              </span>
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-muted">
               Peerpop is the network for Indian creators. Show your best work, prove your numbers, meet creators near you and team up on your next shoot.
@@ -316,15 +326,15 @@ export default function LandingPage() {
           </div>
 
           <div className="relative mx-auto w-full max-w-md pb-10 lg:pb-0" aria-hidden>
-            <div className="bg-brand-gradient absolute -inset-6 -z-10 rounded-[2.5rem] opacity-20 blur-3xl" />
+            <div className="bg-brand-gradient animate-glow absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl" />
             <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-sunken shadow-2xl">
-              <Photo id={PHOTO.kitchenShoot} sizes="(min-width: 1024px) 448px, 90vw" />
+              <Photo id={PHOTO.kitchenShoot} sizes="(min-width: 1024px) 448px, 90vw" className="animate-kenburns" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
             </div>
-            <div className="absolute -right-3 -bottom-2 aspect-square w-36 overflow-hidden rounded-3xl border-4 border-card bg-sunken shadow-xl sm:-right-10 sm:w-44">
+            <div className="animate-float-slow absolute -right-3 -bottom-2 aspect-square w-36 overflow-hidden rounded-3xl border-4 border-card bg-sunken shadow-xl [animation-delay:-3s] sm:-right-10 sm:w-44">
               <Photo id={PHOTO.streetShoot} sizes="176px" />
             </div>
-            <div className="card absolute top-6 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-10">
+            <div className="card animate-float absolute top-6 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-10">
               <span className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-brand">
                 <Photo id={PHOTO.clapperPurple} sizes="40px" />
               </span>
@@ -335,7 +345,7 @@ export default function LandingPage() {
                 <p className="text-xs text-muted">Food · Pune · 128K subscribers</p>
               </div>
             </div>
-            <div className="card absolute bottom-16 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-12">
+            <div className="card animate-float absolute bottom-16 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl [animation-delay:-2s] sm:-left-12">
               <span className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-full text-white">
                 <Handshake size={16} />
               </span>
@@ -351,14 +361,20 @@ export default function LandingPage() {
       <section className="border-y border-line bg-card">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-12 text-center">
           <Eyebrow>Whatever you create, you belong here</Eyebrow>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            {TYPES.map((t) => (
-              <div key={t.label} className="group relative aspect-[3/4] overflow-hidden rounded-3xl bg-sunken">
-                <Photo id={t.photo} sizes="(min-width: 1024px) 180px, 45vw" className="transition duration-500 group-hover:scale-105" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                <p className="absolute inset-x-0 bottom-0 p-4 text-left font-semibold text-white">{t.label}</p>
-              </div>
-            ))}
+          <div className="group/marquee -mx-4 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
+            <div className="animate-marquee flex w-max gap-4 group-hover/marquee:[animation-play-state:paused]">
+              {[...TYPES, ...TYPES].map((t, i) => (
+                <div
+                  key={i}
+                  aria-hidden={i >= TYPES.length}
+                  className="group relative aspect-[3/4] w-44 shrink-0 overflow-hidden rounded-3xl bg-sunken sm:w-52"
+                >
+                  <Photo id={t.photo} sizes="(min-width: 1024px) 180px, 45vw" className="transition duration-500 group-hover:scale-105" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                  <p className="absolute inset-x-0 bottom-0 p-4 text-left font-semibold text-white">{t.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
           <div className="flex flex-wrap justify-center gap-2 pt-2">
             {SKILLS.map(([v, l]) => (
@@ -425,10 +441,15 @@ export default function LandingPage() {
           </div>
           <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
-              <li key={s.title} className="flex flex-col gap-3 rounded-3xl border border-line bg-surface p-6">
-                <span className="bg-brand-gradient flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white">{i + 1}</span>
-                <h3 className="text-lg font-semibold">{s.title}</h3>
-                <p className="text-sm leading-relaxed text-muted">{s.text}</p>
+              <li key={s.title}>
+                <Reveal
+                  delay={i * 120}
+                  className="flex h-full flex-col gap-3 rounded-3xl border border-line bg-surface p-6 transition hover:-translate-y-1 hover:shadow-lg"
+                >
+                  <span className="bg-brand-gradient flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white">{i + 1}</span>
+                  <h3 className="text-lg font-semibold">{s.title}</h3>
+                  <p className="text-sm leading-relaxed text-muted">{s.text}</p>
+                </Reveal>
               </li>
             ))}
           </ol>
@@ -462,7 +483,7 @@ export default function LandingPage() {
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-8">
         <div className="bg-brand-gradient relative overflow-hidden rounded-[2rem] p-8 text-white sm:p-14">
-          <Users size={220} className="absolute -right-10 -bottom-12 opacity-10" aria-hidden />
+          <Users size={220} className="animate-float-slow absolute -right-10 -bottom-12 opacity-10" aria-hidden />
           <div className="relative flex max-w-2xl flex-col gap-5">
             <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">Your next collab is one connection away.</h2>
             <p className="text-lg text-white/85">Set up your profile in two minutes. Free, with Google or email.</p>
