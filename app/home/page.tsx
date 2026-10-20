@@ -53,7 +53,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
     <div className="grid items-start gap-6 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_280px]">
       <aside className="flex flex-col gap-4 md:sticky md:top-24">
         <section className="card hidden overflow-hidden md:block">
-          <div className="h-16 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400" />
+          <div className="h-16 bg-brand-gradient" />
           <div className="-mt-9 flex flex-col items-center gap-1 px-4 pb-4 text-center">
             <div className="rounded-full ring-4 ring-card">
               <Avatar path={profile.photo_path} name={profile.display_name} size={72} />

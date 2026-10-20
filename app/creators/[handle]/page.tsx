@@ -77,7 +77,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       )}
 
       <header className="card overflow-hidden">
-        <div className="h-28 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 sm:h-36" />
+        <div className="h-28 bg-brand-gradient sm:h-36" />
         <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:px-6">
           <div className="-mt-12 shrink-0 self-start rounded-full ring-4 ring-card sm:-mt-14">
             <Avatar path={profile.photo_path} name={profile.display_name} size={112} />

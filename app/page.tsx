@@ -35,7 +35,7 @@ export default function LandingPage() {
   return (
     <main className="flex-1">
       <section className="relative overflow-hidden">
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_20%_0%,rgba(139,92,246,0.18),transparent),radial-gradient(40%_40%_at_90%_10%,rgba(244,114,182,0.16),transparent)]" />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_20%_0%,var(--glow-1),transparent),radial-gradient(40%_40%_at_90%_10%,var(--glow-2),transparent)]" />
         <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-14 pb-16 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="flex flex-col gap-6">
             <span className="chip-brand self-start px-3 py-1.5 text-[13px]">
@@ -43,7 +43,7 @@ export default function LandingPage() {
             </span>
             <h1 className="text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-6xl">
               Where Indian creators{" "}
-              <span className="bg-gradient-to-r from-violet-600 via-fuchsia-500 to-orange-400 bg-clip-text text-transparent">
+              <span className="bg-brand-gradient bg-clip-text text-transparent">
                 find their next collab
               </span>
             </h1>
@@ -63,7 +63,7 @@ export default function LandingPage() {
 
           {/* A taste of what search results look like (made-up examples). */}
           <div className="relative mx-auto w-full max-w-sm" aria-hidden>
-            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-gradient-to-br from-violet-500/15 to-fuchsia-500/10 blur-2xl" />
+            <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-brand-gradient opacity-15 blur-2xl" />
             <p className="mb-3 text-center text-xs font-medium tracking-wide text-muted uppercase">Example profiles</p>
             <div className="flex flex-col gap-3">
               {SAMPLE.map((c, i) => (
@@ -104,12 +104,12 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pb-8">
-        <div className="flex flex-col items-start gap-5 rounded-3xl bg-gradient-to-br from-violet-700 via-violet-600 to-fuchsia-600 p-8 text-white sm:flex-row sm:items-center sm:p-10">
+        <div className="flex flex-col items-start gap-5 rounded-3xl bg-brand-gradient p-8 text-white sm:flex-row sm:items-center sm:p-10">
           <div className="flex-1">
             <h2 className="text-2xl font-extrabold tracking-tight sm:text-3xl">Your next collab is one connection away.</h2>
             <p className="mt-2 text-white/80">Set up your profile in two minutes. Sign in with Google or email.</p>
           </div>
-          <Link href="/login" className="btn btn-lg bg-white text-violet-700 hover:bg-violet-50">
+          <Link href="/login" className="btn btn-lg bg-white text-brand-ink hover:bg-white/90">
             Get started <ArrowRight size={18} />
           </Link>
         </div>

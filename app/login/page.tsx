@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: "Sign in · Peerpop" };
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
     <main className="relative flex flex-1 items-center justify-center px-4 py-12 sm:py-20">
-      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(139,92,246,0.16),transparent)]" />
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50%_40%_at_50%_0%,var(--glow-1),transparent)]" />
       <div className="card flex w-full max-w-md flex-col gap-7 p-6 shadow-xl sm:p-8">
         <div className="text-center">
           <h1 className="text-2xl font-extrabold tracking-tight">Welcome to Peerpop</h1>
