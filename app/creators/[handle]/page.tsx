@@ -3,9 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ConnectPanel } from "@/components/connect-panel";
 import { VideoEmbed } from "@/components/video-embed";
 import { YouTubeStats } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
+import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/connections/data";
 import { compactNumber } from "@/lib/format";
 import { avatarUrl } from "@/lib/profile/avatar";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
@@ -42,6 +44,14 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
     supabase.auth.getUser(),
   ]);
   const isMe = user?.id === profile.user_id;
+  const [connection, mutual, contact] =
+    user && !isMe
+      ? await Promise.all([
+          getConnection(supabase, user.id, profile.user_id),
+          getMutualCount(supabase, profile.user_id),
+          getContactFor(supabase, profile.user_id),
+        ])
+      : [null, 0, null];
   const photo = avatarUrl(profile.photo_path);
 
   return (
@@ -79,6 +89,24 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
             ))}
           </div>
         </div>
+        {user && !isMe && (
+          <div className="flex flex-col gap-2 self-start">
+            <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />
+            {mutual > 0 && (
+              <p className="text-sm text-zinc-500">
+                {mutual} mutual {mutual === 1 ? "connection" : "connections"}
+              </p>
+            )}
+          </div>
+        )}
+        {!user && (
+          <Link
+            href={`/login?next=${encodeURIComponent(`/creators/${profile.handle}`)}`}
+            className="inline-flex h-10 items-center self-start rounded-full bg-violet-600 px-5 text-sm font-medium text-white hover:bg-violet-700"
+          >
+            Sign in to connect
+          </Link>
+        )}
         {isMe && (
           <Link
             href="/settings/profile"
@@ -88,6 +116,23 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           </Link>
         )}
       </header>
+
+      {contact && (
+        <section className="flex flex-col gap-1 rounded-xl bg-green-50 p-4 text-sm text-green-900 dark:bg-green-950 dark:text-green-100">
+          <h2 className="font-medium">Contact {profile.display_name}</h2>
+          {contact.contact_email && (
+            <a href={`mailto:${contact.contact_email}`} className="underline">
+              {contact.contact_email}
+            </a>
+          )}
+          {contact.contact_whatsapp && (
+            <a href={`https://wa.me/${contact.contact_whatsapp.replace("+", "")}`} target="_blank" rel="noreferrer" className="underline">
+              WhatsApp {contact.contact_whatsapp}
+            </a>
+          )}
+          {contact.contact_note && <p>{contact.contact_note}</p>}
+        </section>
+      )}
 
       {profile.bio && <p className="whitespace-pre-line text-zinc-700 dark:text-zinc-300">{profile.bio}</p>}
 
