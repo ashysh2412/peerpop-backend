@@ -15,6 +15,9 @@ export function SiteHeader() {
         <Link href="/creators" className={link}>
           Find creators
         </Link>
+        <Link href="/collabs" className={link}>
+          Collabs
+        </Link>
         {/* The session is only known per request, so the rest streams in. */}
         <Suspense fallback={null}>
           <AccountLinks />

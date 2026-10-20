@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { connectionRequestEmail, escapeHtml } from "./templates";
+import { connectionRequestEmail, escapeHtml, simpleEmail } from "./templates";
 
 describe("connectionRequestEmail", () => {
   const base = { name: "Riya", handle: "riya_eats", city: "Pune", message: null, siteUrl: "https://peerpop.example" };
@@ -21,5 +21,19 @@ describe("connectionRequestEmail", () => {
 
   it("escapes quotes and ampersands", () => {
     expect(escapeHtml(`a & "b" 'c'`)).toBe("a &amp; &quot;b&quot; &#39;c&#39;");
+  });
+});
+
+describe("simpleEmail", () => {
+  it("escapes everything people type", () => {
+    const e = simpleEmail({
+      lead: "<b>Riya</b> is interested",
+      note: "a & b",
+      button: { text: "Open", url: "https://peerpop.example/collabs/1" },
+      reason: "Because.",
+    });
+    expect(e.html).toContain("&lt;b&gt;Riya&lt;/b&gt;");
+    expect(e.html).toContain("a &amp; b");
+    expect(e.text).toContain("Open: https://peerpop.example/collabs/1");
   });
 });

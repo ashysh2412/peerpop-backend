@@ -57,6 +57,12 @@ async function Notifications() {
   const { data: actors } = actorIds.length
     ? await supabase.from("creator_profiles").select("user_id, handle, display_name, photo_path").in("user_id", actorIds)
     : { data: [] };
+  // Collab notifications point at the interest; look up its post so the link opens the collab.
+  const interestIds = items.filter((n) => n.kind.startsWith("collab_") && n.entity_id).map((n) => n.entity_id!);
+  const { data: interests } = interestIds.length
+    ? await supabase.from("collab_interests").select("id, post_id").in("id", interestIds)
+    : { data: [] };
+  const postFor = new Map((interests ?? []).map((i) => [i.id as string, i.post_id as string]));
   const byId = new Map(((actors ?? []) as Actor[]).map((a) => [a.user_id, a]));
   // A request that was withdrawn and sent again shows once, as the latest.
   const seen = new Set<string>();
@@ -88,7 +94,9 @@ async function Notifications() {
             ? "/network?tab=received"
             : n.kind.startsWith("post_") && n.entity_id
               ? `/posts/${n.entity_id}`
-              : `/creators/${actor.handle}`;
+              : n.entity_id && postFor.has(n.entity_id)
+                ? `/collabs/${postFor.get(n.entity_id)}`
+                : `/creators/${actor.handle}`;
         return (
           <li key={n.id}>
             <Link

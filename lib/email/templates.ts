@@ -25,3 +25,17 @@ ${message ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52
 </div>`;
   return { subject, text, html };
 }
+
+type Button = { text: string; url: string };
+
+/** A short email: one bold lead line, an optional quoted note, a button and a footer reason. */
+export function simpleEmail({ lead, note, button, reason }: { lead: string; note?: string | null; button: Button; reason: string }) {
+  const text = [lead, note ? `\n"${note}"` : "", `\n${button.text}: ${button.url}`, `\n${reason}`].join("\n");
+  const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:480px">
+<p>${escapeHtml(lead)}</p>
+${note ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52525b">${escapeHtml(note)}</p>` : ""}
+<p><a href="${button.url}" style="display:inline-block;background:#7c3aed;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">${escapeHtml(button.text)}</a></p>
+<p style="font-size:12px;color:#71717a">${escapeHtml(reason)}</p>
+</div>`;
+  return { text, html };
+}

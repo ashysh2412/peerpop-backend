@@ -3,10 +3,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ContactBox } from "@/components/contact-box";
 import { ConnectPanel } from "@/components/connect-panel";
 import { VideoEmbed } from "@/components/video-embed";
 import { YouTubeStats } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
+import { getOpenCollabsBy } from "@/lib/collabs/data";
 import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/connections/data";
 import { compactNumber } from "@/lib/format";
 import { avatarUrl } from "@/lib/profile/avatar";
@@ -15,6 +17,10 @@ import type { PlatformAccount } from "@/lib/profile/types";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Creator · Peerpop" };
+
+function currentTime() {
+  return Date.now();
+}
 
 export default function CreatorPage({ params, searchParams }: PageProps<"/creators/[handle]">) {
   return (
@@ -35,12 +41,14 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
   const [
     platforms,
     videos,
+    collabs,
     {
       data: { user },
     },
   ] = await Promise.all([
     getPublicPlatforms(supabase, profile.user_id),
     getVideos(supabase, profile.user_id),
+    getOpenCollabsBy(supabase, profile.user_id, new Date(currentTime()).toISOString()),
     supabase.auth.getUser(),
   ]);
   const isMe = user?.id === profile.user_id;
@@ -117,22 +125,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
         )}
       </header>
 
-      {contact && (
-        <section className="flex flex-col gap-1 rounded-xl bg-green-50 p-4 text-sm text-green-900 dark:bg-green-950 dark:text-green-100">
-          <h2 className="font-medium">Contact {profile.display_name}</h2>
-          {contact.contact_email && (
-            <a href={`mailto:${contact.contact_email}`} className="underline">
-              {contact.contact_email}
-            </a>
-          )}
-          {contact.contact_whatsapp && (
-            <a href={`https://wa.me/${contact.contact_whatsapp.replace("+", "")}`} target="_blank" rel="noreferrer" className="underline">
-              WhatsApp {contact.contact_whatsapp}
-            </a>
-          )}
-          {contact.contact_note && <p>{contact.contact_note}</p>}
-        </section>
-      )}
+      {contact && <ContactBox name={profile.display_name} contact={contact} />}
 
       {profile.bio && <p className="whitespace-pre-line text-zinc-700 dark:text-zinc-300">{profile.bio}</p>}
 
@@ -141,6 +134,28 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           {platforms.map((p) => (
             <PlatformCard key={p.id} account={p} />
           ))}
+        </section>
+      )}
+
+      {collabs.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <h2 className="text-lg font-semibold">Open collabs</h2>
+          <ul className="flex flex-col gap-2">
+            {collabs.map((c) => (
+              <li key={c.id}>
+                <Link
+                  href={`/collabs/${c.id}`}
+                  className="flex flex-col gap-1 rounded-xl border border-zinc-200 p-3 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
+                >
+                  <span className="font-medium">{c.title}</span>
+                  <span className="text-xs text-zinc-500">
+                    Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
+                    {c.city_slug && ` · ${labelFor(CITIES, c.city_slug)}`}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
