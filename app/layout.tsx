@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -17,6 +17,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Peerpop",
   description: "Find creators to collab with, connect, and team up on your next shoot.",
+};
+
+// Tints the browser bar on phones to match the page background.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#faf7f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#120f0d" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
