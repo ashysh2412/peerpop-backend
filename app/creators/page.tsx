@@ -21,6 +21,7 @@ type Row = {
   open_to_collab: boolean;
   max_followers: number | null;
   max_followers_verified: boolean;
+  has_verified: boolean;
   avg_views: number | null;
   avg_views_verified: boolean;
   total_count: number;
@@ -180,7 +181,14 @@ function CreatorCard({ row }: { row: Row }) {
           {photo && <Image src={photo} alt={row.display_name} fill sizes="56px" className="object-cover" />}
         </div>
         <div className="min-w-0">
-          <p className="truncate font-medium">{row.display_name}</p>
+          <p className="flex items-center gap-1.5 font-medium">
+            <span className="truncate">{row.display_name}</span>
+            {row.has_verified && (
+              <span title="Verified YouTube channel" className="text-blue-600 dark:text-blue-400">
+                ✓
+              </span>
+            )}
+          </p>
           <p className="truncate text-sm text-zinc-500">
             @{row.handle}
             {row.city_slug && <> · {labelFor(CITIES, row.city_slug)}</>}
