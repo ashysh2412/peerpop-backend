@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function LandingPage() {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-center gap-8 px-4 py-24">
-      <p className="font-medium text-violet-600">Peerpop · Pune</p>
+      <p className="font-medium text-violet-600">Peerpop · India</p>
       <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
         Find creators to collab with.
       </h1>
@@ -12,7 +12,13 @@ export default function LandingPage() {
         Show your best videos, link your YouTube and Instagram, connect with other creators, and
         team up on your next shoot.
       </p>
-      <div>
+      <div className="flex flex-wrap gap-3">
+        <Link
+          href="/creators"
+          className="inline-flex h-12 items-center rounded-full border border-zinc-300 px-6 font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
+        >
+          Browse creators
+        </Link>
         <Link
           href="/login"
           className="inline-flex h-12 items-center rounded-full bg-violet-600 px-6 font-medium text-white hover:bg-violet-700"

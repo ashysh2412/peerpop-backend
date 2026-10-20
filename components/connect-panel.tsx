@@ -10,9 +10,27 @@ const primary =
   "inline-flex h-10 items-center rounded-full bg-violet-600 px-5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60";
 
 /** The Connect / Pending / Connected controls on someone's profile. */
-export function ConnectPanel({ otherId, name, state }: { otherId: string; name: string; state: ConnectionState }) {
+export function ConnectPanel({
+  otherId,
+  name,
+  state,
+  compact = false,
+}: {
+  otherId: string;
+  name: string;
+  state: ConnectionState;
+  /** Search cards: no note field, and no remove or decline buttons. */
+  compact?: boolean;
+}) {
   const [sendState, send] = useActionState<FormState, FormData>(sendConnectionRequest, {});
   const [writing, setWriting] = useState(false);
+
+  if (state.kind === "connected" && compact) {
+    return <span className="text-sm text-green-700 dark:text-green-400">✓ Connected</span>;
+  }
+  if (state.kind === "sent" && compact) {
+    return <span className="text-sm text-zinc-500">Request sent</span>;
+  }
 
   if (state.kind === "connected") {
     return (
@@ -41,6 +59,17 @@ export function ConnectPanel({ otherId, name, state }: { otherId: string; name: 
         <input type="hidden" name="id" value={state.id} />
         <button type="submit" className="text-sm text-zinc-500 hover:underline">
           Withdraw
+        </button>
+      </form>
+    );
+  }
+
+  if (state.kind === "received" && compact) {
+    return (
+      <form action={acceptConnection} className="flex items-center gap-2">
+        <input type="hidden" name="id" value={state.id} />
+        <button type="submit" className={primary}>
+          Accept request
         </button>
       </form>
     );
@@ -88,7 +117,7 @@ export function ConnectPanel({ otherId, name, state }: { otherId: string; name: 
       )}
       <div className="flex items-center gap-3">
         <SubmitButton pendingText="Sending…">Connect</SubmitButton>
-        {!writing && (
+        {!writing && !compact && (
           <button type="button" onClick={() => setWriting(true)} className="text-sm text-zinc-500 hover:underline">
             Add a note
           </button>

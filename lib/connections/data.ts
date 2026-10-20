@@ -95,3 +95,17 @@ export async function countReceived(supabase: Client, me: string) {
     .eq("status", "pending");
   return count ?? 0;
 }
+
+/** Connection states between the signed-in user and each of `others`, for search cards. */
+export async function getStates(supabase: Client, me: string, others: string[]) {
+  const states = new Map<string, ConnectionState>();
+  if (others.length === 0) return states;
+  const { data } = await supabase
+    .from("connections")
+    .select(COLUMNS)
+    .or(`and(from_user.eq.${me},to_user.in.(${others.join(",")})),and(to_user.eq.${me},from_user.in.(${others.join(",")}))`);
+  for (const row of (data ?? []) as ConnectionRow[]) {
+    states.set(row.from_user === me ? row.to_user : row.from_user, stateFor(me, row));
+  }
+  return states;
+}

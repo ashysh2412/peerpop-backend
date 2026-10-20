@@ -22,12 +22,7 @@ type Tab = (typeof TABS)[number][0];
 export default function NetworkPage({ searchParams }: PageProps<"/network">) {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-12">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">My network</h1>
-        <Link href="/creators" className="text-sm font-medium text-violet-600 hover:underline">
-          Find creators →
-        </Link>
-      </div>
+      <h1 className="text-2xl font-semibold">My network</h1>
       <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
         <Network searchParams={searchParams} />
       </Suspense>

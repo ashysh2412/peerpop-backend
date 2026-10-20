@@ -63,9 +63,6 @@ async function Home() {
           Edit profile
         </Link>
       </div>
-      <form action="/auth/signout" method="post">
-        <button className="text-sm text-zinc-500 hover:underline">Sign out</button>
-      </form>
     </>
   );
 }
