@@ -32,9 +32,14 @@ async function Settings() {
     <>
       <div className="flex items-center justify-between gap-4">
         <h1 className="page-title">Edit profile</h1>
-        <Link href={`/creators/${profile.handle}`} className="text-sm font-medium text-brand hover:underline">
-          View my profile →
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium">
+          <Link href="/settings/password" className="text-muted hover:text-ink">
+            Change password
+          </Link>
+          <Link href={`/creators/${profile.handle}`} className="text-brand hover:underline">
+            View my profile →
+          </Link>
+        </div>
       </div>
       <PhotoSection userId={user.id} photoPath={profile.photo_path} />
       <ProfileSection profile={profile} />

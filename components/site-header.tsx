@@ -1,4 +1,4 @@
-import { Bell, Handshake, House, LogOut, Search, Settings, User, Users } from "lucide-react";
+import { Bell, Handshake, House, KeyRound, LogOut, Search, Settings, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { countReceived } from "@/lib/connections/data";
@@ -107,6 +107,9 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
             </Link>
             <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
               <Settings size={16} className="text-muted" /> Edit profile
+            </Link>
+            <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+              <KeyRound size={16} className="text-muted" /> Change password
             </Link>
             <form action="/auth/signout" method="post">
               <button className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
