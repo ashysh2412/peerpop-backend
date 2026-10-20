@@ -1,7 +1,10 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { headers } from "next/headers";
+import { after } from "next/server";
 import { getConnection } from "@/lib/connections/data";
+import { emailConnectionRequest } from "@/lib/email/connection";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
 
@@ -45,6 +48,12 @@ export async function sendConnectionRequest(_prev: FormState, form: FormData): P
     if (error.message.includes("cannot connect")) return { message: "You can't connect with this creator." };
     return { message: TRY_AGAIN };
   }
+  const host = (await headers()).get("host");
+  const siteUrl = `https://${host}`;
+  // Sent once the response is out, so a slow or failing email never blocks the request.
+  after(() =>
+    emailConnectionRequest(user.id, other, message, siteUrl).catch(() => console.error("Connection email failed")),
+  );
   refresh();
   return { ok: true, message: "Request sent." };
 }
