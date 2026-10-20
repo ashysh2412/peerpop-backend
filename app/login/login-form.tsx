@@ -15,7 +15,7 @@ const SUBMIT: Record<Mode, [string, string]> = {
   signin: ["Sign in", "Signing in…"],
   signup: ["Create account", "Creating…"],
   forgot: ["Email me a reset link", "Sending…"],
-  link: ["Email me a sign-in link", "Sending…"],
+  link: ["Continue with email", "Sending…"],
 };
 
 /** Supabase's messages, in plainer words. */
@@ -33,7 +33,7 @@ function friendly(message: string) {
 
 export function LoginForm({
   next,
-  initialMode = "signin",
+  initialMode = "link",
 }: {
   next: string;
   initialMode?: Mode;
@@ -106,7 +106,7 @@ export function LoginForm({
 
   if (status.kind === "sent") {
     const text = {
-      link: "a sign-in link",
+      link: "a link. Tap it and you're in",
       reset: "a link to set a new password",
       confirm: "a link to confirm your email. Tap it once and you're in",
     }[status.what];
@@ -120,10 +120,10 @@ export function LoginForm({
         </p>
         <button
           type="button"
-          onClick={() => switchTo("signin")}
+          onClick={() => switchTo("link")}
           className="mt-2 text-sm font-semibold text-brand hover:underline"
         >
-          Back to sign in
+          Use a different email
         </button>
       </div>
     );
@@ -134,31 +134,13 @@ export function LoginForm({
 
   return (
     <div className="flex flex-col gap-6">
-      {(mode === "signin" || mode === "signup") && (
-        <div className="tabs w-full">
-          <button
-            type="button"
-            onClick={() => switchTo("signin")}
-            className={`flex-1 ${mode === "signin" ? "tab-active" : "tab"}`}
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            onClick={() => switchTo("signup")}
-            className={`flex-1 ${mode === "signup" ? "tab-active" : "tab"}`}
-          >
-            Create account
-          </button>
-        </div>
-      )}
       {mode === "forgot" && (
         <p className="text-center text-sm text-muted">
           Enter your email and we&apos;ll send you a link to set a new password.
         </p>
       )}
 
-      {needsPassword && (
+      {mode !== "forgot" && (
         <>
           <button
             type="button"
@@ -248,23 +230,29 @@ export function LoginForm({
         >
           {status.kind === "busy" ? busyLabel : label}
         </button>
-        {mode === "signin" && (
-          <button
-            type="button"
-            onClick={() => switchTo("link")}
-            className="text-sm font-medium text-muted hover:text-ink"
-          >
-            Email me a sign-in link instead
-          </button>
-        )}
-        {(mode === "forgot" || mode === "link") && (
-          <button
-            type="button"
-            onClick={() => switchTo("signin")}
-            className="text-sm font-medium text-muted hover:text-ink"
-          >
-            Back to sign in with a password
-          </button>
+        {mode === "link" ? (
+          <p className="text-center text-[13px] text-muted">
+            No password needed. We&apos;ll email you a link.{" "}
+            <button type="button" onClick={() => switchTo("signin")} className="font-semibold text-ink hover:underline">
+              Use a password
+            </button>
+          </p>
+        ) : (
+          <p className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-[13px] font-medium text-muted">
+            {mode === "signin" && (
+              <button type="button" onClick={() => switchTo("signup")} className="hover:text-ink">
+                New here? Create a password
+              </button>
+            )}
+            {mode === "signup" && (
+              <button type="button" onClick={() => switchTo("signin")} className="hover:text-ink">
+                Have a password? Sign in
+              </button>
+            )}
+            <button type="button" onClick={() => switchTo("link")} className="hover:text-ink">
+              Email me a link instead
+            </button>
+          </p>
         )}
       </form>
 
