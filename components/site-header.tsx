@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { countReceived } from "@/lib/connections/data";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "./avatar";
+import { Dropdown } from "./dropdown";
 import { Logo } from "./logo";
 import { NavLink } from "./nav-link";
 
@@ -92,10 +93,11 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
         <Badge count={unread ?? 0} />
       </Link>
       {profile && (
-        <details className="group relative">
-          <summary className="flex cursor-pointer list-none items-center rounded-full ring-brand/30 transition hover:ring-4 [&::-webkit-details-marker]:hidden">
-            <Avatar path={profile.photo_path} name={profile.display_name} size={36} />
-          </summary>
+        <Dropdown
+          className="group relative"
+          summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-brand/30 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
+          summary={<Avatar path={profile.photo_path} name={profile.display_name} size={36} />}
+        >
           <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">
             <div className="px-3 py-2">
               <p className="truncate text-sm font-semibold">{profile.display_name}</p>
@@ -117,7 +119,7 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
               </button>
             </form>
           </div>
-        </details>
+        </Dropdown>
       )}
 
       {/* Phones get a bottom tab bar instead of the header links. */}

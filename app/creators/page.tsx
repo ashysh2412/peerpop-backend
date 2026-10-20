@@ -3,6 +3,7 @@ import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CreatorCard, type CreatorRow as Row } from "@/components/creator-card";
+import { Dropdown } from "@/components/dropdown";
 import { ChipGroup } from "@/components/ui";
 import { CITIES, LANGUAGES, NICHES, SKILLS } from "@/lib/catalog";
 import { getStates, type ConnectionState } from "@/lib/connections/data";
@@ -76,15 +77,20 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         <QuickChip href={`/creators${toQueryString(filters, { verified: !filters.verified, page: 1 })}`} on={filters.verified} outline>
           Verified only
         </QuickChip>
-        <details className="group relative">
-          <summary className="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden">
-            <SlidersHorizontal size={15} /> More filters
-            {active > 0 && <span className="chip-brand py-0 text-[11px]">{active}</span>}
-          </summary>
+        <Dropdown
+          className="group relative"
+          summaryClassName="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden"
+          summary={
+            <>
+              <SlidersHorizontal size={15} /> More filters
+              {active > 0 && <span className="chip-brand py-0 text-[11px]">{active}</span>}
+            </>
+          }
+        >
           <div className="card absolute left-0 z-30 mt-2 w-[min(92vw,360px)] p-5 shadow-xl">
             <Filters filters={filters} />
           </div>
-        </details>
+        </Dropdown>
         {total > 0 && (
           <span className="ml-auto text-sm font-medium text-muted">
             {total} {total === 1 ? "creator" : "creators"}
