@@ -1,13 +1,51 @@
 import { ArrowRight, BadgeCheck, Bell, Check, ChevronDown, Handshake, Lock, MapPin, Search, Sparkles, UserPlus, Users } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { NICHES, SKILLS } from "@/lib/catalog";
 
-// Everything on this page is a made-up example of what the app shows, not real accounts.
+// Free photos from Unsplash (unsplash.com/license). Names and numbers are made-up examples, not real accounts.
+const PHOTO = {
+  kitchenShoot: "1695408246612-584543865997", // Wesley Tingey
+  streetShoot: "1695866648623-2b5ff0430414", // LexScope
+  selfShoot: "1632820324313-ee2704746bfd", // Aejaz Memon
+  clapper: "1673767297353-0a4c8ad61b05", // Videodeck .co
+  clapperPurple: "1673767297209-35b4a5dc3ec9", // Videodeck .co
+  editor: "1627244714766-94dab62ed964", // Nubelson Fernandes
+  photographer: "1498830923224-e1c12d1564a6", // Aravind Kumar
+  videographer: "1611784728558-6c7d9b409cdf", // Kyle Loftus
+  food: "1567530331069-630c6a3926f3", // Avinash Uppuluri
+  music: "1659856222014-3a2c6d6afd6a", // Aejaz Memon
+  vlogger: "1758273239210-59fea02475eb", // Vitaly Gariev
+  alley: "1632820326259-a42bc20a36dc", // Aejaz Memon
+  glasses: "1659856233753-7ddf7d3fa8d1", // Aejaz Memon
+};
+
+function Photo({ id, alt = "", sizes, className = "" }: { id: string; alt?: string; sizes: string; className?: string }) {
+  return (
+    <Image
+      src={`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`}
+      alt={alt}
+      fill
+      sizes={sizes}
+      className={`object-cover ${className}`}
+    />
+  );
+}
+
 const TILES = [
-  { name: "Riya", niche: "Food", subs: "128K", grad: "from-[#2e8bff] to-[#5b4dff]" },
-  { name: "Arjun", niche: "Tech", subs: "54K", grad: "from-[#5b4dff] to-[#b04dff]" },
-  { name: "Sana", niche: "Fashion", subs: "212K", grad: "from-[#b04dff] to-[#2e8bff]" },
+  { name: "Isha", niche: "Vlogs", subs: "128K", photo: PHOTO.vlogger },
+  { name: "Kabir", niche: "Comedy", subs: "54K", photo: PHOTO.alley },
+  { name: "Om", niche: "Tech", subs: "212K", photo: PHOTO.glasses },
+];
+
+const TYPES = [
+  { label: "Anchors", photo: PHOTO.clapper },
+  { label: "Editors", photo: PHOTO.editor },
+  { label: "Photographers", photo: PHOTO.photographer },
+  { label: "Videographers", photo: PHOTO.videographer },
+  { label: "Food creators", photo: PHOTO.food },
+  { label: "Musicians", photo: PHOTO.music },
 ];
 
 const STEPS = [
@@ -91,7 +129,9 @@ function ProfileMock() {
       <div className="flex items-center gap-4">
         <span className="bg-brand-gradient rounded-full p-[3px]">
           <span className="block rounded-full bg-card p-[3px]">
-            <span className="block h-16 w-16 rounded-full bg-gradient-to-br from-[#2e8bff] to-[#b04dff]" />
+            <span className="relative block h-16 w-16 overflow-hidden rounded-full">
+              <Photo id={PHOTO.clapperPurple} sizes="64px" />
+            </span>
           </span>
         </span>
         <div className="min-w-0">
@@ -137,18 +177,13 @@ function WorkMock() {
         <span className="text-xs font-semibold text-brand">+ Add video</span>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        {["from-[#2e8bff] to-[#5b4dff]", "from-[#5b4dff] to-[#b04dff]", "from-[#b04dff] to-[#2e8bff]", "from-[#2e8bff] to-[#b04dff]"].map((g, i) => (
-          <div key={g} className={`relative aspect-video overflow-hidden rounded-xl bg-gradient-to-br ${g}`}>
-            <span className="absolute inset-0 flex items-center justify-center">
-              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs text-white ${i % 2 ? "bg-black/40" : "bg-red-600"}`}>▶</span>
+        {[PHOTO.kitchenShoot, PHOTO.streetShoot, PHOTO.food, PHOTO.selfShoot].map((id, i) => (
+          <div key={id} className="relative aspect-video overflow-hidden rounded-xl bg-sunken">
+            <Photo id={id} sizes="200px" />
+            <span className="absolute inset-0 flex items-center justify-center bg-black/15">
+              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs text-white ${i % 2 ? "bg-black/50" : "bg-red-600"}`}>▶</span>
             </span>
           </div>
-        ))}
-      </div>
-      <p className="font-semibold">Photos</p>
-      <div className="grid grid-cols-4 gap-2">
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="aspect-square rounded-lg bg-gradient-to-br from-[#efefff] to-[#e3dcff]" />
         ))}
       </div>
     </div>
@@ -170,7 +205,8 @@ function SearchMock() {
       </div>
       <div className="grid grid-cols-3 gap-3">
         {TILES.map((t) => (
-          <div key={t.name} className={`relative aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br ${t.grad} shadow-lg`}>
+          <div key={t.name} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-sunken shadow-lg">
+            <Photo id={t.photo} sizes="160px" />
             <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 text-white">
               <p className="text-sm font-semibold">{t.name}</p>
               <p className="text-[11px] opacity-85">
@@ -221,7 +257,9 @@ function NetworkMock() {
   return (
     <div className="flex flex-col gap-3">
       <div className="card flex items-center gap-3 p-4 shadow-lg">
-        <span className="h-11 w-11 shrink-0 rounded-full bg-gradient-to-br from-[#5b4dff] to-[#b04dff]" />
+        <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
+          <Photo id={PHOTO.selfShoot} sizes="44px" />
+        </span>
         <div className="min-w-0 flex-1">
           <p className="font-semibold">Arjun Mehta</p>
           <p className="truncate text-xs text-muted">&ldquo;Loved your misal video. Want to do a tech x food episode?&rdquo;</p>
@@ -277,10 +315,27 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="relative mx-auto w-full max-w-sm" aria-hidden>
-            <div className="bg-brand-gradient absolute -inset-6 -z-10 rounded-[2rem] opacity-15 blur-2xl" />
-            <ProfileMock />
-            <div className="card absolute -bottom-16 -left-4 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-12">
+          <div className="relative mx-auto w-full max-w-md pb-10 lg:pb-0" aria-hidden>
+            <div className="bg-brand-gradient absolute -inset-6 -z-10 rounded-[2.5rem] opacity-20 blur-3xl" />
+            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-sunken shadow-2xl">
+              <Photo id={PHOTO.kitchenShoot} sizes="(min-width: 1024px) 448px, 90vw" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
+            </div>
+            <div className="absolute -right-3 -bottom-2 aspect-square w-36 overflow-hidden rounded-3xl border-4 border-card bg-sunken shadow-xl sm:-right-10 sm:w-44">
+              <Photo id={PHOTO.streetShoot} sizes="176px" />
+            </div>
+            <div className="card absolute top-6 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-10">
+              <span className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-brand">
+                <Photo id={PHOTO.clapperPurple} sizes="40px" />
+              </span>
+              <div>
+                <p className="flex items-center gap-1 text-sm font-semibold">
+                  Riya Kulkarni <BadgeCheck size={14} className="text-brand" />
+                </p>
+                <p className="text-xs text-muted">Food · Pune · 128K subscribers</p>
+              </div>
+            </div>
+            <div className="card absolute bottom-16 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-12">
               <span className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-full text-white">
                 <Handshake size={16} />
               </span>
@@ -296,7 +351,16 @@ export default function LandingPage() {
       <section className="border-y border-line bg-card">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-12 text-center">
           <Eyebrow>Whatever you create, you belong here</Eyebrow>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+            {TYPES.map((t) => (
+              <div key={t.label} className="group relative aspect-[3/4] overflow-hidden rounded-3xl bg-sunken">
+                <Photo id={t.photo} sizes="(min-width: 1024px) 180px, 45vw" className="transition duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                <p className="absolute inset-x-0 bottom-0 p-4 text-left font-semibold text-white">{t.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-center gap-2 pt-2">
             {SKILLS.map(([v, l]) => (
               <span key={v} className="bg-brand-gradient rounded-full px-4 py-2 text-sm font-semibold text-white">
                 {l}s
@@ -321,7 +385,12 @@ export default function LandingPage() {
           title="A portfolio that proves it"
           text="Your skills sit right under your name, with your best videos and photos below. Verify your YouTube channel and your numbers carry a badge."
           points={["Skills, niches and languages at the top", "Videos and photo grid of your work", "Subscribers and average views straight from YouTube"]}
-          visual={<WorkMock />}
+          visual={
+            <div className="flex flex-col gap-4">
+              <ProfileMock />
+              <WorkMock />
+            </div>
+          }
         />
         <Feature
           flip
