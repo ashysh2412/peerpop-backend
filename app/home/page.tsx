@@ -25,12 +25,18 @@ async function Home() {
     <>
       <h1 className="text-2xl font-semibold">Welcome back, {profile.display_name}</h1>
       <p className="text-zinc-600 dark:text-zinc-400">
-        Search, connections and collabs are on the way. For now, make your profile shine.
+        Find creators to collab with by city, niche and audience size. Connections and collabs are on the way.
       </p>
       <div className="flex flex-wrap gap-3">
         <Link
-          href={`/creators/${profile.handle}`}
+          href="/creators"
           className="inline-flex h-10 items-center rounded-full bg-violet-600 px-5 font-medium text-white hover:bg-violet-700"
+        >
+          Find creators
+        </Link>
+        <Link
+          href={`/creators/${profile.handle}`}
+          className="inline-flex h-10 items-center rounded-full border border-zinc-300 px-5 font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
         >
           View my profile
         </Link>

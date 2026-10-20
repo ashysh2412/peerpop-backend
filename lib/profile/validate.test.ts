@@ -50,7 +50,7 @@ describe("validateProfile", () => {
   });
 
   it("reports each problem", () => {
-    const r = validateProfile(form([["handle", "a b"], ["city_slug", "mumbai"]]));
+    const r = validateProfile(form([["handle", "a b"], ["city_slug", "atlantis"]]));
     expect(r.ok).toBe(false);
     if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["city_slug", "display_name", "handle", "niches"]);
   });
