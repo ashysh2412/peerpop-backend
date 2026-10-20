@@ -36,12 +36,19 @@ async function AccountLinks() {
       </Link>
     );
   }
-  const [requests, { data: profile }] = await Promise.all([
+  const [requests, { count: unread }, { data: profile }] = await Promise.all([
     countReceived(supabase, user.id),
+    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
     supabase.from("creator_profiles").select("handle").eq("user_id", user.id).maybeSingle(),
   ]);
   return (
     <>
+      <Link href="/notifications" className={`${link} relative`} aria-label="Notifications">
+        🔔
+        {!!unread && (
+          <span className="absolute -right-0.5 -top-0.5 rounded-full bg-red-600 px-1.5 text-xs text-white">{unread}</span>
+        )}
+      </Link>
       <Link href="/network" className={`${link} relative`}>
         My network
         {requests > 0 && (
