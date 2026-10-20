@@ -24,10 +24,22 @@
   --grad-3: #b04dff;
   --glow-1: rgba(46,139,255,0.14);
   --glow-2: rgba(176,77,255,0.12);
+  /* Playful accents for the homepage stickers and doodles. */
+  --pop-yellow: #ffd23f;
+  --pop-coral: #ff6b6b;
+  --pop-mint: #3ddc97;
+  --pop-sky: #8fd3ff;
+  --pop-lilac: #d9c9ff;
 }
 
 
 @theme inline {
+  --color-pop-yellow: var(--pop-yellow);
+  --color-pop-coral: var(--pop-coral);
+  --color-pop-mint: var(--pop-mint);
+  --color-pop-sky: var(--pop-sky);
+  --color-pop-lilac: var(--pop-lilac);
+  --font-hand: var(--font-caveat);
   --color-surface: var(--surface);
   --color-card: var(--card);
   --color-card-hover: var(--card-hover);
@@ -146,10 +158,16 @@ body {
   --animate-marquee: marquee 40s linear infinite;
   --animate-shimmer: shimmer 6s linear infinite;
   --animate-glow: glow 7s ease-in-out infinite;
+  --animate-wiggle: wiggle 3.5s ease-in-out infinite;
+  --animate-spin-slow: spin 14s linear infinite;
 
   @keyframes float {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-12px); }
+  }
+  @keyframes wiggle {
+    0%, 100% { transform: rotate(-4deg); }
+    50% { transform: rotate(4deg); }
   }
   @keyframes kenburns {
     from { transform: scale(1); }

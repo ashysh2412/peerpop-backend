@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" },
       { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
-      // Free Unsplash photos on the homepage.
-      { protocol: "https", hostname: "images.unsplash.com", pathname: "/photo-**" },
     ],
   },
   cacheComponents: true,

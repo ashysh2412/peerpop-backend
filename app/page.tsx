@@ -1,59 +1,61 @@
-import { ArrowRight, BadgeCheck, Bell, Check, ChevronDown, Handshake, Lock, MapPin, Search, UserPlus, Users } from "lucide-react";
+import { ArrowRight, BadgeCheck, Bell, Check, ChevronDown, Handshake, Lock, MapPin, Search, UserPlus } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { Arrow, Heart, Scribble, Sparks, Squiggle, Star, Zigzag } from "@/components/doodles";
 import { Reveal } from "@/components/reveal";
 import { NICHES, SKILLS } from "@/lib/catalog";
 
-// Free photos from Unsplash (unsplash.com/license). Names and numbers are made-up examples, not real accounts.
-const PHOTO = {
-  kitchenShoot: "1695408246612-584543865997", // Wesley Tingey
-  streetShoot: "1695866648623-2b5ff0430414", // LexScope
-  selfShoot: "1632820324313-ee2704746bfd", // Aejaz Memon
-  clapper: "1673767297353-0a4c8ad61b05", // Videodeck .co
-  clapperPurple: "1673767297209-35b4a5dc3ec9", // Videodeck .co
-  editor: "1627244714766-94dab62ed964", // Nubelson Fernandes
-  photographer: "1498830923224-e1c12d1564a6", // Aravind Kumar
-  videographer: "1611784728558-6c7d9b409cdf", // Kyle Loftus
-  food: "1567530331069-630c6a3926f3", // Avinash Uppuluri
-  music: "1659856222014-3a2c6d6afd6a", // Aejaz Memon
-  vlogger: "1758273239210-59fea02475eb", // Vitaly Gariev
-  alley: "1632820326259-a42bc20a36dc", // Aejaz Memon
-  glasses: "1659856233753-7ddf7d3fa8d1", // Aejaz Memon
-};
+// The characters in /public/characters are Open Peeps by Pablo Stanley (CC0), drawn with DiceBear.
+// Names and numbers on this page are made-up examples, not real accounts.
+type Who = "riya" | "arjun" | "sana" | "kabir" | "neha" | "om" | "isha" | "rohan" | "dev" | "meera";
 
-function Photo({ id, alt = "", sizes, className = "" }: { id: string; alt?: string; sizes: string; className?: string }) {
+function Peep({ who, size, className = "" }: { who: Who; size: number; className?: string }) {
+  return <Image src={`/characters/${who}.svg`} alt="" width={size} height={size} unoptimized className={className} />;
+}
+
+/** A character in a round sticker, for avatars. */
+function Face({ who, size, bg = "bg-pop-lilac" }: { who: Who; size: number; bg?: string }) {
   return (
-    <Image
-      src={`https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=1200&q=80`}
-      alt={alt}
-      fill
-      sizes={sizes}
-      className={`object-cover ${className}`}
-    />
+    <span className={`flex shrink-0 items-end justify-center overflow-hidden rounded-full border-2 border-ink ${bg}`} style={{ width: size, height: size }}>
+      <Peep who={who} size={size} />
+    </span>
   );
 }
 
-const TILES = [
-  { name: "Isha", niche: "Vlogs", subs: "128K", photo: PHOTO.vlogger },
-  { name: "Kabir", niche: "Comedy", subs: "54K", photo: PHOTO.alley },
-  { name: "Om", niche: "Tech", subs: "212K", photo: PHOTO.glasses },
-];
+function Bubble({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <span
+      className={`absolute rounded-2xl border-2 border-ink bg-card px-3 py-1.5 font-hand text-xl leading-none font-bold whitespace-nowrap shadow-[3px_3px_0_var(--ink)] ${className}`}
+    >
+      {children}
+    </span>
+  );
+}
 
-const TYPES = [
-  { label: "Anchors", photo: PHOTO.clapper },
-  { label: "Editors", photo: PHOTO.editor },
-  { label: "Photographers", photo: PHOTO.photographer },
-  { label: "Videographers", photo: PHOTO.videographer },
-  { label: "Food creators", photo: PHOTO.food },
-  { label: "Musicians", photo: PHOTO.music },
+const TYPES: { label: string; who: Who; bg: string }[] = [
+  { label: "Anchors", who: "riya", bg: "bg-pop-yellow" },
+  { label: "Editors", who: "arjun", bg: "bg-pop-sky" },
+  { label: "Comedians", who: "om", bg: "bg-pop-coral" },
+  { label: "Videographers", who: "kabir", bg: "bg-pop-mint" },
+  { label: "Photographers", who: "neha", bg: "bg-pop-lilac" },
+  { label: "Food creators", who: "isha", bg: "bg-pop-yellow" },
+  { label: "Musicians", who: "rohan", bg: "bg-pop-sky" },
+  { label: "Fashion creators", who: "sana", bg: "bg-pop-coral" },
+  { label: "Scriptwriters", who: "dev", bg: "bg-pop-mint" },
+  { label: "Voiceover artists", who: "meera", bg: "bg-pop-lilac" },
 ];
 
 const STEPS = [
-  { title: "Make your profile", text: "Add your skills, niche, city and the languages you shoot in. It takes two minutes." },
-  { title: "Show your work", text: "Pin your best videos and photos, and verify your YouTube channel for real numbers." },
-  { title: "Find your people", text: "Search creators near you and send a connect request with a short note." },
-  { title: "Start a collab", text: "Post what you're planning and who you need, or raise your hand on someone else's." },
+  {
+    title: "Make your profile",
+    text: "Add your skills, niche, city and the languages you shoot in. It takes two minutes.",
+    bg: "bg-pop-yellow",
+    tilt: "-rotate-2",
+  },
+  { title: "Show your work", text: "Pin your best videos and photos, and verify your YouTube channel for real numbers.", bg: "bg-pop-sky", tilt: "rotate-1" },
+  { title: "Find your people", text: "Search creators near you and send a connect request with a short note.", bg: "bg-pop-mint", tilt: "-rotate-1" },
+  { title: "Start a collab", text: "Post what you're planning and who you need, or raise your hand on someone else's.", bg: "bg-pop-coral", tilt: "rotate-2" },
 ];
 
 const FAQ = [
@@ -81,7 +83,7 @@ const FAQ = [
 ];
 
 function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="text-xs font-bold tracking-[0.14em] text-brand uppercase">{children}</p>;
+  return <p className="font-hand text-2xl font-bold text-brand">{children}</p>;
 }
 
 function Feature({
@@ -90,6 +92,7 @@ function Feature({
   text,
   points,
   visual,
+  note,
   flip = false,
 }: {
   eyebrow: string;
@@ -97,10 +100,11 @@ function Feature({
   text: string;
   points: string[];
   visual: ReactNode;
+  note: string;
   flip?: boolean;
 }) {
   return (
-    <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
       <Reveal from={flip ? "right" : "left"} className={`flex flex-col gap-4 ${flip ? "lg:order-2" : ""}`}>
         <Eyebrow>{eyebrow}</Eyebrow>
         <h3 className="text-3xl leading-tight font-semibold tracking-tight sm:text-4xl">{title}</h3>
@@ -108,8 +112,8 @@ function Feature({
         <ul className="flex flex-col gap-2.5 pt-1">
           {points.map((p) => (
             <li key={p} className="flex items-start gap-3 text-[15px]">
-              <span className="bg-brand-gradient mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white">
-                <Check size={12} strokeWidth={3} />
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-pop-mint">
+                <Check size={11} strokeWidth={3.5} />
               </span>
               {p}
             </li>
@@ -117,9 +121,17 @@ function Feature({
         </ul>
       </Reveal>
       <Reveal from={flip ? "left" : "right"} delay={120} className={`relative ${flip ? "lg:order-1" : ""}`}>
-        <div aria-hidden>
-          <div className="bg-brand-gradient animate-glow absolute -inset-4 -z-10 rounded-[2.5rem] blur-2xl" />
-          <div className="rounded-[2rem] border border-line bg-surface p-5 transition duration-500 hover:-translate-y-1 hover:shadow-2xl sm:p-8">{visual}</div>
+        <div aria-hidden className="relative">
+          <div className={`absolute inset-0 rounded-[2rem] border-2 border-ink ${flip ? "rotate-2 bg-pop-yellow" : "-rotate-2 bg-pop-lilac"}`} />
+          <div className="relative rounded-[2rem] border-2 border-ink bg-card p-5 transition duration-300 hover:-translate-y-1 hover:rotate-[-0.5deg] sm:p-7">
+            {visual}
+          </div>
+          <p
+            className={`absolute -top-9 flex items-center gap-1 font-hand text-2xl font-bold text-ink ${flip ? "-left-2 sm:-left-6" : "-right-2 sm:-right-6"}`}
+          >
+            {note}
+            <Arrow className={`h-8 w-12 text-brand ${flip ? "" : "-scale-x-100"}`} />
+          </p>
         </div>
       </Reveal>
     </div>
@@ -128,15 +140,9 @@ function Feature({
 
 function ProfileMock() {
   return (
-    <div className="card flex flex-col gap-4 p-5 shadow-xl">
+    <div className="flex flex-col gap-4">
       <div className="flex items-center gap-4">
-        <span className="bg-brand-gradient rounded-full p-[3px]">
-          <span className="block rounded-full bg-card p-[3px]">
-            <span className="relative block h-16 w-16 overflow-hidden rounded-full">
-              <Photo id={PHOTO.clapperPurple} sizes="64px" />
-            </span>
-          </span>
-        </span>
+        <Face who="riya" size={72} bg="bg-pop-yellow" />
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-lg font-semibold">
             Riya Kulkarni <BadgeCheck size={18} className="text-brand" />
@@ -147,13 +153,13 @@ function ProfileMock() {
         </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
-        {["Anchor", "Editor", "Scriptwriter"].map((s) => (
-          <span key={s} className="bg-brand-gradient rounded-full px-3 py-1 text-xs font-semibold text-white">
+        {["Anchor", "Editor", "Scriptwriter"].map((s, i) => (
+          <span key={s} className={`rounded-full border-2 border-ink px-3 py-0.5 text-xs font-bold ${["bg-pop-coral", "bg-pop-sky", "bg-pop-mint"][i]}`}>
             {s}
           </span>
         ))}
       </div>
-      <div className="grid grid-cols-3 divide-x divide-line rounded-2xl bg-sunken py-3 text-center">
+      <div className="grid grid-cols-3 divide-x-2 divide-dashed divide-line rounded-2xl border-2 border-ink py-3 text-center">
         {[
           ["128K", "subscribers"],
           ["22K", "avg views"],
@@ -172,49 +178,31 @@ function ProfileMock() {
   );
 }
 
-function WorkMock() {
-  return (
-    <div className="card flex flex-col gap-4 p-5 shadow-xl">
-      <div className="flex items-center justify-between">
-        <p className="font-semibold">Work</p>
-        <span className="text-xs font-semibold text-brand">+ Add video</span>
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        {[PHOTO.kitchenShoot, PHOTO.streetShoot, PHOTO.food, PHOTO.selfShoot].map((id, i) => (
-          <div key={id} className="relative aspect-video overflow-hidden rounded-xl bg-sunken">
-            <Photo id={id} sizes="200px" />
-            <span className="absolute inset-0 flex items-center justify-center bg-black/15">
-              <span className={`flex h-8 w-8 items-center justify-center rounded-full text-xs text-white ${i % 2 ? "bg-black/50" : "bg-red-600"}`}>▶</span>
-            </span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function SearchMock() {
+  const tiles: { who: Who; name: string; meta: string; bg: string; tilt: string }[] = [
+    { who: "meera", name: "Meera", meta: "Anchor · 128K", bg: "bg-pop-yellow", tilt: "-rotate-3" },
+    { who: "dev", name: "Dev", meta: "Anchor · 54K", bg: "bg-pop-sky", tilt: "rotate-2" },
+    { who: "sana", name: "Sana", meta: "Anchor · 212K", bg: "bg-pop-coral", tilt: "-rotate-1" },
+  ];
   return (
     <div className="flex flex-col gap-4">
-      <div className="card flex items-center gap-2 px-4 py-3 text-sm text-muted shadow-lg">
+      <div className="flex items-center gap-2 rounded-2xl border-2 border-ink px-4 py-3 text-sm text-muted">
         <Search size={16} /> Anchors in Pune who speak Marathi
       </div>
       <div className="flex flex-wrap gap-1.5">
         {["Pune", "Anchor", "Marathi", "Open to collab"].map((c, i) => (
-          <span key={c} className={`rounded-full px-3 py-1 text-xs font-semibold ${i < 3 ? "bg-ink text-white" : "border border-line bg-card"}`}>
+          <span key={c} className={`rounded-full border-2 border-ink px-3 py-0.5 text-xs font-bold ${i < 3 ? "bg-ink text-white" : "bg-card"}`}>
             {c}
           </span>
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        {TILES.map((t) => (
-          <div key={t.name} className="relative aspect-[4/5] overflow-hidden rounded-2xl bg-sunken shadow-lg">
-            <Photo id={t.photo} sizes="160px" />
-            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-2.5 text-white">
+      <div className="grid grid-cols-3 gap-3 pt-2">
+        {tiles.map((t) => (
+          <div key={t.name} className={`${t.tilt} overflow-hidden rounded-2xl border-2 border-ink ${t.bg} transition hover:rotate-0`}>
+            <Peep who={t.who} size={160} className="h-auto w-full" />
+            <div className="border-t-2 border-ink bg-card px-2.5 py-2">
               <p className="text-sm font-semibold">{t.name}</p>
-              <p className="text-[11px] opacity-85">
-                {t.niche} · {t.subs}
-              </p>
+              <p className="text-[11px] text-muted">{t.meta}</p>
             </div>
           </div>
         ))}
@@ -226,26 +214,26 @@ function SearchMock() {
 function CollabMock() {
   return (
     <div className="flex flex-col gap-4">
-      <div className="bg-brand-gradient rounded-3xl p-[2px] shadow-xl">
-        <div className="flex flex-col gap-3 rounded-[22px] bg-card p-5">
-          <p className="flex items-center gap-2 text-xs font-bold tracking-wide text-brand uppercase">
-            <Handshake size={15} /> Collab call
-          </p>
-          <p className="text-xl leading-snug font-semibold tracking-tight">Looking for a Marathi anchor for a food series</p>
-          <div className="flex flex-wrap gap-1.5">
-            <span className="chip-brand">Needs anchor</span>
-            <span className="chip-brand">Needs editor</span>
+      <div className="flex flex-col gap-3 rounded-3xl border-2 border-ink bg-pop-yellow/40 p-5">
+        <p className="flex items-center gap-2 text-xs font-bold tracking-wide uppercase">
+          <Handshake size={15} /> Collab call
+        </p>
+        <p className="text-xl leading-snug font-semibold tracking-tight">Looking for a Marathi anchor for a food series</p>
+        <div className="flex flex-wrap gap-1.5">
+          <span className="rounded-full border-2 border-ink bg-card px-3 py-0.5 text-xs font-bold">Needs anchor</span>
+          <span className="rounded-full border-2 border-ink bg-card px-3 py-0.5 text-xs font-bold">Needs editor</span>
+        </div>
+        <div className="flex items-center justify-between border-t-2 border-dashed border-ink/30 pt-3">
+          <div className="flex -space-x-3">
+            {(["kabir", "neha", "meera"] as Who[]).map((w, i) => (
+              <Face key={w} who={w} size={36} bg={["bg-pop-mint", "bg-pop-sky", "bg-pop-coral"][i]} />
+            ))}
           </div>
-          <div className="flex items-center justify-between border-t border-line pt-3 text-xs text-muted">
-            <span className="flex items-center gap-1">
-              <MapPin size={12} /> Pune · shoot on 8 Nov
-            </span>
-            <span className="btn-primary btn-sm">I&apos;m in</span>
-          </div>
+          <span className="btn-primary btn-sm">I&apos;m in 🙋</span>
         </div>
       </div>
-      <div className="card ml-auto flex w-[85%] items-center gap-3 p-3 shadow-lg">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-soft text-brand">
+      <div className="ml-auto flex w-[88%] rotate-1 items-center gap-3 rounded-2xl border-2 border-ink bg-card p-3">
+        <span className="flex h-9 w-9 shrink-0 animate-wiggle items-center justify-center rounded-full border-2 border-ink bg-pop-coral">
           <Bell size={16} />
         </span>
         <p className="text-sm">
@@ -259,24 +247,22 @@ function CollabMock() {
 function NetworkMock() {
   return (
     <div className="flex flex-col gap-3">
-      <div className="card flex items-center gap-3 p-4 shadow-lg">
-        <span className="relative h-11 w-11 shrink-0 overflow-hidden rounded-full">
-          <Photo id={PHOTO.selfShoot} sizes="44px" />
-        </span>
+      <div className="flex items-center gap-3 rounded-2xl border-2 border-ink p-4">
+        <Face who="arjun" size={48} bg="bg-pop-sky" />
         <div className="min-w-0 flex-1">
           <p className="font-semibold">Arjun Mehta</p>
-          <p className="truncate text-xs text-muted">&ldquo;Loved your misal video. Want to do a tech x food episode?&rdquo;</p>
+          <p className="truncate text-xs text-muted">&ldquo;Loved your misal video. Tech x food episode?&rdquo;</p>
         </div>
         <span className="btn-primary btn-sm">
           <UserPlus size={14} /> Accept
         </span>
       </div>
-      <div className="card flex items-center gap-3 p-4 shadow-lg">
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+      <div className="flex -rotate-1 items-center gap-3 rounded-2xl border-2 border-ink bg-pop-mint/40 p-4">
+        <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-2 border-ink bg-card">
           <Lock size={18} />
         </span>
         <div>
-          <p className="font-semibold">Contact unlocked</p>
+          <p className="font-semibold">Contact unlocked 🎉</p>
           <p className="text-xs text-muted">WhatsApp and email show only after you both say yes.</p>
         </div>
       </div>
@@ -284,37 +270,79 @@ function NetworkMock() {
   );
 }
 
+/** The messy sticker collage in the hero. */
+function HeroCollage() {
+  const cards: { who: Who; bg: string; pos: string; size: number; anim: string }[] = [
+    { who: "riya", bg: "bg-pop-yellow", pos: "left-[22%] top-[8%] w-[48%] -rotate-6", size: 220, anim: "animate-float" },
+    { who: "arjun", bg: "bg-pop-sky", pos: "left-0 top-[46%] w-[36%] rotate-6", size: 170, anim: "animate-float-slow [animation-delay:-2s]" },
+    { who: "kabir", bg: "bg-pop-mint", pos: "right-0 top-[38%] w-[38%] -rotate-3", size: 180, anim: "animate-float [animation-delay:-4s]" },
+    { who: "neha", bg: "bg-pop-coral", pos: "left-[30%] bottom-0 w-[34%] rotate-3", size: 160, anim: "animate-float-slow [animation-delay:-1s]" },
+  ];
+  return (
+    <div className="relative mx-auto aspect-square w-full max-w-[520px]" aria-hidden>
+      <div className="bg-brand-gradient absolute inset-[12%] animate-glow rounded-full blur-3xl" />
+      <Star className="absolute top-[4%] left-[6%] h-10 w-10 animate-spin-slow text-pop-yellow" />
+      <Sparks className="absolute top-[2%] right-[14%] h-10 w-10 text-brand" />
+      <Heart className="absolute right-[6%] bottom-[14%] h-9 w-9 animate-wiggle text-pop-coral" />
+      <Zigzag className="absolute bottom-[4%] left-[2%] h-6 w-20 text-pop-mint" />
+      <Scribble className="absolute top-[30%] right-[2%] h-12 w-24 text-pop-lilac" />
+      {cards.map((c) => (
+        <div key={c.who} className={`absolute ${c.pos}`}>
+          <div className={c.anim}>
+            <div className={`overflow-hidden rounded-[1.75rem] border-[3px] border-ink ${c.bg} shadow-[6px_6px_0_var(--ink)]`}>
+              <Peep who={c.who} size={c.size} className="h-auto w-full" />
+            </div>
+          </div>
+        </div>
+      ))}
+      <Bubble className="top-[2%] left-[52%] rotate-3">need an editor! 🎬</Bubble>
+      <Bubble className="top-[40%] left-[-2%] -rotate-6">I&apos;m in! 🙋</Bubble>
+      <Bubble className="top-[30%] right-[-4%] rotate-6">shoot on Sunday?</Bubble>
+      <span className="absolute right-[18%] bottom-[22%] flex rotate-6 items-center gap-1 rounded-full border-2 border-ink bg-card px-3 py-1 text-xs font-bold shadow-[3px_3px_0_var(--ink)]">
+        <BadgeCheck size={14} className="text-brand" /> 128K verified
+      </span>
+    </div>
+  );
+}
+
 // Signed-in visitors are sent to /home by proxy.ts, so this page stays static.
 export default function LandingPage() {
   return (
-    <main className="flex-1">
-      <section className="relative overflow-hidden">
+    <main className="flex-1 overflow-x-clip">
+      <section className="relative">
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_20%_0%,var(--glow-1),transparent),radial-gradient(40%_40%_at_90%_10%,var(--glow-2),transparent)]" />
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-4 pt-14 pb-20 sm:pt-20 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-12 px-4 pt-12 pb-16 sm:pt-16 lg:grid-cols-[1fr_1fr]">
           <div className="flex flex-col gap-6">
-            <span className="chip-brand self-start px-3 py-1.5 text-[13px]">
+            <span className="flex -rotate-2 items-center gap-2 self-start rounded-full border-2 border-ink bg-pop-yellow px-3 py-1 text-[13px] font-bold shadow-[3px_3px_0_var(--ink)]">
               <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-brand opacity-60" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-brand" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ink opacity-50" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-ink" />
               </span>
               Now live in Pune · free for creators
             </span>
-            <h1 className="text-4xl leading-[1.05] font-semibold tracking-tight sm:text-6xl">
-              Where creators{" "}
-              <span className="animate-shimmer bg-[linear-gradient(90deg,var(--grad-1),var(--grad-2),var(--grad-3),var(--grad-2),var(--grad-1))] bg-[length:200%_auto] bg-clip-text text-transparent">
-                find their next collab
+            <h1 className="text-5xl leading-[1.02] font-semibold tracking-tight sm:text-7xl">
+              Where creators find their{" "}
+              <span className="relative inline-block">
+                <span className="animate-shimmer bg-[linear-gradient(90deg,var(--grad-1),var(--grad-2),var(--grad-3),var(--grad-2),var(--grad-1))] bg-[length:200%_auto] bg-clip-text text-transparent">
+                  next collab
+                </span>
+                <Squiggle className="absolute -bottom-3 left-0 h-4 w-full text-pop-yellow" />
+                <Star className="absolute -top-4 -right-7 h-8 w-8 animate-spin-slow text-pop-coral" />
               </span>
             </h1>
             <p className="max-w-xl text-lg leading-relaxed text-muted">
               Peerpop is the network for Indian creators. Show your best work, prove your numbers, meet creators near you and team up on your next shoot.
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="btn-primary btn-lg">
+            <div className="relative flex flex-wrap items-center gap-3">
+              <Link href="/login" className="btn-primary btn-lg transition hover:-rotate-2">
                 Join Peerpop free <ArrowRight size={18} />
               </Link>
-              <Link href="/creators" className="btn-secondary btn-lg">
+              <Link href="/creators" className="btn btn-lg border-2 border-ink bg-card shadow-[3px_3px_0_var(--ink)] transition hover:rotate-2">
                 Browse creators
               </Link>
+              <span className="hidden -rotate-6 items-center font-hand text-2xl font-bold text-brand sm:flex">
+                <Arrow className="h-8 w-10 -scale-x-100 rotate-180" /> takes 2 mins!
+              </span>
             </div>
             <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
               {["Sign in with Google or email", "No fees", "Contact shared only on yes"].map((t) => (
@@ -324,131 +352,108 @@ export default function LandingPage() {
               ))}
             </p>
           </div>
-
-          <div className="relative mx-auto w-full max-w-md pb-10 lg:pb-0" aria-hidden>
-            <div className="bg-brand-gradient animate-glow absolute -inset-6 -z-10 rounded-[2.5rem] blur-3xl" />
-            <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-sunken shadow-2xl">
-              <Photo id={PHOTO.kitchenShoot} sizes="(min-width: 1024px) 448px, 90vw" className="animate-kenburns" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent" />
-            </div>
-            <div className="animate-float-slow absolute -right-3 -bottom-2 aspect-square w-36 overflow-hidden rounded-3xl border-4 border-card bg-sunken shadow-xl [animation-delay:-3s] sm:-right-10 sm:w-44">
-              <Photo id={PHOTO.streetShoot} sizes="176px" />
-            </div>
-            <div className="card animate-float absolute top-6 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl sm:-left-10">
-              <span className="relative h-10 w-10 overflow-hidden rounded-full ring-2 ring-brand">
-                <Photo id={PHOTO.clapperPurple} sizes="40px" />
-              </span>
-              <div>
-                <p className="flex items-center gap-1 text-sm font-semibold">
-                  Riya Kulkarni <BadgeCheck size={14} className="text-brand" />
-                </p>
-                <p className="text-xs text-muted">Food · Pune · 128K subscribers</p>
-              </div>
-            </div>
-            <div className="card animate-float absolute bottom-16 -left-3 flex items-center gap-3 p-3 pr-4 shadow-xl [animation-delay:-2s] sm:-left-12">
-              <span className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-full text-white">
-                <Handshake size={16} />
-              </span>
-              <div>
-                <p className="text-sm font-semibold">3 creators raised a hand</p>
-                <p className="text-xs text-muted">on your collab call</p>
-              </div>
-            </div>
-          </div>
+          <HeroCollage />
         </div>
       </section>
 
-      <section className="border-y border-line bg-card">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-12 text-center">
-          <Eyebrow>Whatever you create, you belong here</Eyebrow>
-          <div className="group/marquee -mx-4 overflow-hidden [mask-image:linear-gradient(90deg,transparent,#000_8%,#000_92%,transparent)]">
-            <div className="animate-marquee flex w-max gap-4 group-hover/marquee:[animation-play-state:paused]">
-              {[...TYPES, ...TYPES].map((t, i) => (
-                <div
-                  key={i}
-                  aria-hidden={i >= TYPES.length}
-                  className="group relative aspect-[3/4] w-44 shrink-0 overflow-hidden rounded-3xl bg-sunken sm:w-52"
-                >
-                  <Photo id={t.photo} sizes="(min-width: 1024px) 180px, 45vw" className="transition duration-500 group-hover:scale-105" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
-                  <p className="absolute inset-x-0 bottom-0 p-4 text-left font-semibold text-white">{t.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div className="flex flex-wrap justify-center gap-2 pt-2">
-            {SKILLS.map(([v, l]) => (
-              <span key={v} className="bg-brand-gradient rounded-full px-4 py-2 text-sm font-semibold text-white">
-                {l}s
-              </span>
-            ))}
-            {NICHES.filter(([v]) => v !== "other").map(([v, l]) => (
-              <span key={v} className="rounded-full border border-line bg-surface px-4 py-2 text-sm font-semibold">
-                {l}
-              </span>
+      <section className="relative -rotate-1 border-y-[3px] border-ink bg-ink py-3">
+        <div className="group/marquee overflow-hidden">
+          <div className="flex w-max animate-marquee gap-4 group-hover/marquee:[animation-play-state:paused]">
+            {[...TYPES, ...TYPES].map((t, i) => (
+              <div
+                key={i}
+                aria-hidden={i >= TYPES.length}
+                className={`flex shrink-0 items-center gap-3 rounded-full border-2 border-ink ${t.bg} py-1 pr-5 pl-1 ${i % 2 ? "rotate-2" : "-rotate-2"}`}
+              >
+                <Face who={t.who} size={44} bg="bg-card" />
+                <span className="font-semibold whitespace-nowrap">{t.label}</span>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="features" className="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-col gap-24 px-4 py-24">
-        <div className="mx-auto flex max-w-2xl flex-col gap-3 text-center">
-          <Eyebrow>What you can do on Peerpop</Eyebrow>
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">Built for how creators actually team up</h2>
+      <section className="mx-auto flex w-full max-w-6xl flex-col items-center gap-5 px-4 pt-20 pb-6 text-center">
+        <Eyebrow>whatever you create, you belong here</Eyebrow>
+        <div className="flex max-w-3xl flex-wrap justify-center gap-2">
+          {SKILLS.map(([v, l], i) => (
+            <span
+              key={v}
+              className={`rounded-full border-2 border-ink px-4 py-1.5 text-sm font-bold ${["bg-pop-yellow", "bg-pop-sky", "bg-pop-mint", "bg-pop-coral", "bg-pop-lilac"][i % 5]} ${i % 2 ? "rotate-2" : "-rotate-2"}`}
+            >
+              {l}s
+            </span>
+          ))}
+          {NICHES.filter(([v]) => v !== "other").map(([v, l], i) => (
+            <span
+              key={v}
+              className={`rounded-full border-2 border-ink bg-card px-4 py-1.5 text-sm font-semibold ${i % 3 === 0 ? "rotate-1" : i % 3 === 1 ? "-rotate-1" : ""}`}
+            >
+              {l}
+            </span>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" className="mx-auto flex w-full max-w-6xl scroll-mt-20 flex-col gap-28 px-4 py-20">
+        <div className="relative mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+          <Eyebrow>what you can do on Peerpop</Eyebrow>
+          <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">Built for how creators actually team up</h2>
+          <Sparks className="absolute -top-2 -left-10 hidden h-10 w-10 animate-spin-slow text-pop-yellow sm:block" />
         </div>
         <Feature
-          eyebrow="Profile"
+          eyebrow="your profile"
           title="A portfolio that proves it"
           text="Your skills sit right under your name, with your best videos and photos below. Verify your YouTube channel and your numbers carry a badge."
           points={["Skills, niches and languages at the top", "Videos and photo grid of your work", "Subscribers and average views straight from YouTube"]}
-          visual={
-            <div className="flex flex-col gap-4">
-              <ProfileMock />
-              <WorkMock />
-            </div>
-          }
+          note="real numbers!"
+          visual={<ProfileMock />}
         />
         <Feature
           flip
-          eyebrow="Discover"
+          eyebrow="discover"
           title="Find the right creator in seconds"
           text="Filter by city, niche, skill, language and audience size. Every result shows real numbers, so you know who you're talking to."
           points={["181 Indian cities, starting with Pune", "Filter by Marathi, Hindi or English", "See who is open to collab right now"]}
+          note="found you!"
           visual={<SearchMock />}
         />
         <Feature
-          eyebrow="Collabs"
+          eyebrow="collabs"
           title="Post an idea, get hands raised"
           text="Say what you're shooting and who you need. Creators with that skill or in your city get an alert and can say they're in with one tap."
           points={["Alerts go to creators who fit", "Pick from the people who raise a hand", "Collabs that fit you show first on Home"]}
+          note="3 hands up!"
           visual={<CollabMock />}
         />
         <Feature
           flip
-          eyebrow="Network"
+          eyebrow="your network"
           title="Connect without giving out your number"
           text="Send a connect request with a short note. Your WhatsApp and email unlock only when both of you say yes."
           points={["Requests with a personal note", "Contact details stay private until accepted", "A feed of what your connections are making"]}
+          note="no spam calls"
           visual={<NetworkMock />}
         />
       </section>
 
-      <section id="how-it-works" className="scroll-mt-20 border-y border-line bg-card">
-        <div className="mx-auto flex w-full max-w-6xl flex-col gap-12 px-4 py-24">
-          <div className="mx-auto flex max-w-2xl flex-col gap-3 text-center">
-            <Eyebrow>How it works</Eyebrow>
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">From sign-up to your first collab</h2>
+      <section id="how-it-works" className="scroll-mt-20 border-y-[3px] border-ink bg-card">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-14 px-4 py-24">
+          <div className="mx-auto flex max-w-2xl flex-col items-center gap-3 text-center">
+            <Eyebrow>how it works</Eyebrow>
+            <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">From sign-up to your first collab</h2>
           </div>
-          <ol className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {STEPS.map((s, i) => (
               <li key={s.title}>
-                <Reveal
-                  delay={i * 120}
-                  className="flex h-full flex-col gap-3 rounded-3xl border border-line bg-surface p-6 transition hover:-translate-y-1 hover:shadow-lg"
-                >
-                  <span className="bg-brand-gradient flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white">{i + 1}</span>
-                  <h3 className="text-lg font-semibold">{s.title}</h3>
-                  <p className="text-sm leading-relaxed text-muted">{s.text}</p>
+                <Reveal delay={i * 120} className="h-full">
+                  <div
+                    className={`flex h-full flex-col gap-3 rounded-2xl border-2 border-ink p-6 shadow-[5px_5px_0_var(--ink)] transition hover:rotate-0 ${s.bg} ${s.tilt}`}
+                  >
+                    <span className="font-hand text-5xl leading-none font-bold">{i + 1}.</span>
+                    <h3 className="text-lg font-semibold">{s.title}</h3>
+                    <p className="text-sm leading-relaxed text-ink/75">{s.text}</p>
+                  </div>
                 </Reveal>
               </li>
             ))}
@@ -459,7 +464,7 @@ export default function LandingPage() {
       <section id="faq" className="mx-auto grid w-full max-w-6xl scroll-mt-20 gap-10 px-4 py-24 lg:grid-cols-[0.8fr_1.2fr]">
         <div className="flex flex-col gap-3">
           <Eyebrow>FAQ</Eyebrow>
-          <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">Questions? Answers.</h2>
+          <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">Questions? Answers.</h2>
           <p className="text-muted">
             Anything else? Write to{" "}
             <a href="mailto:hello@peerpop.in" className="font-semibold text-brand hover:underline">
@@ -467,13 +472,19 @@ export default function LandingPage() {
             </a>
             .
           </p>
+          <div className="relative mt-4 hidden w-52 lg:block" aria-hidden>
+            <div className="-rotate-3 overflow-hidden rounded-[1.75rem] border-[3px] border-ink bg-pop-sky shadow-[6px_6px_0_var(--ink)]">
+              <Peep who="om" size={208} className="h-auto w-full" />
+            </div>
+            <Bubble className="-top-4 -right-16 rotate-6">ask away!</Bubble>
+          </div>
         </div>
         <div className="flex flex-col gap-3">
           {FAQ.map((f) => (
-            <details key={f.q} className="group card p-5 open:shadow-md">
+            <details key={f.q} className="group rounded-2xl border-2 border-ink bg-card p-5 transition open:shadow-[4px_4px_0_var(--ink)]">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-semibold [&::-webkit-details-marker]:hidden">
                 {f.q}
-                <ChevronDown size={18} className="shrink-0 text-muted transition group-open:rotate-180" />
+                <ChevronDown size={18} className="shrink-0 transition group-open:rotate-180" />
               </summary>
               <p className="mt-3 leading-relaxed text-muted">{f.a}</p>
             </details>
@@ -481,20 +492,32 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-6xl px-4 pb-8">
-        <div className="bg-brand-gradient relative overflow-hidden rounded-[2rem] p-8 text-white sm:p-14">
-          <Users size={220} className="animate-float-slow absolute -right-10 -bottom-12 opacity-10" aria-hidden />
+      <section className="mx-auto w-full max-w-6xl px-4 pt-6 pb-8">
+        <div className="bg-brand-gradient relative overflow-hidden rounded-[2rem] border-[3px] border-ink p-8 pb-0 text-white shadow-[8px_8px_0_var(--ink)] sm:p-14 sm:pb-0">
+          <Star className="absolute top-8 right-10 h-10 w-10 animate-spin-slow text-pop-yellow" aria-hidden />
+          <Heart className="absolute top-24 right-36 hidden h-8 w-8 animate-wiggle text-pop-coral sm:block" aria-hidden />
           <div className="relative flex max-w-2xl flex-col gap-5">
-            <h2 className="text-3xl font-semibold tracking-tight sm:text-5xl">Your next collab is one connection away.</h2>
+            <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">Your next collab is one connection away.</h2>
             <p className="text-lg text-white/85">Set up your profile in two minutes. Free, with Google or email.</p>
             <div className="flex flex-wrap gap-3">
-              <Link href="/login" className="btn btn-lg bg-white text-brand-ink hover:bg-white/90">
+              <Link href="/login" className="btn btn-lg border-2 border-ink bg-white text-ink shadow-[3px_3px_0_var(--ink)] transition hover:-rotate-2">
                 Get started <ArrowRight size={18} />
               </Link>
-              <Link href="/creators" className="btn btn-lg border border-white/40 text-white hover:bg-white/10">
+              <Link href="/creators" className="btn btn-lg border-2 border-white/60 text-white hover:bg-white/10">
                 Browse creators
               </Link>
             </div>
+          </div>
+          <div className="mt-10 flex items-end justify-center gap-1 sm:justify-end" aria-hidden>
+            {(["sana", "dev", "riya", "rohan", "isha", "meera"] as Who[]).map((w, i) => (
+              <div
+                key={w}
+                className={`${i % 2 ? "animate-float-slow" : "animate-float"} ${i > 3 ? "hidden sm:block" : ""}`}
+                style={{ animationDelay: `${-i * 0.7}s` }}
+              >
+                <Peep who={w} size={120} className="h-auto w-20 sm:w-28" />
+              </div>
+            ))}
           </div>
         </div>
       </section>
