@@ -27,7 +27,7 @@ export function IdentityFields({ profile, errors }: { profile?: Partial<Profile>
         error={errors?.handle}
       >
         <div className="flex items-center gap-2">
-          <span className="text-zinc-500">@</span>
+          <span className="text-muted">@</span>
           <input
             id="handle"
             name="handle"
@@ -50,7 +50,7 @@ export function IdentityFields({ profile, errors }: { profile?: Partial<Profile>
           rows={3}
           maxLength={500}
           defaultValue={profile?.bio ?? ""}
-          className="w-full rounded-lg border border-zinc-300 bg-transparent p-3 dark:border-zinc-700"
+          className="textarea"
         />
       </Field>
     </>
@@ -77,7 +77,7 @@ export function InterestFields({ profile, errors }: { profile?: Partial<Profile>
           type="checkbox"
           name="open_to_collab"
           defaultChecked={profile?.open_to_collab ?? true}
-          className="h-5 w-5 accent-violet-600"
+          className="h-5 w-5 accent-[var(--brand)]"
         />
         <span>I&apos;m open to collabs</span>
       </label>
@@ -143,7 +143,7 @@ export function LinkFields({ platforms, errors }: { platforms: PlatformAccount[]
           />
         </Field>
       </div>
-      <p className="text-sm text-zinc-500">
+      <p className="text-sm text-muted">
         Instagram numbers are shown as self-reported. Instagram verification is coming soon.
       </p>
     </>

@@ -18,10 +18,10 @@ import {
 
 export function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-5 rounded-2xl border border-zinc-200 p-6 dark:border-zinc-800">
+    <section className="flex flex-col gap-5 card p-5 sm:p-6">
       <div>
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {description && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{description}</p>}
+        <h2 className="text-lg font-bold">{title}</h2>
+        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       </div>
       {children}
     </section>
@@ -50,7 +50,7 @@ export function ProfileSection({ profile }: { profile: Profile }) {
             name="is_listed"
             value="on"
             defaultChecked={profile.is_listed}
-            className="h-5 w-5 accent-violet-600"
+            className="h-5 w-5 accent-[var(--brand)]"
           />
           <span>Show my profile in search</span>
         </label>
@@ -89,11 +89,11 @@ export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
         <ul className="flex flex-col gap-3">
           {videos.map((v, i) => (
             <li key={v.id} className="flex items-center gap-3">
-              <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
+              <div className="relative h-14 w-24 shrink-0 overflow-hidden rounded-lg bg-sunken">
                 {v.thumbnail_url ? (
                   <Image src={v.thumbnail_url} alt="" fill sizes="96px" className="object-cover" />
                 ) : (
-                  <span className="flex h-full items-center justify-center text-xs text-zinc-500">Instagram</span>
+                  <span className="flex h-full items-center justify-center text-xs text-muted">Instagram</span>
                 )}
               </div>
               <a href={v.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate text-sm hover:underline">

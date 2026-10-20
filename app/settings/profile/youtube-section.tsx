@@ -57,16 +57,16 @@ function PendingCode({ account }: { account: OwnYouTube }) {
       <p className="text-sm">
         Channel: <span className="font-medium">{account.handle ?? account.url}</span>
       </p>
-      <div className="flex flex-col gap-2 rounded-xl bg-violet-50 p-4 dark:bg-violet-950">
-        <p className="text-sm text-violet-900 dark:text-violet-100">Your code</p>
-        <p className="select-all font-mono text-2xl font-semibold tracking-wide text-violet-900 dark:text-violet-100">
+      <div className="flex flex-col gap-2 rounded-xl bg-brand-soft p-4">
+        <p className="text-sm font-medium text-brand-ink">Your code</p>
+        <p className="select-all font-mono text-2xl font-bold tracking-wide text-brand-ink">
           {account.verification_code}
         </p>
       </div>
-      <ol className="list-decimal space-y-1 pl-5 text-sm text-zinc-700 dark:text-zinc-300">
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-ink/90">
         <li>
           Open{" "}
-          <a href="https://studio.youtube.com" target="_blank" rel="noreferrer" className="text-violet-600 underline">
+          <a href="https://studio.youtube.com" target="_blank" rel="noreferrer" className="text-brand underline">
             YouTube Studio
           </a>{" "}
           and go to <b>Customisation</b> → <b>Profile</b> (or <b>Basic info</b>).
@@ -79,7 +79,7 @@ function PendingCode({ account }: { account: OwnYouTube }) {
         <FormMessage state={state} />
       </form>
       <details className="text-sm">
-        <summary className="cursor-pointer text-zinc-500">Use a different channel</summary>
+        <summary className="cursor-pointer text-muted">Use a different channel</summary>
         <div className="mt-3">
           <ChannelForm defaultUrl="" submitLabel="Get a new code" />
         </div>
@@ -101,7 +101,7 @@ function Verified({ account }: { account: OwnYouTube }) {
       {account.stats ? (
         <YouTubeStats stats={account.stats} />
       ) : (
-        <p className="text-sm text-zinc-500">Your numbers will appear after the next refresh.</p>
+        <p className="text-sm text-muted">Your numbers will appear after the next refresh.</p>
       )}
       <form action={refreshAction} className="flex items-center gap-4">
         <SubmitButton pendingText="Updating…">Refresh now</SubmitButton>

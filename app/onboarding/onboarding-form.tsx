@@ -41,13 +41,11 @@ export function OnboardingForm({ userId, suggestedName }: { userId: string; sugg
   }
 
   return (
-    <form action={action} className="flex flex-col gap-8">
-      <ol className="flex gap-2 text-sm">
+    <form action={action} className="card flex flex-col gap-7 p-5 sm:p-7">
+      <ol className="flex gap-2 text-[13px] font-semibold">
         {STEPS.map((label, i) => (
-          <li
-            key={label}
-            className={`flex-1 border-t-4 pt-2 ${i <= step ? "border-violet-600 text-zinc-900 dark:text-zinc-100" : "border-zinc-200 text-zinc-500 dark:border-zinc-800"}`}
-          >
+          <li key={label} className={`flex flex-1 flex-col gap-2 ${i <= step ? "text-ink" : "text-muted"}`}>
+            <span className={`h-1.5 rounded-full ${i <= step ? "bg-brand" : "bg-line"}`} />
             {i + 1}. {label}
           </li>
         ))}
@@ -63,7 +61,7 @@ export function OnboardingForm({ userId, suggestedName }: { userId: string; sugg
       </section>
 
       <section ref={(el) => void (sections.current[2] = el)} className={step === 2 ? "flex flex-col gap-5" : "hidden"}>
-        <p className="text-zinc-600 dark:text-zinc-400">
+        <p className="text-muted">
           Link your channels so other creators can see your work. You can skip this and add them later.
         </p>
         <LinkFields platforms={[]} errors={state.errors} />
@@ -72,7 +70,7 @@ export function OnboardingForm({ userId, suggestedName }: { userId: string; sugg
       {stepError && <p className="text-sm text-red-600">{stepError}</p>}
       <FormMessage state={state} />
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between border-t border-line pt-5">
         {step > 0 ? (
           <button type="button" onClick={() => setStep(step - 1)} className={secondaryButton}>
             Back
@@ -81,11 +79,7 @@ export function OnboardingForm({ userId, suggestedName }: { userId: string; sugg
           <span />
         )}
         {step < STEPS.length - 1 ? (
-          <button
-            type="button"
-            onClick={next}
-            className="inline-flex h-11 items-center rounded-full bg-violet-600 px-6 font-medium text-white hover:bg-violet-700"
-          >
+          <button type="button" onClick={next} className="btn-primary h-11 px-6">
             Next
           </button>
         ) : (

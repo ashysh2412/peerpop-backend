@@ -10,8 +10,8 @@ export const metadata: Metadata = { title: "Edit profile · Peerpop" };
 
 export default function SettingsProfilePage() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-12">
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+    <main className="page-narrow flex flex-col gap-6">
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Settings />
       </Suspense>
     </main>
@@ -31,8 +31,8 @@ async function Settings() {
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold">Edit profile</h1>
-        <Link href={`/creators/${profile.handle}`} className="text-sm font-medium text-violet-600 hover:underline">
+        <h1 className="page-title">Edit profile</h1>
+        <Link href={`/creators/${profile.handle}`} className="text-sm font-medium text-brand hover:underline">
           View my profile →
         </Link>
       </div>

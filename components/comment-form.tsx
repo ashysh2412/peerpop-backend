@@ -21,7 +21,7 @@ export function CommentForm({ postId }: { postId: string }) {
         maxLength={1000}
         rows={2}
         placeholder="Add a comment…"
-        className="w-full resize-y rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+        className="textarea"
       />
       <div className="flex items-center gap-3">
         <SubmitButton pendingText="Posting…">Comment</SubmitButton>

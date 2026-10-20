@@ -1,13 +1,21 @@
 "use client";
 
+import { Check, Clock, UserPlus } from "lucide-react";
 import { useActionState, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { acceptConnection, declineConnection, removeConnection, sendConnectionRequest } from "@/app/network/actions";
 import type { ConnectionState } from "@/lib/connections/data";
 import type { FormState } from "@/lib/profile/types";
-import { FormMessage, SubmitButton, inputClass, secondaryButton } from "./ui";
+import { FormMessage } from "./ui";
 
-const primary =
-  "inline-flex h-10 items-center rounded-full bg-violet-600 px-5 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-60";
+function ConnectButton({ compact }: { compact: boolean }) {
+  const { pending } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending} className={`btn-primary ${compact ? "btn-sm w-full" : ""}`}>
+      <UserPlus size={compact ? 15 : 17} /> {pending ? "Sending…" : "Connect"}
+    </button>
+  );
+}
 
 /** The Connect / Pending / Connected controls on someone's profile. */
 export function ConnectPanel({
@@ -26,10 +34,18 @@ export function ConnectPanel({
   const [writing, setWriting] = useState(false);
 
   if (state.kind === "connected" && compact) {
-    return <span className="text-sm text-green-700 dark:text-green-400">✓ Connected</span>;
+    return (
+      <span className="chip-green justify-center py-1.5">
+        <Check size={14} /> Connected
+      </span>
+    );
   }
   if (state.kind === "sent" && compact) {
-    return <span className="text-sm text-zinc-500">Request sent</span>;
+    return (
+      <span className="chip justify-center py-1.5">
+        <Clock size={14} /> Request sent
+      </span>
+    );
   }
 
   if (state.kind === "connected") {
@@ -41,11 +57,11 @@ export function ConnectPanel({
         }}
         className="flex items-center gap-3"
       >
-        <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
-          ✓ Connected
+        <span className="chip-green px-3.5 py-2 text-sm">
+          <Check size={15} /> Connected
         </span>
         <input type="hidden" name="id" value={state.id} />
-        <button type="submit" className="text-sm text-zinc-500 hover:underline">
+        <button type="submit" className="btn-ghost btn-sm">
           Remove
         </button>
       </form>
@@ -55,9 +71,11 @@ export function ConnectPanel({
   if (state.kind === "sent") {
     return (
       <form action={removeConnection} className="flex items-center gap-3">
-        <span className="rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-900">Request sent</span>
+        <span className="chip px-3.5 py-2 text-sm">
+          <Clock size={15} /> Request sent
+        </span>
         <input type="hidden" name="id" value={state.id} />
-        <button type="submit" className="text-sm text-zinc-500 hover:underline">
+        <button type="submit" className="btn-ghost btn-sm">
           Withdraw
         </button>
       </form>
@@ -66,10 +84,10 @@ export function ConnectPanel({
 
   if (state.kind === "received" && compact) {
     return (
-      <form action={acceptConnection} className="flex items-center gap-2">
+      <form action={acceptConnection}>
         <input type="hidden" name="id" value={state.id} />
-        <button type="submit" className={primary}>
-          Accept request
+        <button type="submit" className="btn-primary btn-sm w-full">
+          <Check size={15} /> Accept request
         </button>
       </form>
     );
@@ -79,18 +97,19 @@ export function ConnectPanel({
     return (
       <div className="flex flex-col gap-2">
         <p className="text-sm">
-          {name} wants to connect{state.message && <>: &ldquo;{state.message}&rdquo;</>}
+          <b>{name}</b> wants to connect
+          {state.message && <span className="text-muted">: &ldquo;{state.message}&rdquo;</span>}
         </p>
         <div className="flex gap-2">
           <form action={acceptConnection}>
             <input type="hidden" name="id" value={state.id} />
-            <button type="submit" className={primary}>
-              Accept
+            <button type="submit" className="btn-primary">
+              <Check size={17} /> Accept
             </button>
           </form>
           <form action={declineConnection}>
             <input type="hidden" name="id" value={state.id} />
-            <button type="submit" className={secondaryButton}>
+            <button type="submit" className="btn-secondary">
               Decline
             </button>
           </form>
@@ -100,7 +119,7 @@ export function ConnectPanel({
   }
 
   if (state.kind === "declined" && !state.canRetry) {
-    return <span className="text-sm text-zinc-500">Request declined</span>;
+    return <span className="chip justify-center py-1.5">Request declined</span>;
   }
 
   return (
@@ -112,13 +131,13 @@ export function ConnectPanel({
           maxLength={300}
           rows={2}
           placeholder={`Say hi to ${name} (optional)`}
-          className={`${inputClass} h-auto py-2`}
+          className="textarea"
         />
       )}
-      <div className="flex items-center gap-3">
-        <SubmitButton pendingText="Sending…">Connect</SubmitButton>
+      <div className={`flex items-center gap-2 ${compact ? "flex-col items-stretch" : "flex-wrap"}`}>
+        <ConnectButton compact={compact} />
         {!writing && !compact && (
-          <button type="button" onClick={() => setWriting(true)} className="text-sm text-zinc-500 hover:underline">
+          <button type="button" onClick={() => setWriting(true)} className="btn-ghost btn-sm">
             Add a note
           </button>
         )}

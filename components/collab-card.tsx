@@ -1,3 +1,4 @@
+import { Calendar, MapPin } from "lucide-react";
 import Link from "next/link";
 import { CITIES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import type { Collab } from "@/lib/collabs/data";
@@ -13,33 +14,36 @@ export function CollabCard({ collab, now }: { collab: Collab; now: number }) {
   const author = collab.author!;
   const shoot = shootLabel(collab.shoot_date);
   return (
-    <Link
-      href={`/collabs/${collab.id}`}
-      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-    >
-      <div className="flex items-center gap-2 text-sm text-zinc-500">
-        <Avatar path={author.photo_path} name={author.display_name} size={24} />
-        <span className="truncate">
-          {author.display_name} · {updatedLabel(collab.created_at, now)}
+    <Link href={`/collabs/${collab.id}`} className="card-link flex flex-col gap-3 p-5">
+      <div className="flex items-center gap-2.5 text-sm">
+        <Avatar path={author.photo_path} name={author.display_name} size={32} />
+        <span className="min-w-0 flex-1 truncate">
+          <b>{author.display_name}</b> <span className="text-muted">· {updatedLabel(collab.created_at, now)}</span>
         </span>
       </div>
-      <h3 className="font-semibold">{collab.title}</h3>
-      <p className="line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{collab.description}</p>
-      <div className="flex flex-wrap gap-1.5 text-xs">
+      <h3 className="text-lg leading-snug font-bold">{collab.title}</h3>
+      <p className="line-clamp-2 text-sm leading-relaxed text-muted">{collab.description}</p>
+      <div className="flex flex-wrap gap-1.5">
         {collab.roles_needed.map((r) => (
-          <span key={r} className="rounded-full bg-violet-100 px-2.5 py-1 text-violet-800 dark:bg-violet-950 dark:text-violet-200">
+          <span key={r} className="chip-brand">
             Needs {labelFor(SKILLS, r).toLowerCase()}
           </span>
         ))}
         {collab.niches.map((n) => (
-          <span key={n} className="rounded-full bg-zinc-100 px-2.5 py-1 dark:bg-zinc-800">
+          <span key={n} className="chip">
             {labelFor(NICHES, n)}
           </span>
         ))}
       </div>
-      <p className="text-xs text-zinc-500">
-        📍 {collab.city_slug ? labelFor(CITIES, collab.city_slug) : "Anywhere / online"}
-        {shoot && ` · 🎬 ${shoot}`}
+      <p className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line pt-3 text-xs font-medium text-muted">
+        <span className="flex items-center gap-1">
+          <MapPin size={13} /> {collab.city_slug ? labelFor(CITIES, collab.city_slug) : "Anywhere / online"}
+        </span>
+        {shoot && (
+          <span className="flex items-center gap-1">
+            <Calendar size={13} /> Shoot {shoot}
+          </span>
+        )}
       </p>
     </Link>
   );

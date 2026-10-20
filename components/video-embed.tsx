@@ -38,7 +38,7 @@ export function VideoEmbed({ video }: { video: ProfileVideo }) {
     <button
       type="button"
       onClick={() => setPlaying(true)}
-      className="group relative aspect-video w-full overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800"
+      className="group relative aspect-video w-full overflow-hidden rounded-xl bg-sunken"
       aria-label={`Play ${video.title ?? "video"}`}
     >
       {video.thumbnail_url && (

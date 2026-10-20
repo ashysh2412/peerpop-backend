@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ArrowRight, Handshake, Settings, Users } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
@@ -19,8 +20,8 @@ function currentTime() {
 
 export default function HomePage({ searchParams }: PageProps<"/home">) {
   return (
-    <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+    <main className="page">
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Home searchParams={searchParams} />
       </Suspense>
     </main>
@@ -49,50 +50,60 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const firstName = profile.display_name.split(" ")[0];
 
   return (
-    <div className="grid gap-6 md:grid-cols-[220px_minmax(0,1fr)] lg:grid-cols-[220px_minmax(0,1fr)_260px]">
-      <aside className="flex flex-col gap-4">
-        <section className="flex flex-col items-center gap-2 rounded-2xl border border-zinc-200 p-4 text-center dark:border-zinc-800">
-          <Avatar path={profile.photo_path} name={profile.display_name} size={64} />
-          <Link href={`/creators/${profile.handle}`} className="font-semibold hover:underline">
-            {profile.display_name}
-          </Link>
-          <p className="text-xs text-zinc-500">
-            @{profile.handle}
-            {city && ` · ${city}`}
-          </p>
-          <div className="mt-2 flex w-full flex-col gap-1 border-t border-zinc-100 pt-3 text-sm dark:border-zinc-900">
-            <Link href="/network" className="flex justify-between rounded-lg px-2 py-1 hover:bg-zinc-100 dark:hover:bg-zinc-900">
-              <span>Connections</span>
-              <b>{connections ?? 0}</b>
+    <div className="grid items-start gap-6 md:grid-cols-[240px_minmax(0,1fr)] lg:grid-cols-[240px_minmax(0,1fr)_280px]">
+      <aside className="flex flex-col gap-4 md:sticky md:top-24">
+        <section className="card hidden overflow-hidden md:block">
+          <div className="h-16 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400" />
+          <div className="-mt-9 flex flex-col items-center gap-1 px-4 pb-4 text-center">
+            <div className="rounded-full ring-4 ring-card">
+              <Avatar path={profile.photo_path} name={profile.display_name} size={72} />
+            </div>
+            <Link href={`/creators/${profile.handle}`} className="mt-2 font-bold hover:underline">
+              {profile.display_name}
             </Link>
-            <Link href="/settings/profile" className="rounded-lg px-2 py-1 text-left hover:bg-zinc-100 dark:hover:bg-zinc-900">
-              Edit profile
+            <p className="text-xs text-muted">
+              @{profile.handle}
+              {city && ` · ${city}`}
+            </p>
+          </div>
+          <div className="flex flex-col border-t border-line p-2 text-sm">
+            <Link href="/network" className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-medium hover:bg-sunken">
+              <Users size={16} className="text-muted" />
+              <span className="flex-1">Connections</span>
+              <span className="font-bold text-brand">{connections ?? 0}</span>
+            </Link>
+            <Link href="/collabs?mine=1" className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-medium hover:bg-sunken">
+              <Handshake size={16} className="text-muted" /> My collabs
+            </Link>
+            <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 font-medium hover:bg-sunken">
+              <Settings size={16} className="text-muted" /> Edit profile
             </Link>
           </div>
         </section>
         {requests > 0 && (
-          <Link
-            href="/network?tab=received"
-            className="rounded-2xl bg-violet-50 p-4 text-sm font-medium text-violet-900 hover:bg-violet-100 dark:bg-violet-950 dark:text-violet-100"
-          >
-            You have {requests} connection {requests === 1 ? "request" : "requests"} waiting →
+          <Link href="/network?tab=received" className="card-link flex items-center gap-3 border-brand/30 bg-brand-soft p-4 text-sm font-semibold text-brand-ink">
+            <span className="flex-1">
+              {requests} connection {requests === 1 ? "request" : "requests"} waiting
+            </span>
+            <ArrowRight size={16} />
           </Link>
         )}
       </aside>
 
       <section className="flex flex-col gap-4">
-        {!cursor && <PostComposer userId={user.id} firstName={firstName} />}
+        {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
         {posts.length === 0 && (
-          <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+          <div className="empty">
             {cursor ? (
               "You're all caught up."
             ) : (
               <>
-                No posts yet. Share the first update, or{" "}
-                <Link href="/creators" className="text-violet-600 hover:underline">
-                  find creators
-                </Link>{" "}
-                to connect with.
+                <span className="text-4xl">✨</span>
+                <p className="font-semibold text-ink">Your feed is quiet</p>
+                <p className="max-w-sm text-sm">Share your first update, or find creators to connect with. Their posts will show up here.</p>
+                <Link href="/creators" className="btn-primary btn-sm mt-1">
+                  Find creators
+                </Link>
               </>
             )}
           </div>
@@ -101,26 +112,23 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           <PostCard key={post.id} post={post} me={user.id} now={now} />
         ))}
         {posts.length === FEED_PAGE && (
-          <Link
-            href={`/home?before=${encodeURIComponent(posts[posts.length - 1].created_at)}`}
-            className="self-center rounded-full border border-zinc-300 px-5 py-2 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
-          >
+          <Link href={`/home?before=${encodeURIComponent(posts[posts.length - 1].created_at)}`} className="btn-secondary self-center">
             Show older posts
           </Link>
         )}
       </section>
 
-      <aside className="hidden flex-col gap-4 lg:flex">
-        <section className="flex flex-col gap-3 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
-          <h2 className="font-semibold">People you may know</h2>
-          {suggestions.length === 0 && <p className="text-sm text-zinc-500">No suggestions right now.</p>}
+      <aside className="hidden flex-col gap-4 lg:sticky lg:top-24 lg:flex">
+        <section className="card flex flex-col gap-4 p-4">
+          <h2 className="font-bold">People you may know</h2>
+          {suggestions.length === 0 && <p className="text-sm text-muted">No suggestions right now.</p>}
           {suggestions.map((s) => (
-            <div key={s.user_id} className="flex flex-col gap-2">
-              <Link href={`/creators/${s.handle}`} className="flex items-center gap-2">
-                <Avatar path={s.photo_path} name={s.display_name} size={36} />
+            <div key={s.user_id} className="flex flex-col gap-2.5">
+              <Link href={`/creators/${s.handle}`} className="flex items-center gap-3">
+                <Avatar path={s.photo_path} name={s.display_name} size={40} />
                 <span className="min-w-0">
-                  <span className="block truncate text-sm font-medium">{s.display_name}</span>
-                  <span className="block truncate text-xs text-zinc-500">
+                  <span className="block truncate text-sm font-semibold hover:underline">{s.display_name}</span>
+                  <span className="block truncate text-xs text-muted">
                     {s.city_slug ? labelFor(CITIES, s.city_slug) : `@${s.handle}`}
                   </span>
                 </span>
@@ -128,8 +136,8 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
               <ConnectPanel otherId={s.user_id} name={s.display_name} state={{ kind: "none" }} compact />
             </div>
           ))}
-          <Link href="/creators" className="text-sm text-violet-600 hover:underline">
-            Find more creators →
+          <Link href="/creators" className="flex items-center gap-1 text-sm font-semibold text-brand hover:underline">
+            Find more creators <ArrowRight size={14} />
           </Link>
         </section>
       </aside>

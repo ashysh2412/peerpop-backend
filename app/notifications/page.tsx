@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { Check, Handshake, Heart, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Avatar } from "@/components/avatar";
 import { updatedLabel } from "@/components/youtube-stats";
-import { avatarUrl } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
 import { MarkRead } from "./mark-read";
 
@@ -20,6 +20,15 @@ type Notification = {
 
 type Actor = { user_id: string; handle: string; display_name: string; photo_path: string | null };
 
+const KIND_ICON: Record<Notification["kind"], { icon: typeof Heart; tone: string }> = {
+  connection_request: { icon: UserPlus, tone: "bg-brand" },
+  connection_accepted: { icon: Check, tone: "bg-emerald-500" },
+  collab_interest: { icon: Handshake, tone: "bg-amber-500" },
+  collab_accepted: { icon: Check, tone: "bg-emerald-500" },
+  post_like: { icon: Heart, tone: "bg-rose-500" },
+  post_comment: { icon: MessageCircle, tone: "bg-sky-500" },
+};
+
 const TEXT: Record<Notification["kind"], string> = {
   connection_request: "wants to connect with you",
   connection_accepted: "accepted your connection request",
@@ -35,9 +44,9 @@ function currentTime() {
 
 export default function NotificationsPage() {
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-12">
-      <h1 className="text-2xl font-semibold">Notifications</h1>
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+    <main className="page-narrow flex flex-col gap-6">
+      <h1 className="page-title">Notifications</h1>
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Notifications />
       </Suspense>
     </main>
@@ -77,18 +86,20 @@ async function Notifications() {
 
   if (shown.length === 0) {
     return (
-      <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
-        Nothing yet. When someone wants to connect, you&apos;ll see it here.
-      </p>
+      <div className="empty">
+        <span className="text-4xl">🔔</span>
+        <p className="font-semibold text-ink">You&apos;re all caught up</p>
+        <p className="text-sm">Requests, likes, comments and collab replies will show up here.</p>
+      </div>
     );
   }
 
   return (
-    <ul className="flex flex-col gap-2">
+    <ul className="card divide-y divide-line overflow-hidden">
       <MarkRead unread={unread} />
       {shown.map((n) => {
         const actor = byId.get(n.actor_id!)!;
-        const photo = avatarUrl(actor.photo_path);
+        const { icon: Icon, tone } = KIND_ICON[n.kind];
         const href =
           n.kind === "connection_request"
             ? "/network?tab=received"
@@ -101,24 +112,20 @@ async function Notifications() {
           <li key={n.id}>
             <Link
               href={href}
-              className={`flex items-center gap-3 rounded-2xl border p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 ${
-                n.read_at ? "border-zinc-200 dark:border-zinc-800" : "border-violet-300 bg-violet-50 dark:border-violet-800 dark:bg-violet-950"
-              }`}
+              className={`flex items-center gap-3 p-4 transition hover:bg-card-hover ${n.read_at ? "" : "bg-brand-soft/60"}`}
             >
-              <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                {photo ? (
-                  <Image src={photo} alt={actor.display_name} fill sizes="40px" className="object-cover" />
-                ) : (
-                  <span className="flex h-full w-full items-center justify-center font-semibold text-zinc-500">
-                    {actor.display_name.charAt(0).toUpperCase()}
-                  </span>
-                )}
+              <div className="relative shrink-0">
+                <Avatar path={actor.photo_path} name={actor.display_name} size={44} />
+                <span className={`absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-white ring-2 ring-card ${tone}`}>
+                  <Icon size={11} strokeWidth={2.5} />
+                </span>
               </div>
-              <p className="flex-1 text-sm">
+              <p className="flex-1 text-sm leading-snug">
                 <b>{actor.display_name}</b> {TEXT[n.kind]}
-                {n.kind === "connection_request" && <span className="text-violet-600"> · Review</span>}
+                {n.kind === "connection_request" && <span className="font-semibold text-brand"> · Review</span>}
               </p>
-              <span className="shrink-0 text-xs text-zinc-500">{updatedLabel(n.created_at, now)}</span>
+              <span className="shrink-0 text-xs text-muted">{updatedLabel(n.created_at, now)}</span>
+              {!n.read_at && <span className="h-2 w-2 shrink-0 rounded-full bg-brand" aria-label="New" />}
             </Link>
           </li>
         );

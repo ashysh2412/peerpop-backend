@@ -7,16 +7,17 @@ export const metadata: Metadata = { title: "Sign in · Peerpop" };
 
 export default function LoginPage({ searchParams }: PageProps<"/login">) {
   return (
-    <main className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-8 px-4 py-16">
-      <div className="text-center">
-        <h1 className="text-2xl font-semibold">Sign in to Peerpop</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">
-          New here? Signing in creates your account.
-        </p>
+    <main className="relative flex flex-1 items-center justify-center px-4 py-12 sm:py-20">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(50%_40%_at_50%_0%,rgba(139,92,246,0.16),transparent)]" />
+      <div className="card flex w-full max-w-md flex-col gap-7 p-6 shadow-xl sm:p-8">
+        <div className="text-center">
+          <h1 className="text-2xl font-extrabold tracking-tight">Welcome to Peerpop</h1>
+          <p className="mt-2 text-muted">Sign in or create your free account.</p>
+        </div>
+        <Suspense>
+          <LoginBody searchParams={searchParams} />
+        </Suspense>
       </div>
-      <Suspense>
-        <LoginBody searchParams={searchParams} />
-      </Suspense>
     </main>
   );
 }

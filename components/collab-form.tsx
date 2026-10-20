@@ -22,7 +22,7 @@ export function CollabForm({ city }: { city: string | null }) {
           maxLength={1500}
           rows={5}
           aria-invalid={!!e.description}
-          className="w-full rounded-lg border border-zinc-300 bg-transparent px-3 py-2 dark:border-zinc-700"
+          className="textarea"
         />
       </Field>
       <ChipGroup label="Who do you need?" name="roles_needed" options={SKILLS} selected={[]} error={e.roles_needed} />
@@ -41,7 +41,7 @@ export function CollabForm({ city }: { city: string | null }) {
       <Field label="Shoot date (optional)" name="shoot_date" error={e.shoot_date}>
         <input id="shoot_date" name="shoot_date" type="date" className={inputClass} />
       </Field>
-      <p className="text-sm text-zinc-500">Your post stays open for 30 days, or until you close it.</p>
+      <p className="rounded-xl bg-sunken px-4 py-3 text-sm text-muted">Your post stays open for 30 days, or until you close it.</p>
       <div className="flex items-center gap-4">
         <SubmitButton pendingText="Posting…">Post collab</SubmitButton>
         <FormMessage state={state} />

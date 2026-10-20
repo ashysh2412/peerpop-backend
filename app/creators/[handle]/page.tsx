@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
+import { BadgeCheck, ChevronRight, Handshake, MapPin, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { Avatar } from "@/components/avatar";
 import { ContactBox } from "@/components/contact-box";
 import { ConnectPanel } from "@/components/connect-panel";
 import { VideoEmbed } from "@/components/video-embed";
@@ -11,7 +12,6 @@ import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { getOpenCollabsBy } from "@/lib/collabs/data";
 import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/connections/data";
 import { compactNumber } from "@/lib/format";
-import { avatarUrl } from "@/lib/profile/avatar";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
 import type { PlatformAccount } from "@/lib/profile/types";
 import { createClient } from "@/lib/supabase/server";
@@ -24,8 +24,8 @@ function currentTime() {
 
 export default function CreatorPage({ params, searchParams }: PageProps<"/creators/[handle]">) {
   return (
-    <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-8 px-4 py-12">
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+    <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-5 px-4 py-6 sm:py-8">
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Creator params={params} searchParams={searchParams} />
       </Suspense>
     </main>
@@ -60,77 +60,82 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           getContactFor(supabase, profile.user_id),
         ])
       : [null, 0, null];
-  const photo = avatarUrl(profile.photo_path);
+
+  const city = profile.city_slug ? labelFor(CITIES, profile.city_slug) : null;
+  const verified = platforms.some((p) => p.source === "verified");
 
   return (
     <>
       {isMe && query.welcome && (
-        <p className="rounded-xl bg-violet-50 p-4 text-violet-900 dark:bg-violet-950 dark:text-violet-100">
-          Your profile is live. Add more videos and contact details in{" "}
-          <Link href="/settings/profile" className="font-medium underline">
-            settings
+        <p className="card border-brand/30 bg-brand-soft p-4 text-brand-ink">
+          🎉 Your profile is live. Add more videos and contact details in{" "}
+          <Link href="/settings/profile" className="font-semibold underline">
+            Edit profile
           </Link>
           .
         </p>
       )}
 
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-          {photo && <Image src={photo} alt={profile.display_name} fill sizes="96px" className="object-cover" />}
-        </div>
-        <div className="flex flex-1 flex-col gap-2">
-          <h1 className="text-2xl font-semibold">{profile.display_name}</h1>
-          <p className="text-zinc-500">
-            @{profile.handle}
-            {profile.city_slug && <> · {labelFor(CITIES, profile.city_slug)}</>}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {profile.open_to_collab && (
-              <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-800 dark:bg-green-950 dark:text-green-300">
-                Open to collab
-              </span>
+      <header className="card overflow-hidden">
+        <div className="h-28 bg-gradient-to-br from-violet-600 via-fuchsia-500 to-orange-400 sm:h-36" />
+        <div className="flex flex-col gap-4 px-5 pb-5 sm:flex-row sm:items-end sm:px-6">
+          <div className="-mt-12 shrink-0 self-start rounded-full ring-4 ring-card sm:-mt-14">
+            <Avatar path={profile.photo_path} name={profile.display_name} size={112} />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-1 sm:pb-1">
+            <h1 className="flex items-center gap-1.5 text-2xl font-extrabold tracking-tight">
+              <span className="truncate">{profile.display_name}</span>
+              {verified && <BadgeCheck size={22} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
+            </h1>
+            <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
+              <span>@{profile.handle}</span>
+              {city && (
+                <span className="flex items-center gap-1">
+                  <MapPin size={14} /> {city}
+                </span>
+              )}
+              {mutual > 0 && (
+                <span className="flex items-center gap-1">
+                  <Users size={14} /> {mutual} mutual {mutual === 1 ? "connection" : "connections"}
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="sm:pb-1">
+            {user && !isMe && (
+              <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />
             )}
-            {profile.niches.map((n) => (
-              <span key={n} className="rounded-full bg-zinc-100 px-3 py-1 text-sm dark:bg-zinc-900">
-                {labelFor(NICHES, n)}
-              </span>
-            ))}
+            {!user && (
+              <Link href={`/login?next=${encodeURIComponent(`/creators/${profile.handle}`)}`} className="btn-primary">
+                Sign in to connect
+              </Link>
+            )}
+            {isMe && (
+              <Link href="/settings/profile" className="btn-secondary">
+                <Pencil size={16} /> Edit profile
+              </Link>
+            )}
           </div>
         </div>
-        {user && !isMe && (
-          <div className="flex flex-col gap-2 self-start">
-            <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />
-            {mutual > 0 && (
-              <p className="text-sm text-zinc-500">
-                {mutual} mutual {mutual === 1 ? "connection" : "connections"}
-              </p>
-            )}
+        {(profile.open_to_collab || profile.niches.length > 0 || profile.bio) && (
+          <div className="flex flex-col gap-3 border-t border-line px-5 py-4 sm:px-6">
+            {profile.bio && <p className="leading-relaxed whitespace-pre-line">{profile.bio}</p>}
+            <div className="flex flex-wrap gap-1.5">
+              {profile.open_to_collab && <span className="chip-green px-3 py-1.5 text-[13px]">Open to collab</span>}
+              {profile.niches.map((n) => (
+                <span key={n} className="chip px-3 py-1.5 text-[13px]">
+                  {labelFor(NICHES, n)}
+                </span>
+              ))}
+            </div>
           </div>
-        )}
-        {!user && (
-          <Link
-            href={`/login?next=${encodeURIComponent(`/creators/${profile.handle}`)}`}
-            className="inline-flex h-10 items-center self-start rounded-full bg-violet-600 px-5 text-sm font-medium text-white hover:bg-violet-700"
-          >
-            Sign in to connect
-          </Link>
-        )}
-        {isMe && (
-          <Link
-            href="/settings/profile"
-            className="inline-flex h-10 items-center self-start rounded-full border border-zinc-300 px-5 text-sm font-medium hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-900"
-          >
-            Edit profile
-          </Link>
         )}
       </header>
 
       {contact && <ContactBox name={profile.display_name} contact={contact} />}
 
-      {profile.bio && <p className="whitespace-pre-line text-zinc-700 dark:text-zinc-300">{profile.bio}</p>}
-
       {platforms.length > 0 && (
-        <section className="grid gap-3 sm:grid-cols-2">
+        <section className="grid gap-4 sm:grid-cols-2">
           {platforms.map((p) => (
             <PlatformCard key={p.id} account={p} />
           ))}
@@ -138,20 +143,23 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       )}
 
       {collabs.length > 0 && (
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Open collabs</h2>
+        <section className="card flex flex-col gap-3 p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Open collabs</h2>
           <ul className="flex flex-col gap-2">
             {collabs.map((c) => (
               <li key={c.id}>
-                <Link
-                  href={`/collabs/${c.id}`}
-                  className="flex flex-col gap-1 rounded-xl border border-zinc-200 p-3 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-                >
-                  <span className="font-medium">{c.title}</span>
-                  <span className="text-xs text-zinc-500">
-                    Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
-                    {c.city_slug && ` · ${labelFor(CITIES, c.city_slug)}`}
+                <Link href={`/collabs/${c.id}`} className="flex items-center gap-3 rounded-xl border border-line p-3.5 transition hover:border-brand/30 hover:bg-card-hover">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+                    <Handshake size={20} />
                   </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-semibold">{c.title}</span>
+                    <span className="block truncate text-xs text-muted">
+                      Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
+                      {c.city_slug && ` · ${labelFor(CITIES, c.city_slug)}`}
+                    </span>
+                  </span>
+                  <ChevronRight size={18} className="text-muted" />
                 </Link>
               </li>
             ))}
@@ -160,13 +168,13 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       )}
 
       {videos.length > 0 && (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold">Videos</h2>
+        <section className="card flex flex-col gap-4 p-5 sm:p-6">
+          <h2 className="text-lg font-bold">Videos</h2>
           <div className="grid gap-4 sm:grid-cols-2">
             {videos.map((v) => (
               <figure key={v.id} className="flex flex-col gap-2">
                 <VideoEmbed video={v} />
-                {v.title && <figcaption className="text-sm text-zinc-600 dark:text-zinc-400">{v.title}</figcaption>}
+                {v.title && <figcaption className="text-sm font-medium text-muted">{v.title}</figcaption>}
               </figure>
             ))}
           </div>
@@ -174,17 +182,29 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       )}
 
       {(profile.skills.length > 0 || profile.languages.length > 0) && (
-        <section className="grid gap-6 sm:grid-cols-2">
+        <section className="card grid gap-5 p-5 sm:grid-cols-2 sm:p-6">
           {profile.skills.length > 0 && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-zinc-500">Skills</h2>
-              <p>{profile.skills.map((s) => labelFor(SKILLS, s)).join(", ")}</p>
+              <h2 className="mb-2 text-sm font-semibold text-muted">Skills</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.skills.map((s) => (
+                  <span key={s} className="chip-brand px-3 py-1.5 text-[13px]">
+                    {labelFor(SKILLS, s)}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
           {profile.languages.length > 0 && (
             <div>
-              <h2 className="mb-2 text-sm font-medium text-zinc-500">Languages</h2>
-              <p>{profile.languages.map((l) => labelFor(LANGUAGES, l)).join(", ")}</p>
+              <h2 className="mb-2 text-sm font-semibold text-muted">Languages</h2>
+              <div className="flex flex-wrap gap-1.5">
+                {profile.languages.map((l) => (
+                  <span key={l} className="chip px-3 py-1.5 text-[13px]">
+                    {labelFor(LANGUAGES, l)}
+                  </span>
+                ))}
+              </div>
             </div>
           )}
         </section>
@@ -193,42 +213,45 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
   );
 }
 
+const PLATFORM_STYLE = {
+  youtube: { name: "YouTube", icon: "bg-red-600", glyph: "▶" },
+  instagram: { name: "Instagram", icon: "bg-gradient-to-br from-amber-400 via-pink-500 to-violet-600", glyph: "◎" },
+} as const;
+
 function PlatformCard({ account }: { account: PlatformAccount }) {
-  const name = account.platform === "youtube" ? "YouTube" : "Instagram";
+  const style = PLATFORM_STYLE[account.platform];
   const verified = account.source === "verified";
   const followers = compactNumber(account.self_followers);
   return (
-    <a
-      href={account.url ?? "#"}
-      target="_blank"
-      rel="noreferrer"
-      className="flex flex-col gap-1 rounded-xl border border-zinc-200 p-4 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-    >
-      <span className="flex items-center gap-2 font-medium">
-        {name}
+    <a href={account.url ?? "#"} target="_blank" rel="noreferrer" className="card-link flex flex-col gap-3 p-5">
+      <span className="flex items-center gap-3">
+        <span className={`flex h-10 w-10 items-center justify-center rounded-xl text-sm text-white ${style.icon}`}>{style.glyph}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-bold">{style.name}</span>
+          <span className="block truncate text-xs text-muted">{account.handle ?? account.url?.replace(/^https:\/\/(www\.)?/, "")}</span>
+        </span>
         {verified ? (
-          <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs text-blue-800 dark:bg-blue-950 dark:text-blue-300">
-            ✓ Verified
+          <span className="chip-brand">
+            <BadgeCheck size={13} /> Verified
           </span>
         ) : (
-          followers && (
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400">
-              Self-reported
-            </span>
-          )
+          followers && <span className="chip">Self-reported</span>
         )}
       </span>
-      <span className="text-sm text-zinc-500">{account.handle ?? account.url?.replace(/^https:\/\/(www\.)?/, "")}</span>
-      {verified && account.stats && (
-        <div className="mt-2">
-          <YouTubeStats stats={account.stats} />
-        </div>
-      )}
+      {verified && account.stats && <YouTubeStats stats={account.stats} />}
       {!verified && followers && (
-        <span className="text-sm">
-          {followers} followers
-          {account.self_avg_views !== null && <> · {compactNumber(account.self_avg_views)} avg views</>}
-        </span>
+        <div className="grid grid-cols-2 gap-2 text-sm">
+          <div className="rounded-xl bg-sunken px-3 py-2.5">
+            <p className="text-[11px] font-medium text-muted">Followers</p>
+            <p className="font-bold">{followers}</p>
+          </div>
+          {account.self_avg_views !== null && (
+            <div className="rounded-xl bg-sunken px-3 py-2.5">
+              <p className="text-[11px] font-medium text-muted">Avg views</p>
+              <p className="font-bold">{compactNumber(account.self_avg_views)}</p>
+            </div>
+          )}
+        </div>
       )}
     </a>
   );

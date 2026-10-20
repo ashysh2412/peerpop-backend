@@ -8,12 +8,12 @@ export const metadata: Metadata = { title: "Set up your profile · Peerpop" };
 
 export default function OnboardingPage() {
   return (
-    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-8 px-4 py-12">
+    <main className="mx-auto flex w-full max-w-xl flex-1 flex-col gap-6 px-4 py-6 sm:py-10">
       <div>
-        <h1 className="text-2xl font-semibold">Set up your creator profile</h1>
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">Three quick steps, and you&apos;re on Peerpop.</p>
+        <h1 className="page-title">Set up your creator profile</h1>
+        <p className="mt-2 text-muted">Three quick steps, and you&apos;re on Peerpop.</p>
       </div>
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Onboarding />
       </Suspense>
     </main>

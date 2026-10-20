@@ -1,3 +1,4 @@
+import { MessageCircle, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { deletePost } from "@/app/posts/actions";
@@ -18,19 +19,21 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
-    <article className="flex flex-col gap-3 rounded-2xl border border-zinc-200 p-4 dark:border-zinc-800">
+    <article className="card flex flex-col gap-3 p-4 sm:p-5">
       <header className="flex items-center gap-3">
         <Link href={`/creators/${post.author_handle}`}>
           <Avatar path={post.author_photo} name={post.author_name} size={44} />
         </Link>
         <div className="min-w-0 flex-1">
-          <Link href={`/creators/${post.author_handle}`} className="font-medium hover:underline">
-            {post.author_name}
-          </Link>
-          <p className="truncate text-xs text-zinc-500">
+          <p className="flex items-center gap-2">
+            <Link href={`/creators/${post.author_handle}`} className="truncate font-bold hover:underline">
+              {post.author_name}
+            </Link>
+            {post.is_connection && <span className="chip-brand py-0.5 text-[11px]">Connection</span>}
+          </p>
+          <p className="truncate text-xs text-muted">
             @{post.author_handle}
             {city && ` · ${city}`}
-            {post.is_connection && " · Connection"}
             {" · "}
             <Link href={`/posts/${post.id}`} className="hover:underline">
               {updatedLabel(post.created_at, now)}
@@ -40,16 +43,18 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         {me === post.author_id && (
           <form action={deletePost}>
             <input type="hidden" name="id" value={post.id} />
-            <button className="rounded-full px-3 py-1 text-xs text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-900">Delete</button>
+            <button aria-label="Delete post" className="btn-ghost btn-sm h-9 w-9 px-0">
+              <Trash2 size={16} />
+            </button>
           </form>
         )}
       </header>
 
-      <p className="whitespace-pre-wrap break-words">{post.body}</p>
+      <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>
 
       {post.image_path && (
-        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-zinc-100 dark:bg-zinc-900">
-          <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 768px) 600px, 100vw" className="object-cover" />
+        <div className="relative -mx-4 aspect-[4/3] overflow-hidden bg-sunken sm:mx-0 sm:rounded-xl">
+          <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 768px) 640px, 100vw" className="object-cover" />
         </div>
       )}
       {video ? (
@@ -58,28 +63,31 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         />
       ) : (
         post.link_url && (
-          <a href={post.link_url} target="_blank" rel="noreferrer nofollow" className="truncate text-sm text-violet-600 hover:underline">
-            {post.link_url}
+          <a
+            href={post.link_url}
+            target="_blank"
+            rel="noreferrer nofollow"
+            className="truncate rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm font-medium text-brand hover:underline"
+          >
+            {post.link_url.replace(/^https?:\/\//, "")}
           </a>
         )
       )}
 
-      <footer className="-mx-1 flex items-center gap-1 border-t border-zinc-100 pt-2 dark:border-zinc-900">
+      <footer className="-mx-2 -mb-1 flex items-center gap-1 border-t border-line pt-2">
         {me ? (
           <LikeButton postId={post.id} liked={post.liked_by_me} count={post.like_count} />
         ) : (
-          <span className="px-3 py-1.5 text-sm text-zinc-500">♡ {post.like_count}</span>
+          <span className="btn-ghost btn-sm pointer-events-none">♡ {post.like_count}</span>
         )}
         {linkToPost ? (
-          <Link
-            href={`/posts/${post.id}`}
-            className="rounded-full px-3 py-1.5 text-sm font-medium text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-900"
-          >
-            💬 Comment{post.comment_count > 0 && ` ${post.comment_count}`}
+          <Link href={`/posts/${post.id}`} className="btn-ghost btn-sm">
+            <MessageCircle size={17} /> Comment
+            {post.comment_count > 0 && <span className="tabular-nums">{post.comment_count}</span>}
           </Link>
         ) : (
-          <span className="px-3 py-1.5 text-sm text-zinc-500">
-            💬 {post.comment_count} {post.comment_count === 1 ? "comment" : "comments"}
+          <span className="btn-ghost btn-sm pointer-events-none">
+            <MessageCircle size={17} /> {post.comment_count} {post.comment_count === 1 ? "comment" : "comments"}
           </span>
         )}
       </footer>

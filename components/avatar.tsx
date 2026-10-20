@@ -6,14 +6,14 @@ export function Avatar({ path, name, size = 40 }: { path: string | null; name: s
   const url = avatarUrl(path);
   return (
     <div
-      className="relative shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800"
+      className="relative shrink-0 overflow-hidden rounded-full bg-sunken"
       style={{ width: size, height: size }}
     >
       {url ? (
         <Image src={url} alt={name} fill sizes={`${size}px`} className="object-cover" />
       ) : (
         <span
-          className="flex h-full w-full items-center justify-center font-semibold text-zinc-500"
+          className="flex h-full w-full items-center justify-center font-semibold text-muted"
           style={{ fontSize: size * 0.4 }}
         >
           {name.charAt(0).toUpperCase()}

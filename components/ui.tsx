@@ -3,8 +3,7 @@
 import { useFormStatus } from "react-dom";
 import type { FormState } from "@/lib/profile/types";
 
-export const inputClass =
-  "h-11 w-full rounded-lg border border-zinc-300 bg-transparent px-3 dark:border-zinc-700 aria-[invalid=true]:border-red-500";
+export const inputClass = "input";
 
 export function Field({
   label,
@@ -21,11 +20,11 @@ export function Field({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={name} className="text-sm font-medium">
+      <label htmlFor={name} className="label">
         {label}
       </label>
       {children}
-      {hint && !error && <p className="text-sm text-zinc-500">{hint}</p>}
+      {hint && !error && <p className="text-[13px] text-muted">{hint}</p>}
       {error && (
         <p id={`${name}-error`} className="text-sm text-red-600">
           {error}
@@ -51,7 +50,7 @@ export function ChipGroup({
 }) {
   return (
     <fieldset className="flex flex-col gap-2">
-      <legend className="mb-1.5 text-sm font-medium">{label}</legend>
+      <legend className="label mb-1.5">{label}</legend>
       <div className="flex flex-wrap gap-2">
         {options.map(([value, text]) => (
           <label key={value} className="cursor-pointer">
@@ -62,7 +61,7 @@ export function ChipGroup({
               defaultChecked={selected.includes(value)}
               className="peer sr-only"
             />
-            <span className="inline-flex h-9 items-center rounded-full border border-zinc-300 px-4 text-sm peer-checked:border-violet-600 peer-checked:bg-violet-600 peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400 dark:border-zinc-700">
+            <span className="inline-flex h-9 items-center rounded-full border border-line bg-card px-4 text-sm font-medium text-muted transition select-none hover:border-brand/40 hover:text-ink peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:text-brand-ink peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40">
               {text}
             </span>
           </label>
@@ -79,7 +78,7 @@ export function SubmitButton({ children, pendingText = "Saving…" }: { children
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex h-11 items-center justify-center rounded-full bg-violet-600 px-6 font-medium text-white hover:bg-violet-700 disabled:opacity-60"
+      className="btn-primary h-11 px-6"
     >
       {pending ? pendingText : children}
     </button>
@@ -89,11 +88,10 @@ export function SubmitButton({ children, pendingText = "Saving…" }: { children
 export function FormMessage({ state }: { state: FormState }) {
   if (!state.message) return null;
   return (
-    <p role="status" className={`text-sm ${state.ok ? "text-green-700 dark:text-green-400" : "text-red-600"}`}>
+    <p role="status" className={`text-sm font-medium ${state.ok ? "text-emerald-600 dark:text-emerald-400" : "text-red-600"}`}>
       {state.message}
     </p>
   );
 }
 
-export const secondaryButton =
-  "inline-flex h-9 items-center rounded-full border border-zinc-300 px-4 text-sm font-medium hover:bg-zinc-100 disabled:opacity-50 dark:border-zinc-700 dark:hover:bg-zinc-900";
+export const secondaryButton = "btn-secondary btn-sm";

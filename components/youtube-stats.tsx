@@ -36,15 +36,15 @@ export function YouTubeStats({ stats }: { stats: AccountStats }) {
   ];
   return (
     <div className="flex flex-col gap-2">
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+      <dl className="grid grid-cols-2 gap-2 text-sm">
         {rows.map(([label, value]) => (
-          <div key={label}>
-            <dt className="text-zinc-500">{label}</dt>
-            <dd className="font-medium">{value}</dd>
+          <div key={label} className="rounded-xl bg-sunken px-3 py-2.5">
+            <dt className="text-[11px] font-medium text-muted">{label}</dt>
+            <dd className="font-bold">{value}</dd>
           </div>
         ))}
       </dl>
-      <p className="text-xs text-zinc-500">Updated {updatedLabel(stats.computed_at)} · from YouTube</p>
+      <p className="text-xs text-muted">Updated {updatedLabel(stats.computed_at)} · from YouTube</p>
     </div>
   );
 }

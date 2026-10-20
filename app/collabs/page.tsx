@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChevronRight, Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CollabCard } from "@/components/collab-card";
@@ -8,7 +9,7 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Collabs · Peerpop" };
 
-const selectClass = "h-10 rounded-lg border border-zinc-300 bg-transparent px-3 dark:border-zinc-700";
+const selectClass = "input h-10 w-auto min-w-36 flex-1 text-sm sm:flex-none";
 
 function currentTime() {
   return Date.now();
@@ -20,17 +21,17 @@ function one(v: string | string[] | undefined) {
 
 export default function CollabsPage({ searchParams }: PageProps<"/collabs">) {
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-10">
-      <div className="flex flex-wrap items-center gap-3">
-        <h1 className="mr-auto text-2xl font-semibold">Collabs</h1>
-        <Link
-          href="/collabs/new"
-          className="inline-flex h-10 items-center rounded-full bg-violet-600 px-5 font-medium text-white hover:bg-violet-700"
-        >
-          + Post a collab
+    <main className="page flex flex-col gap-6">
+      <div className="flex flex-wrap items-end gap-4">
+        <div className="mr-auto">
+          <h1 className="page-title">Collabs</h1>
+          <p className="mt-1 text-muted">Find a shoot to join, or post an idea and pick who joins you.</p>
+        </div>
+        <Link href="/collabs/new" className="btn-primary">
+          <Plus size={18} /> Post a collab
         </Link>
       </div>
-      <Suspense fallback={<p className="text-zinc-500">Loading…</p>}>
+      <Suspense fallback={<p className="text-muted">Loading…</p>}>
         <Collabs searchParams={searchParams} />
       </Suspense>
     </main>
@@ -47,11 +48,11 @@ async function Collabs({ searchParams }: Pick<PageProps<"/collabs">, "searchPara
   const mine = one(params.mine) === "1" && user;
 
   const tabs = user && (
-    <nav className="flex gap-2 text-sm">
-      <Link href="/collabs" className={`rounded-full px-4 py-1.5 ${!mine ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" : "border border-zinc-300 dark:border-zinc-700"}`}>
+    <nav className="tabs self-start">
+      <Link href="/collabs" className={!mine ? "tab-active" : "tab"}>
         Browse
       </Link>
-      <Link href="/collabs?mine=1" className={`rounded-full px-4 py-1.5 ${mine ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900" : "border border-zinc-300 dark:border-zinc-700"}`}>
+      <Link href="/collabs?mine=1" className={mine ? "tab-active" : "tab"}>
         My collabs
       </Link>
     </nav>
@@ -63,22 +64,23 @@ async function Collabs({ searchParams }: Pick<PageProps<"/collabs">, "searchPara
       <>
         {tabs}
         {posts.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
-            You haven&apos;t posted a collab yet.
-          </p>
+          <div className="empty">
+            <span className="text-4xl">🎬</span>
+            <p className="font-semibold text-ink">You haven&apos;t posted a collab yet</p>
+            <p className="text-sm">Describe your idea and who you need. Creators who are interested will raise a hand.</p>
+            <Link href="/collabs/new" className="btn-primary btn-sm mt-1">
+              Post a collab
+            </Link>
+          </div>
         ) : (
           <ul className="flex flex-col gap-2">
             {posts.map((p) => (
               <li key={p.id}>
-                <Link
-                  href={`/collabs/${p.id}`}
-                  className="flex items-center gap-3 rounded-2xl border border-zinc-200 p-4 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:bg-zinc-900"
-                >
-                  <span className="flex-1 font-medium">{p.title}</span>
-                  {p.waiting > 0 && (
-                    <span className="rounded-full bg-violet-600 px-2.5 py-0.5 text-xs text-white">{p.waiting} interested</span>
-                  )}
-                  <span className="text-xs text-zinc-500">{isOpen(p, now) ? "Open" : "Closed"}</span>
+                <Link href={`/collabs/${p.id}`} className="card-link flex items-center gap-3 p-4">
+                  <span className="min-w-0 flex-1 truncate font-semibold">{p.title}</span>
+                  {p.waiting > 0 && <span className="chip-brand">{p.waiting} interested</span>}
+                  <span className={isOpen(p, now) ? "chip-green" : "chip"}>{isOpen(p, now) ? "Open" : "Closed"}</span>
+                  <ChevronRight size={18} className="text-muted" />
                 </Link>
               </li>
             ))}
@@ -110,7 +112,7 @@ async function Collabs({ searchParams }: Pick<PageProps<"/collabs">, "searchPara
   return (
     <>
       {tabs}
-      <form className="flex flex-wrap gap-2">
+      <form className="card flex flex-wrap gap-2 p-3">
         <select name="city" defaultValue={filters.city ?? ""} className={selectClass} aria-label="City">
           <option value="">Any city</option>
           {CITIES.map(([v, label]) => (
@@ -135,25 +137,28 @@ async function Collabs({ searchParams }: Pick<PageProps<"/collabs">, "searchPara
             </option>
           ))}
         </select>
-        <button className="h-10 rounded-full bg-zinc-900 px-5 text-sm font-medium text-white dark:bg-white dark:text-zinc-900">
-          Filter
-        </button>
+        <button className="btn-primary">Filter</button>
       </form>
       {collabs.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
-          No open collabs match. Try removing a filter, or post the first one.
-        </p>
+        <div className="empty">
+          <span className="text-4xl">🤝</span>
+          <p className="font-semibold text-ink">No open collabs here yet</p>
+          <p className="text-sm">Try removing a filter, or be the first to post one.</p>
+          <Link href="/collabs/new" className="btn-primary btn-sm mt-1">
+            Post a collab
+          </Link>
+        </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collabs.map((c) => (
             <CollabCard key={c.id} collab={c} now={now} />
           ))}
         </div>
       )}
       <div className="flex justify-between text-sm">
-        {page > 0 ? <Link href={`/collabs${qs(page - 1)}`} className="text-violet-600">← Newer</Link> : <span />}
+        {page > 0 ? <Link href={`/collabs${qs(page - 1)}`} className="btn-secondary btn-sm">← Newer</Link> : <span />}
         {(page + 1) * COLLAB_PAGE < total && (
-          <Link href={`/collabs${qs(page + 1)}`} className="text-violet-600">
+          <Link href={`/collabs${qs(page + 1)}`} className="btn-secondary btn-sm">
             Older →
           </Link>
         )}
