@@ -8,7 +8,7 @@
  * ink, muted, brand) so the palette changes in one place.
  */
 :root {
-  --surface: #ffffff;
+  --surface: #f5f6fa;
   --card: #ffffff;
   --card-hover: #fafaff;
   --sunken: #f3f4f8;
