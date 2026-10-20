@@ -26,6 +26,10 @@ const TEXT: Record<Notification["kind"], string> = {
   collab_accepted: "accepted you for their collab",
 };
 
+function currentTime() {
+  return Date.now();
+}
+
 export default function NotificationsPage() {
   return (
     <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col gap-6 px-4 py-12">
@@ -51,9 +55,16 @@ async function Notifications() {
     ? await supabase.from("creator_profiles").select("user_id, handle, display_name, photo_path").in("user_id", actorIds)
     : { data: [] };
   const byId = new Map(((actors ?? []) as Actor[]).map((a) => [a.user_id, a]));
-  const shown = items.filter((n) => n.actor_id && byId.has(n.actor_id));
+  // A request that was withdrawn and sent again shows once, as the latest.
+  const seen = new Set<string>();
+  const shown = items.filter((n) => {
+    const key = `${n.kind}:${n.actor_id}`;
+    if (!n.actor_id || !byId.has(n.actor_id) || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
   const unread = items.filter((n) => !n.read_at).length;
-  const now = Date.parse(items[0]?.created_at ?? "") || 0;
+  const now = currentTime();
 
   if (shown.length === 0) {
     return (
@@ -79,13 +90,19 @@ async function Notifications() {
               }`}
             >
               <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-800">
-                {photo && <Image src={photo} alt={actor.display_name} fill sizes="40px" className="object-cover" />}
+                {photo ? (
+                  <Image src={photo} alt={actor.display_name} fill sizes="40px" className="object-cover" />
+                ) : (
+                  <span className="flex h-full w-full items-center justify-center font-semibold text-zinc-500">
+                    {actor.display_name.charAt(0).toUpperCase()}
+                  </span>
+                )}
               </div>
               <p className="flex-1 text-sm">
                 <b>{actor.display_name}</b> {TEXT[n.kind]}
                 {n.kind === "connection_request" && <span className="text-violet-600"> · Review</span>}
               </p>
-              <span className="shrink-0 text-xs text-zinc-500">{updatedLabel(n.created_at, Math.max(now, Date.parse(n.created_at)))}</span>
+              <span className="shrink-0 text-xs text-zinc-500">{updatedLabel(n.created_at, now)}</span>
             </Link>
           </li>
         );
