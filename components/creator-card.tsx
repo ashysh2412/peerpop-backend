@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CITIES, NICHES, labelFor, type Niche } from "@/lib/catalog";
 import type { ConnectionState } from "@/lib/connections/data";
 import { compactNumber } from "@/lib/format";
+import { peepFor } from "@/lib/peeps";
 import { avatarUrl } from "@/lib/profile/avatar";
 import { ConnectPanel } from "./connect-panel";
 
@@ -23,42 +24,27 @@ export type CreatorRow = {
   total_count: number;
 };
 
-// Creators without a photo get one of these, picked from their handle so it stays the same.
-const TILES = [
-  "from-sky-400 to-blue-600",
-  "from-cyan-400 to-sky-600",
-  "from-blue-400 to-indigo-600",
-  "from-indigo-400 to-violet-600",
-  "from-teal-400 to-cyan-600",
-  "from-sky-300 to-indigo-500",
-];
-
-function tileFor(handle: string) {
-  let h = 0;
-  for (const c of handle) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return TILES[h % TILES.length];
-}
-
 /** `viewer` is null when signed out, "me" on your own card, or how you're connected. */
 export function CreatorCard({ row, viewer }: { row: CreatorRow; viewer: ConnectionState | "me" | null }) {
   const photo = avatarUrl(row.photo_path);
+  const peep = peepFor(row.handle);
   const followers = row.max_followers === null ? null : compactNumber(row.max_followers);
   return (
-    <div className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-16px_color-mix(in_oklab,var(--brand)_40%,transparent)]">
-      <Link href={`/creators/${row.handle}`} className={`relative block aspect-[4/5] overflow-hidden bg-gradient-to-br ${tileFor(row.handle)}`}>
+    <div className="group flex flex-col overflow-hidden rounded-3xl border-2 border-ink bg-card shadow-[4px_4px_0_var(--ink)] transition hover:-translate-y-1 hover:-rotate-1 hover:shadow-[6px_6px_0_var(--ink)]">
+      <Link href={`/creators/${row.handle}`} className={`relative block aspect-[4/5] overflow-hidden border-b-2 border-ink ${photo ? "bg-sunken" : peep.bg}`}>
         {photo ? (
           <Image src={photo} alt={row.display_name} fill sizes="(min-width: 1024px) 280px, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center text-7xl font-semibold text-white/90">
-            {row.display_name.charAt(0).toUpperCase()}
-          </span>
+          <Image src={peep.src} alt={row.display_name} fill unoptimized className="translate-y-[4%] object-contain transition duration-500 group-hover:scale-105" />
         )}
-        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent px-3.5 pt-12 pb-3 text-white">
+        <span
+          className={`absolute inset-x-0 bottom-0 px-3.5 pb-3 ${photo ? "bg-gradient-to-t from-black/75 via-black/30 to-transparent pt-12 text-white" : "m-2 rounded-xl border-2 border-ink bg-card pt-2 pb-2 text-ink"}`}
+        >
           <span className="flex items-center gap-1 font-bold">
             <span className="truncate">{row.display_name}</span>
             {row.has_verified && <BadgeCheck size={16} className="shrink-0" aria-label="Verified YouTube channel" />}
           </span>
-          <span className="flex items-center gap-1 text-xs text-white/85">
+          <span className={`flex items-center gap-1 text-xs ${photo ? "text-white/85" : "text-muted"}`}>
             {row.city_slug && (
               <>
                 <MapPin size={12} /> {labelFor(CITIES, row.city_slug)}
@@ -72,7 +58,7 @@ export function CreatorCard({ row, viewer }: { row: CreatorRow; viewer: Connecti
           </span>
         </span>
         {row.open_to_collab && (
-          <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow-sm">
+          <span className="absolute top-3 left-3 -rotate-3 rounded-full border-2 border-ink bg-pop-mint px-2.5 py-0.5 text-[11px] font-bold text-ink">
             Open to collab
           </span>
         )}

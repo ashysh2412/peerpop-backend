@@ -83,10 +83,8 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       )}
 
       <header className="flex flex-col items-center gap-5 pt-2 text-center sm:flex-row sm:items-start sm:gap-7 sm:text-left">
-        <div className="shrink-0 rounded-full bg-brand-gradient p-[3px]">
-          <div className="rounded-full bg-surface p-[3px]">
-            <Avatar path={profile.photo_path} name={profile.display_name} size={128} />
-          </div>
+        <div className="shrink-0 -rotate-3 rounded-full shadow-[5px_5px_0_var(--ink)]">
+          <Avatar path={profile.photo_path} name={profile.display_name} size={128} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col items-center gap-3 sm:items-start">
           <div className="flex flex-col items-center gap-1 sm:items-start">
@@ -113,8 +111,11 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           {/* What they can do comes first: it's what collaborators look for. */}
           {profile.skills.length > 0 && (
             <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-              {profile.skills.map((s) => (
-                <span key={s} className="rounded-full bg-brand px-3.5 py-1.5 text-[13px] font-semibold text-white">
+              {profile.skills.map((s, i) => (
+                <span
+                  key={s}
+                  className={`rounded-full border-2 border-ink px-3.5 py-1 text-[13px] font-bold text-ink shadow-[2px_2px_0_var(--ink)] ${["bg-pop-yellow", "bg-pop-sky", "bg-pop-mint", "bg-pop-coral", "bg-pop-lilac"][i % 5]} ${i % 2 ? "rotate-1" : "-rotate-1"}`}
+                >
                   {labelFor(SKILLS, s)}
                 </span>
               ))}
@@ -155,7 +156,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
       </header>
 
       {stats.length > 0 && (
-        <dl className="grid grid-cols-3 divide-x divide-line rounded-3xl border border-line bg-card py-4">
+        <dl className="grid grid-cols-3 divide-x-2 divide-dashed divide-line rounded-3xl border-2 border-ink bg-card py-4 shadow-[4px_4px_0_var(--ink)]">
           {stats.map(([label, value, isVerified]) => (
             <div key={label} className="flex flex-col items-center gap-0.5 px-2 text-center">
               <dd className="flex items-center gap-1 text-xl font-semibold tracking-tight sm:text-2xl">
@@ -182,7 +183,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           </div>
           {isMe && videos.length === 0 && (
             <Link href="/settings/profile#videos" className="empty transition hover:border-brand/40">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink bg-pop-yellow text-ink">
                 <Plus size={22} />
               </span>
               <p className="font-semibold text-ink">Add your best videos</p>
@@ -212,7 +213,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           </div>
           {isMe && photos.length === 0 && (
             <Link href="/home#compose" className="empty transition hover:border-brand/40">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink bg-pop-yellow text-ink">
                 <ImagePlus size={22} />
               </span>
               <p className="font-semibold text-ink">Add photos of your work</p>
@@ -236,7 +237,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
           <h2 className="text-lg font-bold">Open collabs</h2>
           {collabs.map((c) => (
             <Link key={c.id} href={`/collabs/${c.id}`} className="card-link flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-ink bg-pop-yellow text-ink">
                 <Handshake size={20} />
               </span>
               <span className="min-w-0 flex-1">

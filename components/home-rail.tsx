@@ -54,7 +54,7 @@ export function GetStarted({ steps, handle }: { steps: StarterSteps; handle: str
           My profile
         </Link>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-sunken">
+      <div className="h-2.5 overflow-hidden rounded-full border-2 border-ink bg-card">
         <div className="bg-brand-gradient h-full rounded-full" style={{ width: `${(done / items.length) * 100}%` }} />
       </div>
       <p className="text-xs text-muted">
@@ -65,7 +65,7 @@ export function GetStarted({ steps, handle }: { steps: StarterSteps; handle: str
           <li key={i.label}>
             <Link href={i.href} className="flex items-center gap-3 rounded-xl px-2 py-2 text-sm transition hover:bg-sunken">
               <span
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${i.done ? "bg-brand-gradient text-white" : "border-2 border-line"}`}
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${i.done ? "border-ink bg-pop-mint text-ink" : "border-ink/30"}`}
               >
                 {i.done && <Check size={12} strokeWidth={3} />}
               </span>
@@ -93,7 +93,7 @@ export function HomeRail({ handle, steps, collabs, people }: { handle: string; s
             {collabs.map((c) => (
               <li key={c.id}>
                 <Link href={`/collabs/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-xl p-2 transition hover:bg-sunken">
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border-2 border-ink bg-pop-lilac text-ink">
                     <Handshake size={16} />
                   </span>
                   <span className="min-w-0">

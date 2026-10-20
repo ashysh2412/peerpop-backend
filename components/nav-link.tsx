@@ -33,7 +33,7 @@ export function NavLink({
     <Link
       href={href}
       className={`relative inline-flex h-9 items-center gap-2 rounded-full px-3.5 text-sm font-semibold transition ${
-        active ? "bg-brand-soft text-brand-ink" : "text-muted hover:bg-sunken hover:text-ink"
+        active ? "bg-pop-yellow text-ink ring-2 ring-ink" : "text-muted hover:bg-sunken hover:text-ink"
       }`}
     >
       {children}

@@ -10,8 +10,8 @@ export function CollabCall({ collab }: { collab: Collab }) {
   const author = collab.author!;
   const shoot = shootLabel(collab.shoot_date);
   return (
-    <Link href={`/collabs/${collab.id}`} className="bg-brand-gradient group block rounded-3xl p-[2px] transition hover:-translate-y-0.5">
-      <div className="flex flex-col gap-3 rounded-[22px] bg-card p-5">
+    <Link href={`/collabs/${collab.id}`} className="group block rounded-3xl border-2 border-ink bg-pop-yellow shadow-[4px_4px_0_var(--ink)] transition hover:-translate-y-0.5 hover:-rotate-[0.5deg] hover:shadow-[6px_6px_0_var(--ink)]">
+      <div className="m-1.5 flex flex-col gap-3 rounded-[18px] border-2 border-ink bg-card p-5">
         <p className="flex items-center gap-2 text-xs font-bold tracking-wide text-brand uppercase">
           <Handshake size={15} /> Collab call
         </p>

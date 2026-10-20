@@ -79,7 +79,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         </QuickChip>
         <Dropdown
           className="group relative"
-          summaryClassName="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border border-line bg-card px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden"
+          summaryClassName="flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-full border-2 border-ink bg-card px-4 text-sm font-semibold [&::-webkit-details-marker]:hidden"
           summary={
             <>
               <SlidersHorizontal size={15} /> More filters
@@ -87,7 +87,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
             </>
           }
         >
-          <div className="card absolute left-0 z-30 mt-2 w-[min(92vw,360px)] p-5 shadow-xl">
+          <div className="card absolute left-0 z-30 mt-2 w-[min(92vw,360px)] p-5">
             <Filters filters={filters} />
           </div>
         </Dropdown>
@@ -149,8 +149,8 @@ function QuickChip({ href, on, outline, children }: { href: string; on: boolean;
   return (
     <Link
       href={href}
-      className={`flex h-9 shrink-0 items-center rounded-full px-4 text-sm font-semibold whitespace-nowrap transition ${
-        on ? "bg-ink text-card" : outline ? "border border-line bg-card text-ink hover:bg-sunken" : "bg-sunken text-ink hover:bg-line"
+      className={`flex h-9 shrink-0 items-center rounded-full border-2 border-ink px-4 text-sm font-semibold whitespace-nowrap transition ${
+        on ? "bg-ink text-card" : outline ? "bg-card text-ink hover:bg-pop-mint/50" : "bg-card text-ink hover:bg-pop-yellow/50"
       }`}
     >
       {children}

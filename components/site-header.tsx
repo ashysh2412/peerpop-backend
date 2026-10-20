@@ -98,7 +98,7 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
           summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-brand/30 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
           summary={<Avatar path={profile.photo_path} name={profile.display_name} size={36} />}
         >
-          <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">
+          <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5">
             <div className="px-3 py-2">
               <p className="truncate text-sm font-semibold">{profile.display_name}</p>
               <p className="truncate text-xs text-muted">@{profile.handle}</p>
