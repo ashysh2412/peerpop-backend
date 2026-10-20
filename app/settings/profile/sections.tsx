@@ -16,9 +16,9 @@ import {
   setPhoto,
 } from "./actions";
 
-export function Card({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+export function Card({ id, title, description, children }: { id?: string; title: string; description?: string; children: React.ReactNode }) {
   return (
-    <section className="flex flex-col gap-5 card p-5 sm:p-6">
+    <section id={id} className="flex scroll-mt-24 flex-col gap-5 card p-5 sm:p-6">
       <div>
         <h2 className="text-lg font-bold">{title}</h2>
         {description && <p className="mt-1 text-sm text-muted">{description}</p>}
@@ -82,6 +82,7 @@ export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
   const [state, action] = useActionState<FormState, FormData>(addVideo, {});
   return (
     <Card
+      id="videos"
       title="Pinned videos"
       description="Show your best work at the top of your profile. Up to 6 YouTube videos, Shorts or Instagram Reels."
     >

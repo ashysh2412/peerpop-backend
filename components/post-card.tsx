@@ -19,8 +19,8 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
-    <article className="card flex flex-col gap-3 overflow-hidden rounded-3xl pt-4 sm:pt-5">
-      <header className="flex items-center gap-3 px-4 sm:px-5">
+    <article className="flex flex-col gap-3 border-b border-line pt-5 pb-2">
+      <header className="flex items-center gap-3">
         <Link href={`/creators/${post.author_handle}`}>
           <Avatar path={post.author_photo} name={post.author_name} size={44} />
         </Link>
@@ -50,15 +50,15 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         )}
       </header>
 
-      <p className="px-4 text-[15px] leading-relaxed break-words whitespace-pre-wrap sm:px-5">{post.body}</p>
+      <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>
 
       {post.image_path && (
-        <div className="relative aspect-[4/5] max-h-[640px] w-full overflow-hidden bg-sunken">
+        <div className="relative aspect-[4/5] max-h-[680px] w-full overflow-hidden rounded-3xl bg-sunken">
           <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-cover" />
         </div>
       )}
       {video ? (
-        <div className="px-4 sm:px-5">
+        <div>
           <VideoEmbed
             video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
           />
@@ -69,14 +69,14 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
             href={post.link_url}
             target="_blank"
             rel="noreferrer nofollow"
-            className="mx-4 truncate rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm font-medium text-brand hover:underline sm:mx-5"
+            className="truncate rounded-2xl bg-sunken px-4 py-3 text-sm font-medium text-brand hover:underline"
           >
             {post.link_url.replace(/^https?:\/\//, "")}
           </a>
         )
       )}
 
-      <footer className="flex items-center gap-1 px-2 pb-2 sm:px-3">
+      <footer className="-mx-3 flex items-center gap-1">
         {me ? (
           <LikeButton postId={post.id} liked={post.liked_by_me} count={post.like_count} />
         ) : (

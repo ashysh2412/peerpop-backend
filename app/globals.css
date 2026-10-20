@@ -8,22 +8,22 @@
  * ink, muted, brand) so the palette changes in one place.
  */
 :root {
-  --surface: #f5f7fb;
+  --surface: #ffffff;
   --card: #ffffff;
-  --card-hover: #fafbfd;
-  --sunken: #eef2f7;
-  --line: #e2e8f0;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --brand: #1570ef;
-  --brand-hover: #0f5fd6;
-  --brand-soft: #e8f1fe;
-  --brand-ink: #0b4aa8;
-  --grad-1: #38bdf8;
-  --grad-2: #1570ef;
-  --grad-3: #4f46e5;
-  --glow-1: rgba(21,112,239,0.14);
-  --glow-2: rgba(56,189,248,0.14);
+  --card-hover: #fafaff;
+  --sunken: #f3f4f8;
+  --line: #ebebf2;
+  --ink: #0d0d17;
+  --muted: #6b6b80;
+  --brand: #4a4cf5;
+  --brand-hover: #3b3de0;
+  --brand-soft: #efefff;
+  --brand-ink: #2e2fb0;
+  --grad-1: #2e8bff;
+  --grad-2: #5b4dff;
+  --grad-3: #b04dff;
+  --glow-1: rgba(46,139,255,0.14);
+  --glow-2: rgba(176,77,255,0.12);
 }
 
 
@@ -84,7 +84,7 @@ body {
   @apply inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-brand text-white shadow-[0_6px_16px_-8px_color-mix(in_oklab,var(--brand)_80%,transparent)] hover:bg-brand-hover;
+  @apply btn bg-brand-gradient text-white shadow-[0_8px_20px_-10px_color-mix(in_oklab,var(--brand)_90%,transparent)] hover:brightness-110;
 }
 @utility btn-secondary {
   @apply btn border border-line bg-card text-ink hover:bg-sunken;

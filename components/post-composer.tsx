@@ -59,7 +59,7 @@ export function PostComposer({
   const preview = image ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${image}` : null;
 
   return (
-    <form ref={form} action={action} className="card flex flex-col gap-3 p-4 sm:p-5">
+    <form ref={form} action={action} className="flex flex-col gap-3 rounded-3xl bg-sunken p-4 sm:p-5">
       <div className="flex gap-3">
         <Avatar path={photo} name={name} size={44} />
         <textarea

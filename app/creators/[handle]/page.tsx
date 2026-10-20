@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BadgeCheck, ChevronRight, Handshake, MapPin, Pencil, Users } from "lucide-react";
+import { BadgeCheck, ChevronRight, Handshake, MapPin, Pencil, Plus, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -165,9 +165,25 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
 
       {contact && <ContactBox name={profile.display_name} contact={contact} />}
 
-      {videos.length > 0 && (
+      {(videos.length > 0 || isMe) && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-bold">Work</h2>
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-lg font-bold">Work</h2>
+            {isMe && videos.length > 0 && videos.length < 6 && (
+              <Link href="/settings/profile#videos" className="btn-secondary btn-sm">
+                <Plus size={15} /> Add video
+              </Link>
+            )}
+          </div>
+          {isMe && videos.length === 0 && (
+            <Link href="/settings/profile#videos" className="empty transition hover:border-brand/40">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+                <Plus size={22} />
+              </span>
+              <p className="font-semibold text-ink">Add your best videos</p>
+              <p className="max-w-sm text-sm">Paste YouTube or Instagram links. They play right here, so collaborators can see your work.</p>
+            </Link>
+          )}
           <div className="grid gap-3 sm:grid-cols-2">
             {videos.map((v) => (
               <figure key={v.id} className="flex flex-col gap-2">
