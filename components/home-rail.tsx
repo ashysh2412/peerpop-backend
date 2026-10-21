@@ -24,7 +24,7 @@ function Section({ title, href, children }: { title: string; href: string; child
 }
 
 /** The setup checklist for new creators. Renders nothing once every step is done. `compact` is a one-line version for phones. */
-export function GetStarted({ steps, handle, compact }: { steps: StarterSteps; handle: string; compact?: boolean }) {
+export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: boolean }) {
   const items = [
     {
       done: steps.photo,
@@ -64,7 +64,7 @@ export function GetStarted({ steps, handle, compact }: { steps: StarterSteps; ha
     <section className="card flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Get started</h2>
-        <Link href={`/creators/${handle}`} className="text-xs font-semibold text-brand hover:underline">
+        <Link href="/settings/profile" className="text-xs font-semibold text-brand hover:underline">
           My profile
         </Link>
       </div>
@@ -94,10 +94,10 @@ export function GetStarted({ steps, handle, compact }: { steps: StarterSteps; ha
 }
 
 /** The right-hand column on Home for wide screens: setup, collabs that fit you, creators to meet. */
-export function HomeRail({ handle, steps, collabs, people }: { handle: string; steps: StarterSteps; collabs: Collab[]; people: Suggestion[] }) {
+export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[] }) {
   return (
     <aside className="hidden flex-col gap-4 lg:flex">
-      <GetStarted steps={steps} handle={handle} />
+      <GetStarted steps={steps} />
 
       <Section title="Collabs for you" href="/home?tab=collabs">
         {collabs.length === 0 ? (

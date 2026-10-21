@@ -13,9 +13,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) {
-      // Brand-new people get the quick profile screen once; they can skip it.
+      // Brand-new people land on the feed with a welcome note; the profile can wait.
       const { created } = await ensureProfile(supabase, data.user);
-      return NextResponse.redirect(`${origin}${created ? "/onboarding" : next}`);
+      return NextResponse.redirect(`${origin}${created ? "/home?welcome=1" : next}`);
     }
   }
 

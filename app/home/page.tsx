@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { ArrowRight, Plus } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
 import { CreatorStories } from "@/components/creator-stories";
@@ -39,8 +38,6 @@ function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string
 async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) {
   const { supabase, user } = await requireUser("/home");
   const { profile, created } = await ensureProfile(supabase, user);
-  // First visit: offer the quick profile screen once. Skipping it is fine.
-  if (created) redirect("/onboarding");
   const { before, tab, welcome } = await searchParams;
   const showCollabs = tab === "collabs";
   const cursor = !showCollabs && typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
@@ -67,9 +64,13 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                 <p className="font-hand text-xl font-bold text-brand">Creators to meet, and what they&apos;re making.</p>
               </div>
             </div>
-            {welcome && (
+            {(welcome || created) && (
               <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
-                🎉 <span className="font-semibold">You&apos;re in, {firstName}!</span> Say hello with your first post, or tap a creator below to connect.
+                🎉 <span className="font-semibold">You&apos;re in!</span> Say hello with a post, or{" "}
+                <Link href="/settings/profile" className="font-semibold underline">
+                  add your photo and what you make
+                </Link>
+                .
               </p>
             )}
             <CreatorStories me={profile} people={people} />
@@ -123,7 +124,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
             {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
             {!cursor && (
               <div className="lg:hidden">
-                <GetStarted steps={steps} handle={profile.handle} compact />
+                <GetStarted steps={steps} compact />
               </div>
             )}
             {posts.length === 0 && (
@@ -150,7 +151,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           </>
         )}
       </div>
-      <HomeRail handle={profile.handle} steps={steps} collabs={open.slice(0, 3)} people={people.slice(0, 4)} />
+      <HomeRail steps={steps} collabs={open.slice(0, 3)} people={people.slice(0, 4)} />
     </div>
   );
 }

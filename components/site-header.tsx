@@ -1,4 +1,4 @@
-import { Bell, Handshake, House, KeyRound, LogOut, Search, Settings, User, Users } from "lucide-react";
+import { Bell, Handshake, House, KeyRound, LogOut, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { countReceived } from "@/lib/connections/data";
@@ -104,11 +104,8 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
               <p className="truncate text-xs text-muted">@{profile.handle}</p>
             </div>
             <div className="my-1 h-px bg-line" />
-            <Link href={`/creators/${profile.handle}`} className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-              <User size={16} className="text-muted" /> View profile
-            </Link>
             <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-              <Settings size={16} className="text-muted" /> Edit profile
+              <User size={16} className="text-muted" /> My profile
             </Link>
             <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
               <KeyRound size={16} className="text-muted" /> Change password
@@ -141,7 +138,7 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
           Network
         </NavLink>
         {profile && (
-          <NavLink href={`/creators/${profile.handle}`} variant="tab">
+          <NavLink href="/settings/profile" variant="tab">
             <User size={22} /> Profile
           </NavLink>
         )}
