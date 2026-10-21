@@ -16,6 +16,8 @@ import {
   type SearchFilters,
 } from "@/lib/search/params";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/session";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Find creators · Peerpop" };
 
@@ -29,7 +31,7 @@ export default function CreatorsPage({ searchParams }: PageProps<"/creators">) {
         <h1 className="page-title">Find creators</h1>
         <p className="mt-1 text-muted">Tap a niche to start. Verified numbers come straight from YouTube.</p>
       </div>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Search searchParams={searchParams} />
       </Suspense>
     </main>
@@ -43,7 +45,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
   const rows = (data ?? []) as Row[];
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const others = rows.map((r) => r.user_id).filter((id) => id !== user?.id);
   const states = user ? await getStates(supabase, user.id, others) : new Map<string, ConnectionState>();
   const total = rows[0]?.total_count ?? 0;

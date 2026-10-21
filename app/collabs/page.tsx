@@ -6,6 +6,8 @@ import { CollabCard } from "@/components/collab-card";
 import { CITIES, NICHES, SKILLS, type Niche, type Skill } from "@/lib/catalog";
 import { COLLAB_PAGE, getMyCollabs, isOpen, listCollabs, type CollabFilters } from "@/lib/collabs/data";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/session";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Collabs · Peerpop" };
 
@@ -31,7 +33,7 @@ export default function CollabsPage({ searchParams }: PageProps<"/collabs">) {
           <Plus size={18} /> Post a collab
         </Link>
       </div>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Collabs searchParams={searchParams} />
       </Suspense>
     </main>
@@ -43,7 +45,7 @@ async function Collabs({ searchParams }: Pick<PageProps<"/collabs">, "searchPara
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const now = currentTime();
   const mine = one(params.mine) === "1" && user;
 

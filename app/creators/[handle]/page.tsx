@@ -19,6 +19,8 @@ import { compactNumber } from "@/lib/format";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
 import type { PlatformAccount } from "@/lib/profile/types";
 import { createClient } from "@/lib/supabase/server";
+import { getSessionUser } from "@/lib/supabase/session";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Creator · Peerpop" };
 
@@ -29,7 +31,7 @@ function currentTime() {
 export default function CreatorPage({ params }: PageProps<"/creators/[handle]">) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-7 px-4 py-6 sm:py-10">
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Creator params={params} />
       </Suspense>
     </main>
@@ -55,7 +57,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
     getVideos(supabase, profile.user_id),
     getPhotosBy(supabase, profile.user_id),
     getOpenCollabsBy(supabase, profile.user_id, new Date(currentTime()).toISOString()),
-    supabase.auth.getUser(),
+    getSessionUser(supabase),
   ]);
   const isMe = user?.id === profile.user_id;
   const [connection, mutual, contact] =

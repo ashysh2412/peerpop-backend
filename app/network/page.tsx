@@ -9,6 +9,7 @@ import { getNetwork } from "@/lib/connections/data";
 import { requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
 import { acceptConnection, declineConnection, removeConnection } from "./actions";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "My network · Peerpop" };
 
@@ -23,7 +24,7 @@ export default function NetworkPage({ searchParams }: PageProps<"/network">) {
   return (
     <main className="page-narrow flex flex-col gap-5">
       <h1 className="page-title">My network</h1>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Network searchParams={searchParams} />
       </Suspense>
     </main>

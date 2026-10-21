@@ -6,6 +6,7 @@ import { Avatar } from "@/components/avatar";
 import { updatedLabel } from "@/components/youtube-stats";
 import { requireUser } from "@/lib/profile/data";
 import { MarkRead } from "./mark-read";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Notifications · Peerpop" };
 
@@ -48,7 +49,7 @@ export default function NotificationsPage() {
   return (
     <main className="page-narrow flex flex-col gap-6">
       <h1 className="page-title">Notifications</h1>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Notifications />
       </Suspense>
     </main>

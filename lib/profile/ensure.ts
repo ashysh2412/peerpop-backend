@@ -1,7 +1,7 @@
 import "server-only";
-import type { User } from "@supabase/supabase-js";
 import { io } from "next/cache";
 import type { createClient } from "@/lib/supabase/server";
+import type { SessionUser } from "@/lib/supabase/session";
 import { getProfileById } from "./data";
 import { importGooglePhoto, isGooglePhotoUrl } from "./google-photo";
 import { handleFromName, withSuffix } from "./handle";
@@ -9,7 +9,7 @@ import { handleFromName, withSuffix } from "./handle";
 type Client = Awaited<ReturnType<typeof createClient>>;
 
 /** A name to start with: the one Google gave us, or the part of the email before the @. */
-export function startingName(user: Pick<User, "email" | "user_metadata">) {
+export function startingName(user: Pick<SessionUser, "email" | "user_metadata">) {
   const fromGoogle = user.user_metadata?.full_name ?? user.user_metadata?.name;
   if (typeof fromGoogle === "string" && fromGoogle.trim()) return fromGoogle.trim().slice(0, 80);
   const local = (user.email ?? "").split("@")[0].replace(/[._\-+\d]+/g, " ").trim();
@@ -21,7 +21,7 @@ export function startingName(user: Pick<User, "email" | "user_metadata">) {
  * Every signed-in person gets a profile straight away, so they can use the app
  * without filling anything in. Returns it, and whether it was just made.
  */
-export async function ensureProfile(supabase: Client, user: User) {
+export async function ensureProfile(supabase: Client, user: SessionUser) {
   const existing = await getProfileById(supabase, user.id);
   if (existing) return { profile: existing, created: false };
 

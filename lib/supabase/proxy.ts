@@ -34,9 +34,9 @@ export async function updateSession(request: NextRequest) {
   });
 
   // Refreshes the auth token if it has expired. Do not remove.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims checks the session token locally (and refreshes it when it has expired) instead of asking Supabase Auth every time.
+  const { data } = await supabase.auth.getClaims();
+  const user = data?.claims?.sub ? data.claims : null;
 
   const path = request.nextUrl.pathname;
   if (!user && PROTECTED_PREFIXES.some((p) => path.startsWith(p))) {

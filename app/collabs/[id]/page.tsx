@@ -14,6 +14,8 @@ import { getCollab, getInterests, getMyInterest, isOpen } from "@/lib/collabs/da
 import { getContactFor } from "@/lib/connections/data";
 import { createClient } from "@/lib/supabase/server";
 import { acceptInterest, closeCollab, declineInterest, deleteCollab, withdrawInterest } from "../actions";
+import { getSessionUser } from "@/lib/supabase/session";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Collab · Peerpop" };
 
@@ -27,7 +29,7 @@ export default function CollabPage({ params }: PageProps<"/collabs/[id]">) {
       <Link href="/collabs" className="flex items-center gap-1 self-start text-sm font-medium text-muted hover:text-ink">
         <ArrowLeft size={16} /> All collabs
       </Link>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <CollabDetail params={params} />
       </Suspense>
     </main>
@@ -40,7 +42,7 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const collab = await getCollab(supabase, id);
   if (!collab) notFound();
   const author = collab.author!;

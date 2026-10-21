@@ -10,6 +10,8 @@ import { updatedLabel } from "@/components/youtube-stats";
 import { getComments, getPost } from "@/lib/feed/data";
 import { createClient } from "@/lib/supabase/server";
 import { deleteComment } from "../actions";
+import { getSessionUser } from "@/lib/supabase/session";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Post · Peerpop" };
 
@@ -23,7 +25,7 @@ export default function PostPage({ params }: PageProps<"/posts/[id]">) {
       <Link href="/home" className="flex items-center gap-1 self-start text-sm font-medium text-muted hover:text-ink">
         <ArrowLeft size={16} /> Back to feed
       </Link>
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Post params={params} />
       </Suspense>
     </main>
@@ -36,7 +38,7 @@ async function Post({ params }: { params: PageProps<"/posts/[id]">["params"] }) 
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   const me = user?.id ?? null;
   const [post, comments] = await Promise.all([getPost(supabase, me, id), getComments(supabase, id)]);
   if (!post) notFound();

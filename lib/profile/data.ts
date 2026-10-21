@@ -2,6 +2,7 @@ import "server-only";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import type { AccountStats, Contacts, OwnYouTube, PlatformAccount, Profile, ProfileVideo } from "./types";
+import { getSessionUser } from "@/lib/supabase/session";
 
 const PROFILE_COLUMNS =
   "user_id, handle, display_name, photo_path, bio, city_slug, niches, skills, languages, open_to_collab, is_listed";
@@ -11,7 +12,7 @@ export async function requireUser(next = "/home") {
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
   if (!user) redirect(`/login?next=${encodeURIComponent(next)}`);
   return { supabase, user };
 }

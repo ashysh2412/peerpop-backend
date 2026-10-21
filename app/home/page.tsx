@@ -12,6 +12,7 @@ import { countReceived } from "@/lib/connections/data";
 import { FEED_PAGE, type FeedPost, getFeed, getStarterSteps, getSuggestions } from "@/lib/feed/data";
 import { requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
+import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Home · Peerpop" };
 
@@ -22,7 +23,7 @@ function currentTime() {
 export default function HomePage({ searchParams }: PageProps<"/home">) {
   return (
     <main className="page">
-      <Suspense fallback={<p className="text-muted">Loading…</p>}>
+      <Suspense fallback={<CardsSkeleton />}>
         <Home searchParams={searchParams} />
       </Suspense>
     </main>

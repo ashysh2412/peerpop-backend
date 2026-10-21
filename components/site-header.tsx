@@ -7,6 +7,7 @@ import { Avatar } from "./avatar";
 import { Dropdown } from "./dropdown";
 import { Logo } from "./logo";
 import { NavLink } from "./nav-link";
+import { getSessionUser } from "@/lib/supabase/session";
 
 function Badge({ count }: { count: number }) {
   if (!count) return null;
@@ -38,7 +39,7 @@ async function AccountNav() {
   const supabase = await createClient();
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = await getSessionUser(supabase);
 
   if (!user) {
     return (
