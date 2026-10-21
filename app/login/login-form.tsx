@@ -15,7 +15,7 @@ const SUBMIT: Record<Mode, [string, string]> = {
   signin: ["Sign in", "Signing in…"],
   signup: ["Create account", "Creating…"],
   forgot: ["Email me a reset link", "Sending…"],
-  link: ["Continue with email", "Sending…"],
+  link: ["Email me a code", "Sending…"],
 };
 
 /** Supabase's messages, in plainer words. */
@@ -104,12 +104,15 @@ export function LoginForm({
     );
   }
 
+  if (status.kind === "sent" && status.what === "link") {
+    return <CodeStep email={status.email} next={next} onBack={() => switchTo("link")} />;
+  }
+
   if (status.kind === "sent") {
     const text = {
-      link: "a link. Tap it and you're in",
       reset: "a link to set a new password",
       confirm: "a link to confirm your email. Tap it once and you're in",
-    }[status.what];
+    }[status.what as "reset" | "confirm"];
     return (
       <div className="flex flex-col items-center gap-2 text-center">
         <span className="text-4xl">📬</span>
@@ -232,7 +235,7 @@ export function LoginForm({
         </button>
         {mode === "link" ? (
           <p className="text-center text-[13px] text-muted">
-            No password needed. We&apos;ll email you a link.{" "}
+            No password needed. We&apos;ll email you a code.{" "}
             <button type="button" onClick={() => switchTo("signin")} className="font-semibold text-ink hover:underline">
               Use a password
             </button>
@@ -250,7 +253,7 @@ export function LoginForm({
               </button>
             )}
             <button type="button" onClick={() => switchTo("link")} className="hover:text-ink">
-              Email me a link instead
+              Email me a code instead
             </button>
           </p>
         )}
@@ -262,5 +265,60 @@ export function LoginForm({
         </p>
       )}
     </div>
+  );
+}
+
+/** After we email a code: type it here. The email also has a link, which works too. */
+function CodeStep({ email, next, onBack }: { email: string; next: string; onBack: () => void }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function verify(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    setError(null);
+    const { error } = await createClient().auth.verifyOtp({ email, token: code, type: "email" });
+    if (error) {
+      setBusy(false);
+      return setError(/expired|invalid/i.test(error.message) ? "That code didn't work. Check it, or send a new one." : friendly(error.message));
+    }
+    window.location.assign(next);
+  }
+
+  return (
+    <form onSubmit={verify} className="flex flex-col gap-4 text-center">
+      <span className="text-4xl">📬</span>
+      <div>
+        <p className="font-semibold">Check your email</p>
+        <p className="mt-1 text-muted">
+          We sent a code to <strong className="text-ink">{email}</strong>.
+        </p>
+      </div>
+      <input
+        aria-label="Code from the email"
+        inputMode="numeric"
+        autoComplete="one-time-code"
+        autoFocus
+        required
+        pattern="[0-9]{6,10}"
+        maxLength={10}
+        value={code}
+        onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+        placeholder="123456"
+        className="input h-14 text-center text-2xl font-semibold tracking-[0.4em]"
+      />
+      <button type="submit" disabled={busy} className="btn-primary h-12 w-full text-[15px]">
+        {busy ? "Checking…" : "Continue"}
+      </button>
+      {error && (
+        <p role="alert" className="text-sm text-red-600">
+          {error}
+        </p>
+      )}
+      <button type="button" onClick={onBack} className="text-sm font-semibold text-muted hover:text-ink">
+        Use a different email or send a new code
+      </button>
+    </form>
   );
 }
