@@ -26,9 +26,19 @@ function normaliseLink(raw: string) {
 
 export async function createPost(_prev: FormState, form: FormData): Promise<FormState> {
   const { supabase, user } = await requireUser("/home");
-  const body = str(form, "body");
+  let body = str(form, "body");
   const image = str(form, "image_path") || null;
-  const link = normaliseLink(str(form, "link_url"));
+  let linkRaw = str(form, "link_url");
+  // A link pasted into the text becomes the post's link, so a video plays without an extra tap.
+  const pasted = !linkRaw ? body.match(/https?:\/\/\S+/i)?.[0] : undefined;
+  if (pasted) {
+    linkRaw = pasted;
+    // A post that's only the link keeps it as the text, and the card hides the repeat.
+    body = body.replace(pasted, "").trim() || pasted;
+  }
+  const link = normaliseLink(linkRaw);
+  if (!body && link) body = link;
+  if (!body && image) body = "📸";
   if (!body) return { message: "Write something first." };
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };

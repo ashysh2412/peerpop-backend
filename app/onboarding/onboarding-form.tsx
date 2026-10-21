@@ -1,49 +1,33 @@
 "use client";
 
 import { Pencil } from "lucide-react";
+import Link from "next/link";
 import { useActionState, useState } from "react";
 import { PhotoUpload } from "@/components/photo-upload";
 import { ChipGroup, Field, FormMessage, SubmitButton } from "@/components/ui";
 import { CITIES, LANGUAGES, NICHES, SKILLS } from "@/lib/catalog";
 import { handleFromName } from "@/lib/profile/handle";
-import type { FormState } from "@/lib/profile/types";
+import type { FormState, Profile } from "@/lib/profile/types";
 import { completeOnboarding } from "../settings/profile/actions";
 
 // Marathi, Hindi and English show first; the rest open with "More languages".
 const TOP_LANGUAGES = 3;
 
-/** One short screen: photo, name, what you make. Bio, videos and channels can wait. */
-export function OnboardingForm({ userId, suggestedName, googlePhoto }: { userId: string; suggestedName: string; googlePhoto: string | null }) {
+/** One short, skippable screen: photo, name, what you make. Bio, videos and channels can wait. */
+export function OnboardingForm({ userId, profile }: { userId: string; profile: Profile }) {
   const [state, action] = useActionState<FormState, FormData>(completeOnboarding, {});
-  const [name, setName] = useState(suggestedName);
+  const [name, setName] = useState(profile.display_name);
   const [customHandle, setCustomHandle] = useState<string | null>(null);
   const [editingHandle, setEditingHandle] = useState(false);
-  const [uploaded, setUploaded] = useState(false);
   const [allLanguages, setAllLanguages] = useState(false);
-  const [nicheError, setNicheError] = useState<string | null>(null);
-  const handle = customHandle ?? handleFromName(name || "creator");
+  // Keep the handle we already made until they change their name.
+  const handle = customHandle ?? (name === profile.display_name ? profile.handle : handleFromName(name || "creator"));
   const errors = state.errors;
   const showHandleInput = editingHandle || !!errors?.handle;
 
   return (
-    <form
-      action={action}
-      onSubmit={(e) => {
-        if (!e.currentTarget.querySelector('input[name="niches"]:checked')) {
-          e.preventDefault();
-          setNicheError("Pick at least one thing you make.");
-        }
-      }}
-      className="card flex flex-col gap-6 p-5 sm:p-7"
-    >
-      <PhotoUpload
-        userId={userId}
-        initialPath={null}
-        name="photo_path"
-        fallbackUrl={googlePhoto}
-        onUploaded={async () => void setUploaded(true)}
-      />
-      {googlePhoto && !uploaded && <input type="hidden" name="use_google_photo" value="on" />}
+    <form action={action} className="card flex flex-col gap-6 p-5 sm:p-7">
+      <PhotoUpload userId={userId} initialPath={profile.photo_path} name="photo_path" />
 
       <Field label="Your name" name="display_name" error={errors?.display_name}>
         <input
@@ -59,12 +43,10 @@ export function OnboardingForm({ userId, suggestedName, googlePhoto }: { userId:
         />
       </Field>
 
-      <div onChange={() => setNicheError(null)}>
-        <ChipGroup label="What do you make?" name="niches" options={NICHES} selected={[]} error={nicheError ?? errors?.niches} />
-      </div>
-      <ChipGroup label="What do you do? (optional)" name="skills" options={SKILLS} selected={[]} />
+      <ChipGroup label="What do you make?" name="niches" options={NICHES} selected={profile.niches} />
+      <ChipGroup label="What do you do?" name="skills" options={SKILLS} selected={profile.skills} />
       <div className="flex flex-col gap-2">
-        <ChipGroup label="Languages you shoot in" name="languages" options={allLanguages ? LANGUAGES : LANGUAGES.slice(0, TOP_LANGUAGES)} selected={[]} />
+        <ChipGroup label="Languages you shoot in" name="languages" options={allLanguages ? LANGUAGES : LANGUAGES.slice(0, TOP_LANGUAGES)} selected={profile.languages} />
         {!allLanguages && (
           <button type="button" onClick={() => setAllLanguages(true)} className="self-start text-sm font-semibold text-brand hover:underline">
             + {LANGUAGES.length - TOP_LANGUAGES} more languages
@@ -73,7 +55,7 @@ export function OnboardingForm({ userId, suggestedName, googlePhoto }: { userId:
       </div>
 
       <Field label="Your city" name="city_slug" error={errors?.city_slug}>
-        <select id="city_slug" name="city_slug" defaultValue="pune" className="input">
+        <select id="city_slug" name="city_slug" defaultValue={profile.city_slug ?? "pune"} className="input">
           {CITIES.map(([v, label]) => (
             <option key={v} value={v}>
               {label}
@@ -116,8 +98,10 @@ export function OnboardingForm({ userId, suggestedName, googlePhoto }: { userId:
 
       <FormMessage state={state} />
       <div className="flex flex-col gap-3 border-t border-line pt-5">
-        <SubmitButton pendingText="Setting you up…">Join Peerpop</SubmitButton>
-        <p className="text-center text-[13px] text-muted">Your bio, videos and channels can wait. Add them any time.</p>
+        <SubmitButton pendingText="Saving…">Save and see the feed</SubmitButton>
+        <Link href="/home" className="text-center text-sm font-semibold text-muted hover:text-ink">
+          Skip for now
+        </Link>
       </div>
     </form>
   );

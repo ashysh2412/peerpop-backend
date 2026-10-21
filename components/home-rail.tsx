@@ -23,8 +23,8 @@ function Section({ title, href, children }: { title: string; href: string; child
   );
 }
 
-/** The setup checklist for new creators. Renders nothing once every step is done. */
-export function GetStarted({ steps, handle }: { steps: StarterSteps; handle: string }) {
+/** The setup checklist for new creators. Renders nothing once every step is done. `compact` is a one-line version for phones. */
+export function GetStarted({ steps, handle, compact }: { steps: StarterSteps; handle: string; compact?: boolean }) {
   const items = [
     {
       done: steps.photo,
@@ -45,6 +45,20 @@ export function GetStarted({ steps, handle }: { steps: StarterSteps; handle: str
   ];
   const done = items.filter((i) => i.done).length;
   if (done === items.length) return null;
+  if (compact) {
+    const next = items.find((i) => !i.done)!;
+    return (
+      <Link href={next.href} className="flex items-center gap-3 rounded-2xl bg-card px-4 py-3 text-sm shadow-sm transition hover:bg-sunken">
+        <span className="h-1.5 w-12 shrink-0 overflow-hidden rounded-full bg-sunken">
+          <span className="bg-brand-gradient block h-full rounded-full" style={{ width: `${(done / items.length) * 100}%` }} />
+        </span>
+        <span className="min-w-0 flex-1 truncate">
+          <span className="font-semibold">{next.label}</span> <span className="text-muted">· {done}/{items.length}</span>
+        </span>
+        <ArrowRight size={15} className="shrink-0 text-muted" />
+      </Link>
+    );
+  }
 
   return (
     <section className="card flex flex-col gap-3 p-4">

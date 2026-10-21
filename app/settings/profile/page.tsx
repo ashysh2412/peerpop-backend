@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
-import { getOwnContacts, getOwnPlatforms, getProfileById, getVideos, requireUser } from "@/lib/profile/data";
+import { getOwnContacts, getOwnPlatforms, getVideos, requireUser } from "@/lib/profile/data";
+import { ensureProfile } from "@/lib/profile/ensure";
 import { ContactsSection, LinksSection, PhotoSection, ProfileSection, VideosSection } from "./sections";
 import { YouTubeSection } from "./youtube-section";
 
@@ -20,8 +20,7 @@ export default function SettingsProfilePage() {
 
 async function Settings() {
   const { supabase, user } = await requireUser("/settings/profile");
-  const profile = await getProfileById(supabase, user.id);
-  if (!profile) redirect("/onboarding");
+  const { profile } = await ensureProfile(supabase, user);
   const [platforms, videos, contacts] = await Promise.all([
     getOwnPlatforms(supabase, user.id),
     getVideos(supabase, user.id),

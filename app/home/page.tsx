@@ -11,7 +11,8 @@ import { PostComposer } from "@/components/post-composer";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
 import { countReceived } from "@/lib/connections/data";
 import { FEED_PAGE, type FeedPost, getFeed, getStarterSteps, getSuggestions } from "@/lib/feed/data";
-import { getProfileById, requireUser } from "@/lib/profile/data";
+import { requireUser } from "@/lib/profile/data";
+import { ensureProfile } from "@/lib/profile/ensure";
 
 export const metadata: Metadata = { title: "Home · Peerpop" };
 
@@ -37,8 +38,9 @@ function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string
 
 async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) {
   const { supabase, user } = await requireUser("/home");
-  const profile = await getProfileById(supabase, user.id);
-  if (!profile) redirect("/onboarding");
+  const { profile, created } = await ensureProfile(supabase, user);
+  // First visit: offer the quick profile screen once. Skipping it is fine.
+  if (created) redirect("/onboarding");
   const { before, tab, welcome } = await searchParams;
   const showCollabs = tab === "collabs";
   const cursor = !showCollabs && typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
@@ -59,7 +61,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
           <>
-            <div className="flex items-end justify-between gap-3">
+            <div className="hidden items-end justify-between gap-3 lg:flex">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight">Hey {firstName} 👋</h1>
                 <p className="font-hand text-xl font-bold text-brand">Creators to meet, and what they&apos;re making.</p>
@@ -118,12 +120,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           </>
         ) : (
           <>
+            {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
             {!cursor && (
               <div className="lg:hidden">
-                <GetStarted steps={steps} handle={profile.handle} />
+                <GetStarted steps={steps} handle={profile.handle} compact />
               </div>
             )}
-            {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
             {posts.length === 0 && (
               <div className="empty">
                 {cursor ? (

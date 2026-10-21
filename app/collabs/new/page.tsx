@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { CollabForm } from "@/components/collab-form";
-import { getProfileById, requireUser } from "@/lib/profile/data";
+import { requireUser } from "@/lib/profile/data";
+import { ensureProfile } from "@/lib/profile/ensure";
 
 export const metadata: Metadata = { title: "Post a collab · Peerpop" };
 
@@ -24,7 +24,6 @@ export default function NewCollabPage() {
 
 async function NewCollab() {
   const { supabase, user } = await requireUser("/collabs/new");
-  const profile = await getProfileById(supabase, user.id);
-  if (!profile) redirect("/onboarding");
+  const { profile } = await ensureProfile(supabase, user);
   return <CollabForm city={profile.city_slug} />;
 }

@@ -51,7 +51,11 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         )}
       </header>
 
-      {linkToPost ? <ExpandableText text={post.body} /> : <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>}
+      {post.body === post.link_url ? null : linkToPost ? (
+        <ExpandableText text={post.body} />
+      ) : (
+        <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>
+      )}
 
       {post.image_path && (
         <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken">

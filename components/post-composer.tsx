@@ -64,10 +64,9 @@ export function PostComposer({
         <Avatar path={photo} name={name} size={44} />
         <textarea
           name="body"
-          required
           maxLength={3000}
-          rows={2}
-          placeholder={`What are you working on, ${firstName}?`}
+          rows={1}
+          placeholder={`What are you making today, ${firstName}?`}
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>
@@ -111,7 +110,7 @@ export function PostComposer({
         </button>
         {!showLink && (
           <button type="button" onClick={() => setShowLink(true)} className="btn-ghost btn-sm">
-            <Link2 size={17} className="text-sky-500" /> Link or video
+            <Link2 size={17} className="text-sky-500" /> Video link
           </button>
         )}
         <div className="ml-auto">

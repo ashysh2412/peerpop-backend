@@ -21,7 +21,7 @@ export function normalizeHandle(raw: string) {
   return raw.trim().replace(/^@/, "").toLowerCase();
 }
 
-export function validateProfile(form: FormData): Result<ProfileInput> {
+export function validateProfile(form: FormData, { nichesOptional = false } = {}): Result<ProfileInput> {
   const errors: Record<string, string> = {};
   const handle = normalizeHandle(str(form, "handle"));
   const display_name = str(form, "display_name");
@@ -37,7 +37,7 @@ export function validateProfile(form: FormData): Result<ProfileInput> {
   if (city && !CITIES.some(([c]) => c === city)) errors.city_slug = "Pick a city from the list.";
 
   const niches = pick(form, "niches", NICHES);
-  if (niches.length === 0) errors.niches = "Pick at least one niche.";
+  if (niches.length === 0 && !nichesOptional) errors.niches = "Pick at least one niche.";
 
   if (Object.keys(errors).length) return { ok: false, errors };
   return {

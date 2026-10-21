@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { Search } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
 import { secondaryButton } from "@/components/ui";
 import { CITIES, labelFor } from "@/lib/catalog";
 import { getNetwork } from "@/lib/connections/data";
-import { getProfileById, requireUser } from "@/lib/profile/data";
+import { requireUser } from "@/lib/profile/data";
+import { ensureProfile } from "@/lib/profile/ensure";
 import { acceptConnection, declineConnection, removeConnection } from "./actions";
 
 export const metadata: Metadata = { title: "My network · Peerpop" };
@@ -32,7 +32,7 @@ export default function NetworkPage({ searchParams }: PageProps<"/network">) {
 
 async function Network({ searchParams }: Pick<PageProps<"/network">, "searchParams">) {
   const { supabase, user } = await requireUser("/network");
-  if (!(await getProfileById(supabase, user.id))) redirect("/onboarding");
+  await ensureProfile(supabase, user);
   const [{ tab: rawTab, q }, network] = await Promise.all([searchParams, getNetwork(supabase, user.id)]);
   const tab: Tab = TABS.some(([t]) => t === rawTab) ? (rawTab as Tab) : network.received.length ? "received" : "connections";
   const query = typeof q === "string" ? q.trim().toLowerCase() : "";
