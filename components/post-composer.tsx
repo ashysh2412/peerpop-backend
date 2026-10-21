@@ -64,9 +64,10 @@ export function PostComposer({
         <Avatar path={photo} name={name} size={44} />
         <textarea
           name="body"
+          required
           maxLength={3000}
           rows={1}
-          placeholder={`What are you making today, ${firstName}?`}
+          placeholder={showLink ? "Give your video a title, or say a line about it" : `What are you making today, ${firstName}?`}
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>

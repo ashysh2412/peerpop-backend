@@ -12,7 +12,7 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <div className="card flex w-full max-w-md flex-col gap-7 p-6 shadow-xl sm:p-8">
         <div className="text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Welcome to Peerpop</h1>
-          <p className="mt-2 text-muted">Join free or sign in. No password needed.</p>
+          <p className="mt-2 text-muted">Log in, or join free in a minute.</p>
         </div>
         <Suspense>
           <LoginBody searchParams={searchParams} />

@@ -33,12 +33,10 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   const pasted = !linkRaw ? body.match(/https?:\/\/\S+/i)?.[0] : undefined;
   if (pasted) {
     linkRaw = pasted;
-    // A post that's only the link keeps it as the text, and the card hides the repeat.
-    body = body.replace(pasted, "").trim() || pasted;
+    body = body.replace(pasted, "").trim();
   }
   const link = normaliseLink(linkRaw);
-  if (!body && link) body = link;
-  if (!body && image) body = "📸";
+  if (!body && link) return { message: "Add a title or a line about your video." };
   if (!body) return { message: "Write something first." };
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };
