@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BadgeCheck, ChevronRight, Handshake, ImagePlus, MapPin, Pencil, Plus, Users } from "lucide-react";
+import { BadgeCheck, ChevronRight, Handshake, ImagePlus, MapPin, MessageCircle, Pencil, Plus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProfileLink } from "@/components/profile-link";
@@ -134,8 +134,11 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
           {profile.bio && <p className="max-w-xl leading-relaxed whitespace-pre-line">{profile.bio}</p>}
 
           <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
-            {user && !isMe && (
-              <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />
+            {user && !isMe && <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />}
+            {user && !isMe && connection?.status === "accepted" && (
+              <Link href={`/messages/${profile.handle}`} className="btn-primary">
+                <MessageCircle size={16} /> Message
+              </Link>
             )}
             {!user && (
               <Link href={`/login?next=${encodeURIComponent(`/creators/${profile.handle}`)}`} className="btn-primary">
@@ -220,7 +223,13 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
             <div className="grid grid-cols-3 gap-1 overflow-hidden rounded-2xl sm:gap-1.5">
               {photos.map((ph) => (
                 <Link key={ph.id} href={`/posts/${ph.id}`} className="relative aspect-square overflow-hidden bg-sunken">
-                  <Image src={postImageUrl(ph.image_path)} alt="" fill sizes="(min-width: 768px) 250px, 33vw" className="object-cover transition duration-300 hover:scale-105" />
+                  <Image
+                    src={postImageUrl(ph.image_path)}
+                    alt=""
+                    fill
+                    sizes="(min-width: 768px) 250px, 33vw"
+                    className="object-cover transition duration-300 hover:scale-105"
+                  />
                 </Link>
               ))}
             </div>

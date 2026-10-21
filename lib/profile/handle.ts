@@ -1,6 +1,6 @@
 // Top-level pages. A profile link like /riyasharma must never collide with one of these.
 export const RESERVED_HANDLES = new Set([
-  "api", "auth", "collabs", "creators", "home", "login", "network", "notifications", "onboarding",
+  "api", "auth", "collabs", "messages", "creators", "home", "login", "network", "notifications", "onboarding",
   "posts", "privacy", "settings", "terms", "design-preview", "characters", "admin", "about", "help",
 ]);
 

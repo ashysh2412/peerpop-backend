@@ -1,7 +1,8 @@
-import { Bell, Handshake, House, KeyRound, LogOut, Search, User, Users } from "lucide-react";
+import { Bell, Handshake, House, KeyRound, LogOut, MessageCircle, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { countReceived } from "@/lib/connections/data";
+import { countUnreadMessages } from "@/lib/messages/data";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "./avatar";
 import { Dropdown } from "./dropdown";
@@ -58,16 +59,27 @@ async function AccountNav() {
     );
   }
 
-  const [requests, { count: unread }, { data: profile }] = await Promise.all([
+  const [requests, messages, { count: unread }, { data: profile }] = await Promise.all([
     countReceived(supabase, user.id),
+    countUnreadMessages(supabase, user.id),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
     supabase.from("creator_profiles").select("handle, display_name, photo_path").eq("user_id", user.id).maybeSingle(),
   ]);
 
-  return <SignedIn requests={requests} unread={unread ?? 0} profile={profile} />;
+  return <SignedIn requests={requests} messages={messages} unread={unread ?? 0} profile={profile} />;
 }
 
-function SignedIn({ requests, unread, profile }: { requests: number; unread: number; profile: { handle: string; display_name: string; photo_path: string | null } | null }) {
+function SignedIn({
+  requests,
+  messages,
+  unread,
+  profile,
+}: {
+  requests: number;
+  messages: number;
+  unread: number;
+  profile: { handle: string; display_name: string; photo_path: string | null } | null;
+}) {
   return (
     <>
       <nav className="hidden items-center gap-1 md:flex">
@@ -85,6 +97,14 @@ function SignedIn({ requests, unread, profile }: { requests: number; unread: num
           <Badge count={requests} />
         </NavLink>
       </nav>
+      <Link
+        href="/messages"
+        aria-label={messages ? `Messages, ${messages} unread` : "Messages"}
+        className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full text-muted transition hover:bg-sunken hover:text-ink"
+      >
+        <MessageCircle size={20} />
+        <Badge count={messages} />
+      </Link>
       <Link
         href="/notifications"
         aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}

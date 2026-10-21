@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Search } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
@@ -88,12 +88,8 @@ async function Network({ searchParams }: Pick<PageProps<"/network">, "searchPara
                   <Avatar path={r.profile.photo_path} name={r.profile.display_name} size={48} />
                   <div className="min-w-0">
                     <p className="truncate font-semibold hover:underline">{r.profile.display_name}</p>
-                    <p className="truncate text-sm text-muted">
-                      {r.profile.city_slug ? labelFor(CITIES, r.profile.city_slug) : "Creator"}
-                    </p>
-                    {tab === "received" && r.message && (
-                      <p className="mt-1.5 rounded-xl bg-sunken px-3 py-2 text-sm">&ldquo;{r.message}&rdquo;</p>
-                    )}
+                    <p className="truncate text-sm text-muted">{r.profile.city_slug ? labelFor(CITIES, r.profile.city_slug) : "Creator"}</p>
+                    {tab === "received" && r.message && <p className="mt-1.5 rounded-xl bg-sunken px-3 py-2 text-sm">&ldquo;{r.message}&rdquo;</p>}
                   </div>
                 </Link>
                 <div className="flex gap-2">
@@ -116,8 +112,8 @@ async function Network({ searchParams }: Pick<PageProps<"/network">, "searchPara
                     </form>
                   )}
                   {tab === "connections" && (
-                    <Link href={`/creators/${r.profile.handle}`} className={secondaryButton}>
-                      View profile
+                    <Link href={`/messages/${r.profile.handle}`} className="btn-primary btn-sm">
+                      <MessageCircle size={15} /> Message
                     </Link>
                   )}
                 </div>
