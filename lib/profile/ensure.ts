@@ -1,5 +1,6 @@
 import "server-only";
 import type { User } from "@supabase/supabase-js";
+import { io } from "next/cache";
 import type { createClient } from "@/lib/supabase/server";
 import { getProfileById } from "./data";
 import { importGooglePhoto, isGooglePhotoUrl } from "./google-photo";
@@ -24,6 +25,8 @@ export async function ensureProfile(supabase: Client, user: User) {
   const existing = await getProfileById(supabase, user.id);
   if (existing) return { profile: existing, created: false };
 
+  // Picking a free handle and naming the photo file use random numbers and the clock.
+  await io();
   const display_name = startingName(user);
   const google = user.user_metadata?.avatar_url ?? user.user_metadata?.picture;
   const photo_path = isGooglePhotoUrl(google) ? await importGooglePhoto(supabase, user.id, google) : null;
