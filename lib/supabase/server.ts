@@ -1,8 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { supabaseEnv } from "./env";
 
 export async function createClient() {
+  // The Supabase client reads the clock as soon as it's made (to check the session's expiry),
+  // so wait for a real request: prefetches that prerender with cookies would otherwise trip Next.js.
+  await connection();
   const cookieStore = await cookies();
   const { url, key } = supabaseEnv();
 
