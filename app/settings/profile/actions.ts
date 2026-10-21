@@ -1,10 +1,8 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { redirect } from "next/navigation";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
-import { withSuffix } from "@/lib/profile/handle";
 import { saveLinks } from "@/lib/profile/save-links";
 import type { FormState } from "@/lib/profile/types";
 import { validateContacts, validateLinks, validateProfile } from "@/lib/profile/validate";
@@ -15,27 +13,6 @@ const MAX_VIDEOS = 6;
 
 function isUniqueViolation(error: { code?: string } | null) {
   return error?.code === "23505";
-}
-
-export async function completeOnboarding(_prev: FormState, form: FormData): Promise<FormState> {
-  const { supabase, user } = await requireUser("/onboarding");
-  const profile = validateProfile(form, { nichesOptional: true });
-  if (!profile.ok) return { errors: profile.errors };
-
-  const photo = form.get("photo_path");
-  const update = { ...profile.data, ...(typeof photo === "string" && isOwnAvatarPath(photo, user.id) ? { photo_path: photo } : {}) };
-
-  // A handle we suggested gets a few digits added when it's taken; one the creator typed doesn't.
-  const autoHandle = form.get("handle_auto") === "1";
-  let handle = profile.data.handle;
-  for (let attempt = 0; ; attempt++) {
-    const { error } = await supabase.from("creator_profiles").update({ ...update, handle }).eq("user_id", user.id);
-    if (!error) break;
-    if (!isUniqueViolation(error)) return { message: "Couldn't save your profile. Please try again." };
-    if (!autoHandle || attempt >= 4) return { errors: HANDLE_TAKEN };
-    handle = withSuffix(profile.data.handle);
-  }
-  redirect("/home?welcome=1");
 }
 
 export async function saveProfile(_prev: FormState, form: FormData): Promise<FormState> {

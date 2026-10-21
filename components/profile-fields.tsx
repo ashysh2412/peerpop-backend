@@ -20,29 +20,8 @@ export function IdentityFields({ profile, errors }: { profile?: Partial<Profile>
           className={inputClass}
         />
       </Field>
-      <Field
-        label="Handle"
-        name="handle"
-        hint="Your profile link: peerpop/creators/yourhandle"
-        error={errors?.handle}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-muted">@</span>
-          <input
-            id="handle"
-            name="handle"
-            required
-            minLength={3}
-            maxLength={31}
-            pattern="@?[a-zA-Z0-9_]{3,30}"
-            autoCapitalize="none"
-            autoCorrect="off"
-            defaultValue={profile?.handle}
-            aria-invalid={!!errors?.handle}
-            className={inputClass}
-          />
-        </div>
-      </Field>
+      {/* The handle is only the profile link, made from the name at sign-up. People don't pick or see it. */}
+      <input type="hidden" name="handle" value={profile?.handle ?? ""} />
       <Field label="Bio" name="bio" hint="A line or two about what you make." error={errors?.bio}>
         <textarea
           id="bio"

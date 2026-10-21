@@ -12,6 +12,10 @@ describe("handleFromName", () => {
     expect(handleFromName("प्रिया")).toBe("creator");
   });
 
+  it("never takes the name of a page", () => {
+    expect(handleFromName("Home")).toBe("home1");
+  });
+
   it("pads short names and trims long ones", () => {
     expect(handleFromName("Al")).toBe("alcreator");
     expect(handleFromName("a".repeat(40))).toHaveLength(24);

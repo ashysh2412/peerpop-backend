@@ -33,9 +33,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
             {post.is_connection && <span className="chip-brand py-0.5 text-[11px]">Connection</span>}
           </p>
           <p className="truncate text-xs text-muted">
-            @{post.author_handle}
-            {city && ` · ${city}`}
-            {" · "}
+            {city && `${city} · `}
             <Link href={`/posts/${post.id}`} className="hover:underline">
               {updatedLabel(post.created_at, now)}
             </Link>

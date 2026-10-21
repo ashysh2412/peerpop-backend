@@ -88,8 +88,7 @@ async function Network({ searchParams }: Pick<PageProps<"/network">, "searchPara
                   <div className="min-w-0">
                     <p className="truncate font-semibold hover:underline">{r.profile.display_name}</p>
                     <p className="truncate text-sm text-muted">
-                      @{r.profile.handle}
-                      {r.profile.city_slug && <> · {labelFor(CITIES, r.profile.city_slug)}</>}
+                      {r.profile.city_slug ? labelFor(CITIES, r.profile.city_slug) : "Creator"}
                     </p>
                     {tab === "received" && r.message && (
                       <p className="mt-1.5 rounded-xl bg-sunken px-3 py-2 text-sm">&ldquo;{r.message}&rdquo;</p>

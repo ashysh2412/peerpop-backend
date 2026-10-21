@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ProfileLink } from "@/components/profile-link";
 import { Suspense } from "react";
 import { getOwnContacts, getOwnPlatforms, getVideos, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
@@ -30,16 +31,17 @@ async function Settings() {
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="page-title">Edit profile</h1>
+        <h1 className="page-title">My profile</h1>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium">
           <Link href="/settings/password" className="text-muted hover:text-ink">
             Change password
           </Link>
           <Link href={`/creators/${profile.handle}`} className="text-brand hover:underline">
-            View my profile →
+            See how others see it →
           </Link>
         </div>
       </div>
+      <ProfileLink handle={profile.handle} />
       <PhotoSection userId={user.id} photoPath={profile.photo_path} />
       <ProfileSection profile={profile} />
       <VideosSection videos={videos} />

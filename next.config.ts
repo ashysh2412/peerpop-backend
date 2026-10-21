@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "i.ytimg.com", pathname: "/vi/**" },
     ],
   },
+  // Sign-up no longer has its own screen: people land on the feed and edit their profile when they like.
+  async redirects() {
+    return [{ source: "/onboarding", destination: "/settings/profile", permanent: false }];
+  },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {

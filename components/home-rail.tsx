@@ -136,7 +136,7 @@ export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; coll
                   <Avatar path={p.photo_path} name={p.display_name} size={36} />
                   <span className="min-w-0">
                     <span className="block truncate text-sm font-semibold hover:underline">{p.display_name}</span>
-                    <span className="block truncate text-xs text-muted">{p.city_slug ? labelFor(CITIES, p.city_slug) : `@${p.handle}`}</span>
+                    <span className="block truncate text-xs text-muted">{p.city_slug ? labelFor(CITIES, p.city_slug) : "Creator"}</span>
                   </span>
                 </Link>
                 <div className="w-24 shrink-0">

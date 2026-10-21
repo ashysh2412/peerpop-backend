@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { BadgeCheck, ChevronRight, Handshake, ImagePlus, MapPin, Pencil, Plus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ProfileLink } from "@/components/profile-link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
@@ -25,18 +26,18 @@ function currentTime() {
   return Date.now();
 }
 
-export default function CreatorPage({ params, searchParams }: PageProps<"/creators/[handle]">) {
+export default function CreatorPage({ params }: PageProps<"/creators/[handle]">) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-7 px-4 py-6 sm:py-10">
       <Suspense fallback={<p className="text-muted">Loading…</p>}>
-        <Creator params={params} searchParams={searchParams} />
+        <Creator params={params} />
       </Suspense>
     </main>
   );
 }
 
-async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[handle]">, "params" | "searchParams">) {
-  const [{ handle }, query] = await Promise.all([params, searchParams]);
+async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params">) {
+  const { handle } = await params;
   const supabase = await createClient();
   const profile = await getProfileByHandle(supabase, decodeURIComponent(handle));
   if (!profile) notFound();
@@ -72,15 +73,7 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
 
   return (
     <>
-      {isMe && query.welcome && (
-        <p className="card border-brand/30 bg-brand-soft p-4 text-brand-ink">
-          🎉 Your profile is live. Add more videos and contact details in{" "}
-          <Link href="/settings/profile" className="font-semibold underline">
-            Edit profile
-          </Link>
-          .
-        </p>
-      )}
+      {isMe && <ProfileLink handle={profile.handle} />}
 
       <header className="flex flex-col items-center gap-5 pt-2 text-center sm:flex-row sm:items-start sm:gap-7 sm:text-left">
         <div className="shrink-0 rounded-full bg-brand-gradient p-[3px]">
@@ -95,7 +88,6 @@ async function Creator({ params, searchParams }: Pick<PageProps<"/creators/[hand
               {verified && <BadgeCheck size={24} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
             </h1>
             <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted sm:justify-start">
-              <span>@{profile.handle}</span>
               {city && (
                 <span className="flex items-center gap-1">
                   <MapPin size={14} /> {city}
