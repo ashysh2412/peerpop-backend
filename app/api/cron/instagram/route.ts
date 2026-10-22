@@ -1,7 +1,7 @@
-import { publishApproved, topUpDrafts } from "@/lib/instagram/queue";
+import { autoApproveNext, getAccount, publishApproved, topUpDrafts } from "@/lib/instagram/queue";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// Vercel Cron calls this daily (see vercel.json): it posts the next approved post and makes new drafts.
+// Vercel Cron calls this daily (see vercel.json): it posts the next approved post (picking one itself when auto-post is on) and makes new drafts.
 export const maxDuration = 60;
 
 export async function GET(request: Request) {
@@ -12,6 +12,10 @@ export async function GET(request: Request) {
   try {
     const admin = createAdminClient();
     const now = Date.now();
+    if ((await getAccount(admin))?.auto_post) {
+      await topUpDrafts(admin, now);
+      await autoApproveNext(admin, now);
+    }
     const result = await publishApproved(admin, new URL(request.url).origin, now);
     const drafted = await topUpDrafts(admin, now);
     return Response.json({ ...result, drafted });

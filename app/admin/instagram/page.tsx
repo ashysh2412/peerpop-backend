@@ -8,7 +8,7 @@ import { isConfirmedAdmin } from "@/lib/admin/access";
 import { getIgQueue, topUpDrafts, type IgPost } from "@/lib/instagram/queue";
 import { requireUser } from "@/lib/profile/data";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { approvePost, postNow, retryPost, skipPost } from "./actions";
+import { approvePost, postNow, retryPost, setAutoPost, skipPost } from "./actions";
 
 export const metadata: Metadata = { title: "Instagram · Admin · Peerpop", robots: { index: false } };
 
@@ -50,7 +50,7 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
           <ArrowLeft size={16} /> Admin
         </Link>
         <h1 className="page-title mt-2">Instagram</h1>
-        <p className="mt-1 text-muted">Peerpop makes posts for your Instagram. Approve the ones you like, and one goes out every evening at 7 pm.</p>
+        <p className="mt-1 text-muted">Peerpop makes posts for your Instagram. Approve the ones you like, or turn on auto-post, and one goes out every evening at 7 pm.</p>
       </div>
 
       {typeof note === "string" && NOTES[note] && <p className="card bg-brand-soft p-4 text-sm font-medium">{NOTES[note]}</p>}
@@ -63,7 +63,9 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
           {account ? (
             <>
               <p className="font-semibold">Connected to @{account.username}</p>
-              <p className="text-sm text-muted">Peerpop keeps the connection fresh by itself.</p>
+              <p className="text-sm text-muted">
+                {account.autoPost ? "Auto-post is on: a post goes out every evening without asking you." : "Posts go out only after you approve them."}
+              </p>
             </>
           ) : (
             <>
@@ -72,7 +74,13 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
             </>
           )}
         </div>
-        <a href="/admin/instagram/connect" className={account ? "btn-secondary" : "btn-dark"}>
+        {account && (
+          <form action={setAutoPost}>
+            <input type="hidden" name="on" value={account.autoPost ? "0" : "1"} />
+            <button className={account.autoPost ? "btn-secondary" : "btn-primary"}>{account.autoPost ? "Turn off auto-post" : "Turn on auto-post"}</button>
+          </form>
+        )}
+        <a href="/admin/instagram/connect" className={account ? "btn-ghost" : "btn-dark"}>
           {account ? "Reconnect" : "Connect Instagram"}
         </a>
       </section>

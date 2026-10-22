@@ -8,4 +8,6 @@ select t.expect_error($$select * from ig_posts$$, 'users cannot read the Instagr
 select t.expect_error($$update ig_posts set status = 'approved'$$, 'users cannot approve posts');
 reset role;
 select t.expect_error($$insert into ig_account (id, ig_user_id, access_token, expires_at) values (2, '2', 'x', now())$$, 'there is only one connected account');
+select t.expect_error($$update ig_account set auto_post = null$$, 'auto_post is never empty');
+do $$ begin assert (select auto_post = false from ig_account where id = 1), 'auto-post starts off'; end $$;
 \echo 'instagram tests: all checks passed'

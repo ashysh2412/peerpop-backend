@@ -52,3 +52,9 @@ export async function postNow(form: FormData) {
   await publishApproved(db, origin, Date.now(), idFrom(form));
   revalidatePath("/admin/instagram");
 }
+
+export async function setAutoPost(form: FormData) {
+  const db = await admin();
+  await db.from("ig_account").update({ auto_post: form.get("on") === "1" }).eq("id", 1);
+  revalidatePath("/admin/instagram");
+}

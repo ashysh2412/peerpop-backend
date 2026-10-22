@@ -16,7 +16,7 @@ export type IgPost = IgIdea & {
   posted_at: string | null;
 };
 
-export type IgAccount = { ig_user_id: string; username: string | null; access_token: string; expires_at: string; updated_at: string };
+export type IgAccount = { ig_user_id: string; username: string | null; access_token: string; expires_at: string; updated_at: string; auto_post: boolean };
 
 const DAY = 24 * 60 * 60 * 1000;
 const KEEP_DRAFTS = 6;
@@ -63,12 +63,12 @@ export async function getIgQueue(admin: Admin) {
     drafts: (drafts.data ?? []) as IgPost[],
     approved: (approved.data ?? []) as IgPost[],
     done: (done.data ?? []) as IgPost[],
-    account: account ? { username: account.username, expiresAt: account.expires_at } : null,
+    account: account ? { username: account.username, expiresAt: account.expires_at, autoPost: account.auto_post } : null,
   };
 }
 
 export async function getAccount(admin: Admin) {
-  const { data } = await admin.from("ig_account").select("ig_user_id, username, access_token, expires_at, updated_at").eq("id", 1).maybeSingle();
+  const { data } = await admin.from("ig_account").select("ig_user_id, username, access_token, expires_at, updated_at, auto_post").eq("id", 1).maybeSingle();
   return data as IgAccount | null;
 }
 
@@ -81,6 +81,17 @@ export async function saveAccount(admin: Admin, a: { igUserId: string; username:
     expires_at: new Date(now + a.expiresIn * 1000).toISOString(),
     updated_at: new Date(now).toISOString(),
   });
+}
+
+/** With auto-post on: if nothing is waiting to go out, approves the oldest draft. */
+export async function autoApproveNext(admin: Admin, now: number) {
+  const { count } = await admin.from("ig_posts").select("id", { count: "exact", head: true }).eq("status", "approved");
+  if ((count ?? 0) > 0) return false;
+  const { data } = await admin.from("ig_posts").select("id").eq("status", "draft").order("created_at").limit(1);
+  const next = (data ?? [])[0] as { id: string } | undefined;
+  if (!next) return false;
+  await admin.from("ig_posts").update({ status: "approved", approved_at: new Date(now).toISOString() }).eq("id", next.id).eq("status", "draft");
+  return true;
 }
 
 /** Tokens last 60 days; renew when fewer than 15 are left. */
