@@ -98,6 +98,22 @@ export async function getSuggestions(supabase: Client, me: { user_id: string; ci
   return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }
 
+/** The newest listed creators you aren't connected to or waiting on yet. */
+export async function getNewCreators(supabase: Client, me: string, limit = 5) {
+  const [{ data: links }, { data }] = await Promise.all([
+    supabase.from("connections").select("from_user, to_user").or(`from_user.eq.${me},to_user.eq.${me}`).in("status", ["pending", "accepted"]),
+    supabase
+      .from("creator_profiles")
+      .select("user_id, handle, display_name, photo_path, city_slug")
+      .eq("is_listed", true)
+      .neq("user_id", me)
+      .order("created_at", { ascending: false })
+      .limit(30),
+  ]);
+  const skip = new Set((links ?? []).flatMap((l) => [l.from_user, l.to_user]));
+  return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
+}
+
 export type Photo = { id: string; image_path: string };
 
 /** A creator's latest posts that have a photo, for the grid on their profile. */
@@ -113,7 +129,7 @@ export async function getPhotosBy(supabase: Client, authorId: string, limit = 12
   return (data ?? []) as Photo[];
 }
 
-export type StarterSteps = { photo: boolean; video: boolean; post: boolean; connections: number };
+export type StarterSteps = { photo: boolean; video: boolean; post: boolean; posts: number; connections: number };
 
 /** How far a new creator is with setting up: the "Get started" card on Home. */
 export async function getStarterSteps(supabase: Client, me: { user_id: string; photo_path: string | null }): Promise<StarterSteps> {
@@ -126,5 +142,5 @@ export async function getStarterSteps(supabase: Client, me: { user_id: string; p
       .or(`from_user.eq.${me.user_id},to_user.eq.${me.user_id}`)
       .eq("status", "accepted"),
   ]);
-  return { photo: !!me.photo_path, video: (videos ?? 0) > 0, post: (posts ?? 0) > 0, connections: connections ?? 0 };
+  return { photo: !!me.photo_path, video: (videos ?? 0) > 0, post: (posts ?? 0) > 0, posts: posts ?? 0, connections: connections ?? 0 };
 }

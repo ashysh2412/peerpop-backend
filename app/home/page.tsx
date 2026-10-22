@@ -8,9 +8,10 @@ import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
 import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
+import { ProfileSummary } from "@/components/profile-summary";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
 import { countReceived } from "@/lib/connections/data";
-import { FEED_PAGE, getFeed, getStarterSteps, getSuggestions } from "@/lib/feed/data";
+import { FEED_PAGE, getFeed, getNewCreators, getStarterSteps, getSuggestions } from "@/lib/feed/data";
 import { requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
 import { CardsSkeleton } from "@/components/skeleton";
@@ -45,12 +46,13 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, requests, people, { collabs }, steps] = await Promise.all([
+  const [posts, requests, people, { collabs }, steps, newcomers] = await Promise.all([
     getFeed(supabase, cursor),
     countReceived(supabase, user.id),
     cursor ? Promise.resolve([]) : getSuggestions(supabase, profile, 12),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
+    cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
   ]);
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
@@ -87,7 +89,8 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   );
 
   return (
-    <div className="mx-auto grid w-full max-w-[1000px] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+    <div className="mx-auto grid w-full max-w-[1000px] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:max-w-[1240px] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+      <ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} />
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
           <>
@@ -152,7 +155,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail steps={steps} collabs={open.slice(0, 3)} people={people.slice(0, 4)} />
+      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers} />
     </div>
   );
 }

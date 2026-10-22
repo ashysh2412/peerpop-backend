@@ -96,13 +96,13 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
   );
 }
 
-/** The right-hand column on Home for wide screens: setup, collabs that fit you, creators to meet. */
+/** The right-hand column on Home for wide screens: setup, the newest collabs, and the newest creators. */
 export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[] }) {
   return (
     <aside className="hidden flex-col gap-4 lg:flex">
       <GetStarted steps={steps} />
 
-      <Section title="Collabs for you" href="/home?tab=collabs">
+      <Section title="New collabs" href="/collabs">
         {collabs.length === 0 ? (
           <p className="text-sm text-muted">No open collabs right now. Start one and creators nearby will hear about it.</p>
         ) : (
@@ -131,7 +131,7 @@ export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; coll
       </Section>
 
       {people.length > 0 && (
-        <Section title="Creators to meet" href="/creators">
+        <Section title="New on Peerpop" href="/creators">
           <ul className="flex flex-col gap-3">
             {people.map((p) => (
               <li key={p.user_id} className="flex items-center gap-3">
