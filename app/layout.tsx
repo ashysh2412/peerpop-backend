@@ -24,11 +24,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Peerpop",
   description: "Find creators to collab with, connect, and team up on your next shoot.",
+  appleWebApp: { title: "Peerpop", statusBarStyle: "default" },
 };
 
-// Tints the browser bar on phones to match the page background.
+// Tints the browser bar on phones to match the yellow header, and lets the
+// bottom bar sit above the iPhone home indicator.
 export const viewport: Viewport = {
-  themeColor: "#f5f6fa",
+  themeColor: "#f0b100",
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

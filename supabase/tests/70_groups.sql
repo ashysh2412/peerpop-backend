@@ -42,11 +42,18 @@ update groups set about = 'For members' where slug = 'secret-club';
 select set_config('request.jwt.claims', '{"sub":"b7b7b7b7-0000-0000-0000-000000000000"}', false);
 select t.check((select count(*) from notifications where user_id = :B and kind = 'group_accepted') = 1, 'the person hears they were approved');
 select t.check((select count(*) from get_group_feed((select id from groups where slug = 'secret-club'))) = 1, 'members see private posts');
+insert into post_comments (post_id, author_id, body) values ((select id from posts where body = 'welcome to secret'), :B, 'members only chat');
 
 select set_config('request.jwt.claims', '{"sub":"c7c7c7c7-0000-0000-0000-000000000000"}', false);
 select t.check((select count(*) from group_members where group_id = (select id from groups where slug = 'secret-club')) = 0,
   'outsiders cannot list private group members');
 select t.check((select count(*) from posts where group_id is not null) = 2, 'outsiders see only open group posts');
+select t.check((select count(*) from post_comments where body = 'members only chat') = 0, 'outsiders cannot read comments on private group posts');
+select t.expect_error($$insert into post_comments (post_id, author_id, body) values ((select id from posts where body = 'welcome to secret'), 'c7c7c7c7-0000-0000-0000-000000000000', 'hi')$$,
+  'outsiders cannot comment on private group posts');
+select t.expect_error($$insert into post_likes (post_id, user_id) values ((select id from posts where body = 'welcome to secret'), 'c7c7c7c7-0000-0000-0000-000000000000')$$,
+  'outsiders cannot like private group posts');
+select t.check((select name from get_group('secret-club')) = 'Secret club', 'a group opens by its link');
 
 -- Admins can remove posts in their group.
 select set_config('request.jwt.claims', '{"sub":"a7a7a7a7-0000-0000-0000-000000000000"}', false);

@@ -27,8 +27,8 @@ export async function getGroups(supabase: Client) {
 }
 
 export async function getGroup(supabase: Client, slug: string) {
-  const groups = await getGroups(supabase);
-  return groups.find((g) => g.slug === slug) ?? null;
+  const { data } = await supabase.rpc("get_group", { p_slug: slug });
+  return ((data ?? []) as GroupSummary[])[0] ?? null;
 }
 
 export async function getGroupFeed(supabase: Client, groupId: string, before: string | null) {

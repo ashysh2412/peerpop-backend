@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CardsSkeleton } from "@/components/skeleton";
 import { updatedLabel } from "@/components/youtube-stats";
-import { isAdminEmail } from "@/lib/admin/access";
+import { isConfirmedAdmin } from "@/lib/admin/access";
 import { getAdminOverview } from "@/lib/admin/data";
 import { CITIES, labelFor } from "@/lib/catalog";
 import { requireUser } from "@/lib/profile/data";
@@ -29,9 +29,9 @@ export default function AdminPage({ searchParams }: PageProps<"/admin">) {
 }
 
 async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">) {
-  const { user } = await requireUser("/admin");
+  const { supabase } = await requireUser("/admin");
   // Anyone else gets a plain "not found", so the page doesn't advertise itself.
-  if (!isAdminEmail(user.email)) notFound();
+  if (!(await isConfirmedAdmin(supabase))) notFound();
   const { q } = await searchParams;
   const query = typeof q === "string" ? q.trim().toLowerCase() : "";
   const now = currentTime();

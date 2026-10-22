@@ -34,6 +34,18 @@ async function allAuthUsers(admin: ReturnType<typeof createAdminClient>) {
   return users;
 }
 
+/** Reads every row, 1,000 at a time, since Supabase caps each request at 1,000 rows. */
+async function allRows<T>(page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>) {
+  const rows: T[] = [];
+  for (let from = 0; from < 200_000; from += 1000) {
+    const { data, error } = await page(from, from + 999);
+    if (error || !data) break;
+    rows.push(...data);
+    if (data.length < 1000) break;
+  }
+  return rows;
+}
+
 function countBy(rows: { id: string }[] | null) {
   const m = new Map<string, number>();
   for (const r of rows ?? []) m.set(r.id, (m.get(r.id) ?? 0) + 1);
@@ -46,16 +58,16 @@ export async function getAdminOverview(now: number): Promise<AdminOverview> {
   const head = { count: "exact" as const, head: true };
   const [authUsers, profiles, posts, links, collabs, groups, messages] = await Promise.all([
     allAuthUsers(admin),
-    admin.from("creator_profiles").select("user_id, handle, display_name, city_slug, is_listed, photo_path").limit(20000),
-    admin.from("posts").select("id:author_id").limit(50000),
-    admin.from("connections").select("from_user, to_user").eq("status", "accepted").limit(50000),
+    allRows((a, b) => admin.from("creator_profiles").select("user_id, handle, display_name, city_slug, is_listed, photo_path").order("user_id").range(a, b)),
+    allRows((a, b) => admin.from("posts").select("id:author_id").order("id").range(a, b)),
+    allRows((a, b) => admin.from("connections").select("from_user, to_user").eq("status", "accepted").order("from_user").order("to_user").range(a, b)),
     admin.from("collab_posts").select("id", head),
     admin.from("groups").select("id", head),
     admin.from("messages").select("id", head),
   ]);
-  const byId = new Map((profiles.data ?? []).map((p) => [p.user_id as string, p]));
-  const postCount = countBy(posts.data as { id: string }[] | null);
-  const linkRows = (links.data ?? []) as { from_user: string; to_user: string }[];
+  const byId = new Map(profiles.map((p) => [p.user_id as string, p]));
+  const postCount = countBy(posts as { id: string }[]);
+  const linkRows = links as { from_user: string; to_user: string }[];
   const connCount = countBy(linkRows.flatMap((l) => [{ id: l.from_user }, { id: l.to_user }]));
 
   const users: AdminUser[] = authUsers
@@ -86,7 +98,7 @@ export async function getAdminOverview(now: number): Promise<AdminOverview> {
       today: since(1),
       week: since(7),
       month: since(30),
-      posts: (posts.data ?? []).length,
+      posts: posts.length,
       collabs: collabs.count ?? 0,
       groups: groups.count ?? 0,
       messages: messages.count ?? 0,

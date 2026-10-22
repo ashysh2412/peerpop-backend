@@ -8,7 +8,7 @@ describe("safeNextPath", () => {
   });
 
   it("falls back to /home for missing or unsafe values", () => {
-    for (const bad of [null, undefined, "", "home", "https://evil.com", "//evil.com", "/\\evil.com"]) {
+    for (const bad of [null, undefined, "", "home", "https://evil.com", "//evil.com", "/\\evil.com", "/\t/evil.com", "/\n/evil.com", "/ /evil.com"]) {
       expect(safeNextPath(bad)).toBe("/home");
     }
   });

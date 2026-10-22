@@ -59,9 +59,11 @@ export async function deletePost(form: FormData) {
   const { supabase, user } = await requireUser("/home");
   const id = str(form, "id");
   if (!UUID.test(id)) return;
-  const { data } = await supabase.from("posts").delete().eq("id", id).eq("author_id", user.id).select("image_path");
-  const image = data?.[0]?.image_path;
-  if (image) await supabase.storage.from(POST_IMAGE_BUCKET).remove([image]);
+  // The database decides who may delete: the author, or an admin of the post's group.
+  const { data } = await supabase.from("posts").delete().eq("id", id).select("author_id, image_path");
+  const post = data?.[0];
+  // Storage only lets people remove their own files.
+  if (post?.image_path && post.author_id === user.id) await supabase.storage.from(POST_IMAGE_BUCKET).remove([post.image_path]);
   refresh();
 }
 

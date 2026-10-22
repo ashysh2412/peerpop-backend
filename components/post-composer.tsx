@@ -2,7 +2,7 @@
 
 import { ImagePlus, Link2, X } from "lucide-react";
 import Image from "next/image";
-import { useActionState, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { createPost } from "@/app/posts/actions";
 import { createClient } from "@/lib/supabase/client";
 import type { FormState } from "@/lib/profile/types";
@@ -35,6 +35,17 @@ export function PostComposer({
   const [error, setError] = useState<string | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const file = useRef<HTMLInputElement>(null);
+  const text = useRef<HTMLTextAreaElement>(null);
+
+  // The phone "Create > Post" button links to #compose; open the keyboard there.
+  useEffect(() => {
+    const focus = () => {
+      if (window.location.hash === "#compose") text.current?.focus();
+    };
+    focus();
+    window.addEventListener("hashchange", focus);
+    return () => window.removeEventListener("hashchange", focus);
+  }, []);
   const [state, action] = useActionState<FormState, FormData>(async (prev, data) => {
     const result = await createPost(prev, data);
     if (result.ok) {
@@ -65,6 +76,7 @@ export function PostComposer({
       <div className="flex gap-3">
         <Avatar path={photo} name={name} size={44} />
         <textarea
+          ref={text}
           name="body"
           required
           maxLength={3000}

@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import { isAdminEmail } from "@/lib/admin/access";
 import { countReceived } from "@/lib/connections/data";
 import { countUnreadMessages } from "@/lib/messages/data";
+import { ensureProfile } from "@/lib/profile/ensure";
 import { createClient } from "@/lib/supabase/server";
 import { Avatar } from "./avatar";
+import { CreateMenu } from "./create-menu";
 import { Dropdown } from "./dropdown";
 import { Logo } from "./logo";
 import { NavLink } from "./nav-link";
@@ -60,12 +62,23 @@ async function AccountNav() {
     );
   }
 
-  const [requests, messages, { count: unread }, { data: profile }] = await Promise.all([
+  const [requests, messages, { count: unread }, { data: found }] = await Promise.all([
     countReceived(supabase, user.id),
     countUnreadMessages(supabase, user.id),
     supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
     supabase.from("creator_profiles").select("handle, display_name, photo_path").eq("user_id", user.id).maybeSingle(),
   ]);
+
+  // Password and code logins skip the OAuth callback, so the first page they see makes the profile.
+  let profile = found;
+  if (!profile) {
+    try {
+      const { profile: made } = await ensureProfile(supabase, user);
+      profile = { handle: made.handle, display_name: made.display_name, photo_path: made.photo_path };
+    } catch {
+      profile = null;
+    }
+  }
 
   return <SignedIn requests={requests} messages={messages} unread={unread ?? 0} profile={profile} isAdmin={isAdminEmail(user.email)} />;
 }
@@ -119,50 +132,53 @@ function SignedIn({
         <Bell size={20} />
         <Badge count={unread ?? 0} />
       </Link>
-      {profile && (
-        <Dropdown
-          className="group relative"
-          summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-black/20 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
-          summary={<Avatar path={profile.photo_path} name={profile.display_name} size={36} />}
-        >
-          <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">
-            <div className="px-3 py-2">
-              <p className="truncate text-sm font-semibold">{profile.display_name}</p>
-            </div>
-            <div className="my-1 h-px bg-line" />
-            <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-              <User size={16} className="text-muted" /> My profile
-            </Link>
-            {isAdmin && (
-              <Link href="/admin" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-                <ShieldCheck size={16} className="text-muted" /> Admin
+      <Dropdown
+        className="group relative"
+        summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-black/20 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
+        summary={<Avatar path={profile?.photo_path ?? null} name={profile?.display_name ?? "You"} size={36} />}
+      >
+        <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">
+          {profile && (
+            <>
+              <div className="px-3 py-2">
+                <p className="truncate text-sm font-semibold">{profile.display_name}</p>
+              </div>
+              <div className="my-1 h-px bg-line" />
+              <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+                <User size={16} className="text-muted" /> My profile
               </Link>
-            )}
-            <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-              <KeyRound size={16} className="text-muted" /> Change password
+            </>
+          )}
+          <Link href="/groups" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken md:hidden">
+            <LayoutGrid size={16} className="text-muted" /> Groups
+          </Link>
+          {isAdmin && (
+            <Link href="/admin" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+              <ShieldCheck size={16} className="text-muted" /> Admin
             </Link>
-            <form action="/auth/signout" method="post">
-              <button className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
-                <LogOut size={16} className="text-muted" /> Sign out
-              </button>
-            </form>
-          </div>
-        </Dropdown>
-      )}
+          )}
+          <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+            <KeyRound size={16} className="text-muted" /> Change password
+          </Link>
+          <form action="/auth/signout" method="post">
+            <button className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+              <LogOut size={16} className="text-muted" /> Sign out
+            </button>
+          </form>
+        </div>
+      </Dropdown>
 
-      {/* Phones get a bottom tab bar instead of the header links. */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex border-t border-line bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
+      {/* Phones get a bottom bar of easy-reach keys instead of the header links, with Create in the middle. */}
+      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-start border-t border-line bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
         <NavLink href="/home" variant="tab">
           <House size={22} /> Home
         </NavLink>
         <NavLink href="/creators" variant="tab">
           <Search size={22} /> Creators
         </NavLink>
+        <CreateMenu />
         <NavLink href="/collabs" variant="tab">
           <Handshake size={22} /> Collabs
-        </NavLink>
-        <NavLink href="/groups" variant="tab">
-          <LayoutGrid size={22} /> Groups
         </NavLink>
         <NavLink href="/network" variant="tab">
           <span className="relative">
@@ -171,11 +187,6 @@ function SignedIn({
           </span>
           Network
         </NavLink>
-        {profile && (
-          <NavLink href="/settings/profile" variant="tab">
-            <User size={22} /> Profile
-          </NavLink>
-        )}
       </nav>
     </>
   );
