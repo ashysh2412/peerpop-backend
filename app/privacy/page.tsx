@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import { GrievanceSection } from "@/components/grievance-section";
 import { LegalPage } from "@/components/legal-page";
 
 export const metadata: Metadata = { title: "Privacy policy · Peerpop" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated="20 October 2026">
+    <LegalPage title="Privacy policy" updated="22 October 2026">
       <p>
         Peerpop helps content creators in India find each other and collaborate. This page explains what we collect,
         why, and the choices you have. Questions? Write to <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
@@ -20,6 +21,7 @@ export default function PrivacyPage() {
           public data through the YouTube API and never get access to your YouTube account.
         </li>
         <li>Your connection requests and connections, and the notifications we send you about them.</li>
+        <li>Your posts, comments, collab posts, and the messages you send and receive on Peerpop.</li>
       </ul>
       <h2>How we use it</h2>
       <ul>
@@ -45,14 +47,21 @@ export default function PrivacyPage() {
         <li>Edit or remove anything on your profile, and remove your YouTube channel, from Edit profile.</li>
         <li>
           To delete your account and its data, email <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>{" "}
-          from the address you sign in with. We delete it within 30 days.
+          from the address you sign in with. We remove it from Peerpop within 30 days. As Indian law requires, we keep a
+          locked copy for 180 days that only we can access, then delete it for good.
         </li>
       </ul>
+      <h2>When the law requires it</h2>
+      <p>
+        If a government agency or court lawfully asks, we may share account information, posts and messages with them, as
+        India&apos;s IT Act and IT Rules 2021 require.
+      </p>
       <h2>Keeping data safe</h2>
       <p>
         Data is stored with Supabase and protected by access rules so people only see what they are allowed to. YouTube
         numbers stop showing as verified if we can&apos;t refresh them for 7 days.
       </p>
+      <GrievanceSection />
       <h2>Changes</h2>
       <p>If we change this policy, we&apos;ll update the date above and tell you by email for any important change.</p>
     </LegalPage>

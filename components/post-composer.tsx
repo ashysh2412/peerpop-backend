@@ -93,7 +93,7 @@ export function PostComposer({
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>
-      {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube videos play right in the feed." className="input" />}
+      {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube, Google Drive and Vimeo videos play right in the feed." className="input" />}
       <input type="hidden" name="image_path" value={image ?? ""} />
       {groupId && <input type="hidden" name="group_id" value={groupId} />}
       {preview && (

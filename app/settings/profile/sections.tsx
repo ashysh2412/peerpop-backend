@@ -98,7 +98,7 @@ export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
     <Card
       id="videos"
       title="Pinned videos"
-      description="Show your best work at the top of your profile. Up to 6 YouTube videos, Shorts or Instagram Reels."
+      description='Show your best work at the top of your profile. Up to 6 videos from YouTube, Instagram, Google Drive or Vimeo. For a video on your phone, upload it to Google Drive, set sharing to "Anyone with the link", and paste that link here.'
     >
       {videos.length > 0 && (
         <ul className="flex flex-col gap-3">
@@ -145,7 +145,7 @@ export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
               name="video_url"
               required
               inputMode="url"
-              placeholder="https://youtu.be/… or https://instagram.com/reel/…"
+              placeholder="YouTube, Instagram Reel, Google Drive or Vimeo link"
               aria-invalid={!!state.errors?.video_url}
               className={inputClass}
             />

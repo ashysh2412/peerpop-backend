@@ -65,7 +65,7 @@ export async function addVideo(_prev: FormState, form: FormData): Promise<FormSt
   const { supabase, user } = await requireUser("/settings/profile");
   const url = form.get("video_url");
   const parsed = typeof url === "string" ? parseVideoUrl(url) : null;
-  if (!parsed) return { errors: { video_url: "Paste a YouTube video, Short, or Instagram Reel link." } };
+  if (!parsed) return { errors: { video_url: "Paste a YouTube, Instagram Reel, Google Drive or Vimeo video link." } };
   const titleRaw = form.get("title");
   const title = typeof titleRaw === "string" && titleRaw.trim() ? titleRaw.trim().slice(0, 200) : null;
 

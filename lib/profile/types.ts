@@ -1,4 +1,5 @@
 import type { Language, Niche, Skill } from "@/lib/catalog";
+import type { VideoPlatform } from "@/lib/videos/parse";
 
 export type Profile = {
   user_id: string;
@@ -44,7 +45,7 @@ export type OwnYouTube = PlatformAccount & { verification_code: string | null };
 
 export type ProfileVideo = {
   id: string;
-  platform: "youtube" | "instagram";
+  platform: VideoPlatform;
   url: string;
   external_id: string;
   title: string | null;
