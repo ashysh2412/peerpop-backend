@@ -32,7 +32,13 @@ export function CreatorCard({ row, viewer }: { row: CreatorRow; viewer: Connecti
     <div className="group flex flex-col overflow-hidden rounded-3xl border border-line bg-card transition hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-16px_color-mix(in_oklab,var(--brand)_40%,transparent)]">
       <Link href={`/creators/${row.handle}`} className={`relative block aspect-[4/5] overflow-hidden ${photo ? "bg-sunken" : tintFor(row.handle)}`}>
         {photo ? (
-          <Image src={photo} alt={row.display_name} fill sizes="(min-width: 1024px) 280px, 50vw" className="object-cover transition duration-500 group-hover:scale-105" />
+          <Image
+            src={photo}
+            alt={row.display_name}
+            fill
+            sizes="(min-width: 1024px) 280px, 50vw"
+            className="object-cover transition duration-500 group-hover:scale-105"
+          />
         ) : (
           <span className="flex h-full w-full items-center justify-center pb-10 text-7xl font-semibold text-ink/60">
             {row.display_name.charAt(0).toUpperCase()}
@@ -59,15 +65,11 @@ export function CreatorCard({ row, viewer }: { row: CreatorRow; viewer: Connecti
           </span>
         </span>
         {row.open_to_collab && (
-          <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow-sm">
-            Open to collab
-          </span>
+          <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[11px] font-bold text-emerald-700 shadow-sm">Open to collab</span>
         )}
       </Link>
       <div className="flex flex-1 flex-col gap-3 p-3">
-        {row.niches.length > 0 && (
-          <p className="truncate text-xs font-medium text-muted">{row.niches.map((n) => labelFor(NICHES, n)).join(" · ")}</p>
-        )}
+        {row.niches.length > 0 && <p className="truncate text-xs font-medium text-muted">{row.niches.map((n) => labelFor(NICHES, n)).join(" · ")}</p>}
         <div className="mt-auto">
           {viewer === "me" ? (
             <Link href="/settings/profile" className="btn-secondary btn-sm w-full">

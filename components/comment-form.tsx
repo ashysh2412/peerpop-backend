@@ -15,14 +15,7 @@ export function CommentForm({ postId }: { postId: string }) {
   return (
     <form ref={form} action={action} className="flex flex-col gap-2">
       <input type="hidden" name="post_id" value={postId} />
-      <textarea
-        name="body"
-        required
-        maxLength={1000}
-        rows={2}
-        placeholder="Add a comment…"
-        className="textarea"
-      />
+      <textarea name="body" required maxLength={1000} rows={2} placeholder="Add a comment…" className="textarea" />
       <div className="flex items-center gap-3">
         <SubmitButton pendingText="Posting…">Comment</SubmitButton>
         <FormMessage state={state} />

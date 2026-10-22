@@ -23,7 +23,7 @@ export function CreatorStories({ me, people }: { me: Me; people: Suggestion[] })
       <Bubble href={`/creators/${me.handle}`} label="You" ring={false}>
         <span className="relative block">
           <Avatar path={me.photo_path} name={me.display_name} size={62} />
-          <span className="absolute -right-0.5 -bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-white ring-2 ring-surface">
+          <span className="absolute -right-0.5 -bottom-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-ink ring-2 ring-surface">
             <Plus size={13} strokeWidth={3} />
           </span>
         </span>

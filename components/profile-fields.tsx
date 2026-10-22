@@ -23,14 +23,7 @@ export function IdentityFields({ profile, errors }: { profile?: Partial<Profile>
       {/* The handle is only the profile link, made from the name at sign-up. People don't pick or see it. */}
       <input type="hidden" name="handle" value={profile?.handle ?? ""} />
       <Field label="Bio" name="bio" hint="A line or two about what you make." error={errors?.bio}>
-        <textarea
-          id="bio"
-          name="bio"
-          rows={3}
-          maxLength={500}
-          defaultValue={profile?.bio ?? ""}
-          className="textarea"
-        />
+        <textarea id="bio" name="bio" rows={3} maxLength={500} defaultValue={profile?.bio ?? ""} className="textarea" />
       </Field>
     </>
   );
@@ -52,12 +45,7 @@ export function InterestFields({ profile, errors }: { profile?: Partial<Profile>
       <ChipGroup label="Skills you offer" name="skills" options={SKILLS} selected={profile?.skills ?? []} />
       <ChipGroup label="Languages" name="languages" options={LANGUAGES} selected={profile?.languages ?? []} />
       <label className="flex items-center gap-3">
-        <input
-          type="checkbox"
-          name="open_to_collab"
-          defaultChecked={profile?.open_to_collab ?? true}
-          className="h-5 w-5 accent-[var(--brand)]"
-        />
+        <input type="checkbox" name="open_to_collab" defaultChecked={profile?.open_to_collab ?? true} className="h-5 w-5 accent-[var(--brand)]" />
         <span>I&apos;m open to collabs</span>
       </label>
     </>
@@ -73,7 +61,9 @@ export function LinkFields({ platforms, errors }: { platforms: PlatformAccount[]
       <Field
         label="YouTube channel"
         name="youtube_url"
-        hint={ytVerified ? "Verified. To change it, remove it under Verify your YouTube channel." : "Like youtube.com/@yourname. You can verify it in settings."}
+        hint={
+          ytVerified ? "Verified. To change it, remove it under Verify your YouTube channel." : "Like youtube.com/@yourname. You can verify it in settings."
+        }
         error={errors?.youtube_url}
       >
         <input
@@ -122,9 +112,7 @@ export function LinkFields({ platforms, errors }: { platforms: PlatformAccount[]
           />
         </Field>
       </div>
-      <p className="text-sm text-muted">
-        Instagram numbers are shown as self-reported. Instagram verification is coming soon.
-      </p>
+      <p className="text-sm text-muted">Instagram numbers are shown as self-reported. Instagram verification is coming soon.</p>
     </>
   );
 }

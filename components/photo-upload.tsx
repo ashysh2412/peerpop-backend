@@ -35,9 +35,7 @@ export function PhotoUpload({
     setBusy(true);
     const ext = file.type.split("/")[1].replace("jpeg", "jpg");
     const newPath = `${userId}/${Date.now()}.${ext}`;
-    const { error: uploadError } = await createClient()
-      .storage.from(AVATAR_BUCKET)
-      .upload(newPath, file, { contentType: file.type, cacheControl: "31536000" });
+    const { error: uploadError } = await createClient().storage.from(AVATAR_BUCKET).upload(newPath, file, { contentType: file.type, cacheControl: "31536000" });
     if (uploadError) {
       setBusy(false);
       return setError("Upload failed. Please try again.");

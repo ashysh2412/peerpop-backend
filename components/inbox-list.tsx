@@ -9,11 +9,11 @@ export function InboxList({ chats, active, now }: { chats: Chat[]; active?: stri
   if (chats.length === 0) {
     return (
       <div className="empty">
-        <MessageCircle size={32} className="text-brand" />
+        <MessageCircle size={32} className="text-brand-ink" />
         <p className="font-semibold text-ink">No messages yet</p>
         <p className="max-w-xs text-sm">
           Open one of your{" "}
-          <Link href="/network" className="font-semibold text-brand hover:underline">
+          <Link href="/network" className="font-semibold text-brand-ink hover:underline">
             connections
           </Link>{" "}
           and tap Message to start a chat.
@@ -41,7 +41,7 @@ export function InboxList({ chats, active, now }: { chats: Chat[]; active?: stri
                   {c.last_body}
                 </span>
                 {c.unread > 0 && (
-                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[11px] font-bold text-white">{c.unread}</span>
+                  <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-brand px-1.5 text-[11px] font-bold text-ink">{c.unread}</span>
                 )}
               </span>
             </span>

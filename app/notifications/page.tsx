@@ -127,7 +127,7 @@ async function Notifications() {
               </div>
               <p className="flex-1 text-sm leading-snug">
                 <b>{actor.display_name}</b> {TEXT[n.kind]}
-                {n.kind === "connection_request" && <span className="font-semibold text-brand"> · Review</span>}
+                {n.kind === "connection_request" && <span className="font-semibold text-brand-ink"> · Review</span>}
               </p>
               <span className="shrink-0 text-xs text-muted">{updatedLabel(n.created_at, now)}</span>
               {!n.read_at && <span className="h-2 w-2 shrink-0 rounded-full bg-brand" aria-label="New" />}

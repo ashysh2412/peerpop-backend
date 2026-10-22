@@ -125,15 +125,7 @@ export function ConnectPanel({
   return (
     <form action={send} className="flex flex-col gap-2">
       <input type="hidden" name="to_user" value={otherId} />
-      {writing && (
-        <textarea
-          name="message"
-          maxLength={300}
-          rows={2}
-          placeholder={`Say hi to ${name} (optional)`}
-          className="textarea"
-        />
-      )}
+      {writing && <textarea name="message" maxLength={300} rows={2} placeholder={`Say hi to ${name} (optional)`} className="textarea" />}
       <div className={`flex items-center gap-2 ${compact ? "flex-col items-stretch" : "flex-wrap"}`}>
         <ConnectButton compact={compact} />
         {!writing && !compact && (

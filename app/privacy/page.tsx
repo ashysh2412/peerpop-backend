@@ -8,7 +8,7 @@ export default function PrivacyPage() {
     <LegalPage title="Privacy policy" updated="20 October 2026">
       <p>
         Peerpop helps content creators in India find each other and collaborate. This page explains what we collect,
-        why, and the choices you have. Questions? Write to <a className="text-brand" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
+        why, and the choices you have. Questions? Write to <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
       </p>
       <h2>What we collect</h2>
       <ul>
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
         We use a few providers to run Peerpop: Supabase (database and sign-in), Vercel (hosting), Resend (email) and
         Google (sign-in and YouTube data). They process data only to provide their service to us. Our use of
         information received from Google APIs follows the{" "}
-        <a className="text-brand" href="https://developers.google.com/terms/api-services-user-data-policy">
+        <a className="text-brand-ink" href="https://developers.google.com/terms/api-services-user-data-policy">
           Google API Services User Data Policy
         </a>
         , including its Limited Use requirements.
@@ -44,7 +44,7 @@ export default function PrivacyPage() {
         <li>Turn off &quot;Show my profile in search&quot; at any time to hide your profile.</li>
         <li>Edit or remove anything on your profile, and remove your YouTube channel, from Edit profile.</li>
         <li>
-          To delete your account and its data, email <a className="text-brand" href="mailto:hello@peerpop.in">hello@peerpop.in</a>{" "}
+          To delete your account and its data, email <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>{" "}
           from the address you sign in with. We delete it within 30 days.
         </li>
       </ul>

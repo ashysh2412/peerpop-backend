@@ -14,17 +14,7 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /** "Start a post" box: text, an optional link (YouTube links play inline) and an optional photo. */
-export function PostComposer({
-  userId,
-  firstName,
-  name,
-  photo,
-}: {
-  userId: string;
-  firstName: string;
-  name: string;
-  photo: string | null;
-}) {
+export function PostComposer({ userId, firstName, name, photo }: { userId: string; firstName: string; name: string; photo: string | null }) {
   const [image, setImage] = useState<string | null>(null);
   const [showLink, setShowLink] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -48,9 +38,7 @@ export function PostComposer({
     setBusy(true);
     const ext = f.type.split("/")[1].replace("jpeg", "jpg");
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error: uploadError } = await createClient()
-      .storage.from(BUCKET)
-      .upload(path, f, { contentType: f.type, cacheControl: "31536000" });
+    const { error: uploadError } = await createClient().storage.from(BUCKET).upload(path, f, { contentType: f.type, cacheControl: "31536000" });
     setBusy(false);
     if (uploadError) return setError("Upload failed. Please try again.");
     setImage(path);
@@ -71,15 +59,7 @@ export function PostComposer({
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>
-      {showLink && (
-        <input
-          name="link_url"
-          type="url"
-          inputMode="url"
-          placeholder="Paste a link. YouTube videos play right in the feed."
-          className="input"
-        />
-      )}
+      {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube videos play right in the feed." className="input" />}
       <input type="hidden" name="image_path" value={image ?? ""} />
       {preview && (
         <div className="relative aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl">

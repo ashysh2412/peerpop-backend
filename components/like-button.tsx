@@ -17,12 +17,7 @@ export function LikeButton({ postId, liked, count }: { postId: string; liked: bo
   }
 
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={state.liked}
-      className={`btn-ghost btn-sm ${state.liked ? "text-rose-500 hover:text-rose-600" : ""}`}
-    >
+    <button type="button" onClick={onClick} aria-pressed={state.liked} className={`btn-ghost btn-sm ${state.liked ? "text-rose-500 hover:text-rose-600" : ""}`}>
       <Heart size={17} className={state.liked ? "fill-current" : ""} />
       {state.liked ? "Liked" : "Like"}
       {state.count > 0 && <span className="tabular-nums">{state.count}</span>}

@@ -14,7 +14,7 @@ function Section({ title, href, children }: { title: string; href: string; child
     <section className="card flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">{title}</h2>
-        <Link href={href} className="text-xs font-semibold text-brand hover:underline">
+        <Link href={href} className="text-xs font-semibold text-brand-ink hover:underline">
           See all
         </Link>
       </div>
@@ -53,7 +53,10 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
           <span className="bg-brand-gradient block h-full rounded-full" style={{ width: `${(done / items.length) * 100}%` }} />
         </span>
         <span className="min-w-0 flex-1 truncate">
-          <span className="font-semibold">{next.label}</span> <span className="text-muted">· {done}/{items.length}</span>
+          <span className="font-semibold">{next.label}</span>{" "}
+          <span className="text-muted">
+            · {done}/{items.length}
+          </span>
         </span>
         <ArrowRight size={15} className="shrink-0 text-muted" />
       </Link>
@@ -64,7 +67,7 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
     <section className="card flex flex-col gap-3 p-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold">Get started</h2>
-        <Link href="/settings/profile" className="text-xs font-semibold text-brand hover:underline">
+        <Link href="/settings/profile" className="text-xs font-semibold text-brand-ink hover:underline">
           My profile
         </Link>
       </div>
@@ -79,7 +82,7 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
           <li key={i.label}>
             <Link href={i.href} className="flex items-center gap-3 rounded-xl px-2 py-2 text-sm transition hover:bg-sunken">
               <span
-                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${i.done ? "bg-brand-gradient text-white" : "border-2 border-line"}`}
+                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${i.done ? "bg-brand-gradient text-ink" : "border-2 border-line"}`}
               >
                 {i.done && <Check size={12} strokeWidth={3} />}
               </span>
@@ -107,7 +110,7 @@ export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; coll
             {collabs.map((c) => (
               <li key={c.id}>
                 <Link href={`/collabs/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-xl p-2 transition hover:bg-sunken">
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
                     <Handshake size={16} />
                   </span>
                   <span className="min-w-0">

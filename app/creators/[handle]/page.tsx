@@ -87,7 +87,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
           <div className="flex flex-col items-center gap-1 sm:items-start">
             <h1 className="flex items-center gap-1.5 text-3xl font-semibold tracking-tight">
               <span className="truncate">{profile.display_name}</span>
-              {verified && <BadgeCheck size={24} className="shrink-0 text-brand" aria-label="Verified YouTube channel" />}
+              {verified && <BadgeCheck size={24} className="shrink-0 text-brand-ink" aria-label="Verified YouTube channel" />}
             </h1>
             <p className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-sm text-muted sm:justify-start">
               {city && (
@@ -160,7 +160,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
             <div key={label} className="flex flex-col items-center gap-0.5 px-2 text-center">
               <dd className="flex items-center gap-1 text-xl font-semibold tracking-tight sm:text-2xl">
                 {value}
-                {isVerified && <BadgeCheck size={16} className="text-brand" aria-label="Verified" />}
+                {isVerified && <BadgeCheck size={16} className="text-brand-ink" aria-label="Verified" />}
               </dd>
               <dt className="text-xs font-medium text-muted">{label}</dt>
             </div>
@@ -182,7 +182,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
           </div>
           {isMe && videos.length === 0 && (
             <Link href="/settings/profile#videos" className="empty transition hover:border-brand/40">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-ink">
                 <Plus size={22} />
               </span>
               <p className="font-semibold text-ink">Add your best videos</p>
@@ -212,7 +212,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
           </div>
           {isMe && photos.length === 0 && (
             <Link href="/home#compose" className="empty transition hover:border-brand/40">
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-white">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-gradient text-ink">
                 <ImagePlus size={22} />
               </span>
               <p className="font-semibold text-ink">Add photos of your work</p>
@@ -242,7 +242,7 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
           <h2 className="text-lg font-bold">Open collabs</h2>
           {collabs.map((c) => (
             <Link key={c.id} href={`/collabs/${c.id}`} className="card-link flex items-center gap-3 p-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand-ink">
                 <Handshake size={20} />
               </span>
               <span className="min-w-0 flex-1">

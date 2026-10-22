@@ -36,7 +36,7 @@ async function Settings() {
           <Link href="/settings/password" className="text-muted hover:text-ink">
             Change password
           </Link>
-          <Link href={`/creators/${profile.handle}`} className="text-brand hover:underline">
+          <Link href={`/creators/${profile.handle}`} className="text-brand-ink hover:underline">
             See how others see it →
           </Link>
         </div>

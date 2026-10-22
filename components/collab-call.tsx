@@ -12,7 +12,7 @@ export function CollabCall({ collab }: { collab: Collab }) {
   return (
     <Link href={`/collabs/${collab.id}`} className="bg-brand-gradient group block rounded-3xl p-[2px] transition hover:-translate-y-0.5">
       <div className="flex flex-col gap-3 rounded-[22px] bg-card p-5">
-        <p className="flex items-center gap-2 text-xs font-bold tracking-wide text-brand uppercase">
+        <p className="flex items-center gap-2 text-xs font-bold tracking-wide text-brand-ink uppercase">
           <Handshake size={15} /> Collab call
         </p>
         <h3 className="text-xl leading-snug font-semibold tracking-tight">{collab.title}</h3>

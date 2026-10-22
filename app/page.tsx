@@ -83,7 +83,7 @@ const FAQ = [
 ];
 
 function Eyebrow({ children }: { children: ReactNode }) {
-  return <p className="font-hand text-2xl font-bold text-brand">{children}</p>;
+  return <p className="font-hand text-2xl font-bold text-brand-ink">{children}</p>;
 }
 
 function Feature({
@@ -130,7 +130,7 @@ function Feature({
             className={`absolute -top-9 flex items-center gap-1 font-hand text-2xl font-bold text-ink ${flip ? "-left-2 sm:-left-6" : "-right-2 sm:-right-6"}`}
           >
             {note}
-            <Arrow className={`h-8 w-12 text-brand ${flip ? "" : "-scale-x-100"}`} />
+            <Arrow className={`h-8 w-12 text-brand-ink ${flip ? "" : "-scale-x-100"}`} />
           </p>
         </div>
       </Reveal>
@@ -145,7 +145,7 @@ function ProfileMock() {
         <Face who="riya" size={72} bg="bg-pop-yellow" />
         <div className="min-w-0">
           <p className="flex items-center gap-1.5 text-lg font-semibold">
-            Riya Kulkarni <BadgeCheck size={18} className="text-brand" />
+            Riya Kulkarni <BadgeCheck size={18} className="text-brand-ink" />
           </p>
           <p className="flex items-center gap-1 text-sm text-muted">
             <MapPin size={13} /> Pune · Food, Travel
@@ -172,7 +172,7 @@ function ProfileMock() {
         ))}
       </div>
       <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
-        <BadgeCheck size={14} className="text-brand" /> Verified with YouTube · updated today
+        <BadgeCheck size={14} className="text-brand-ink" /> Verified with YouTube · updated today
       </p>
     </div>
   );
@@ -282,7 +282,7 @@ function HeroCollage() {
     <div className="relative mx-auto aspect-square w-full max-w-[520px]" aria-hidden>
       <div className="bg-brand-gradient absolute inset-[12%] animate-glow rounded-full blur-3xl" />
       <Star className="absolute top-[4%] left-[6%] h-10 w-10 animate-spin-slow text-pop-yellow" />
-      <Sparks className="absolute top-[2%] right-[14%] h-10 w-10 text-brand" />
+      <Sparks className="absolute top-[2%] right-[14%] h-10 w-10 text-brand-ink" />
       <Heart className="absolute right-[6%] bottom-[14%] h-9 w-9 animate-wiggle text-pop-coral" />
       <Zigzag className="absolute bottom-[4%] left-[2%] h-6 w-20 text-pop-mint" />
       <Scribble className="absolute top-[30%] right-[2%] h-12 w-24 text-pop-lilac" />
@@ -299,7 +299,7 @@ function HeroCollage() {
       <Bubble className="top-[40%] left-[-2%] -rotate-6">I&apos;m in! 🙋</Bubble>
       <Bubble className="top-[30%] right-[-4%] rotate-6">shoot on Sunday?</Bubble>
       <span className="absolute right-[18%] bottom-[22%] flex rotate-6 items-center gap-1 rounded-full border-2 border-ink bg-card px-3 py-1 text-xs font-bold shadow-[3px_3px_0_var(--ink)]">
-        <BadgeCheck size={14} className="text-brand" /> 128K verified
+        <BadgeCheck size={14} className="text-brand-ink" /> 128K verified
       </span>
     </div>
   );
@@ -340,14 +340,14 @@ export default function LandingPage() {
               <Link href="/creators" className="btn btn-lg border-2 border-ink bg-card shadow-[3px_3px_0_var(--ink)] transition hover:rotate-2">
                 Browse creators
               </Link>
-              <span className="hidden -rotate-6 items-center font-hand text-2xl font-bold text-brand sm:flex">
+              <span className="hidden -rotate-6 items-center font-hand text-2xl font-bold text-brand-ink sm:flex">
                 <Arrow className="h-8 w-10 -scale-x-100 rotate-180" /> takes 2 mins!
               </span>
             </div>
             <p className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
               {["Sign in with Google or email", "No fees", "Contact shared only on yes"].map((t) => (
                 <span key={t} className="flex items-center gap-1.5">
-                  <Check size={14} className="text-brand" /> {t}
+                  <Check size={14} className="text-brand-ink" /> {t}
                 </span>
               ))}
             </p>
@@ -467,7 +467,7 @@ export default function LandingPage() {
           <h2 className="text-4xl font-semibold tracking-tight sm:text-5xl">Questions? Answers.</h2>
           <p className="text-muted">
             Anything else? Write to{" "}
-            <a href="mailto:hello@peerpop.in" className="font-semibold text-brand hover:underline">
+            <a href="mailto:hello@peerpop.in" className="font-semibold text-brand-ink hover:underline">
               hello@peerpop.in
             </a>
             .
@@ -493,7 +493,7 @@ export default function LandingPage() {
       </section>
 
       <section className="mx-auto w-full max-w-6xl px-4 pt-6 pb-8">
-        <div className="bg-brand-gradient relative overflow-hidden rounded-[2rem] border-[3px] border-ink p-8 pb-0 text-white shadow-[8px_8px_0_var(--ink)] sm:p-14 sm:pb-0">
+        <div className="bg-brand-gradient relative overflow-hidden rounded-[2rem] border-[3px] border-ink p-8 pb-0 text-ink shadow-[8px_8px_0_var(--ink)] sm:p-14 sm:pb-0">
           <Star className="absolute top-8 right-10 h-10 w-10 animate-spin-slow text-pop-yellow" aria-hidden />
           <Heart className="absolute top-24 right-36 hidden h-8 w-8 animate-wiggle text-pop-coral sm:block" aria-hidden />
           <div className="relative flex max-w-2xl flex-col gap-5">

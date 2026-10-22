@@ -8,7 +8,7 @@ export default function TermsPage() {
     <LegalPage title="Terms of use" updated="20 October 2026">
       <p>
         These terms apply when you use Peerpop. By creating an account you agree to them. Questions? Write to{" "}
-        <a className="text-brand" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
+        <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
       </p>
       <h2>Your account</h2>
       <ul>

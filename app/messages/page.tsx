@@ -32,7 +32,7 @@ async function Inbox() {
         <InboxList chats={chats} now={currentTime()} />
       </section>
       <div className="card hidden flex-col items-center justify-center gap-2 p-10 text-center text-muted lg:flex">
-        <MessageCircle size={32} className="text-brand" />
+        <MessageCircle size={32} className="text-brand-ink" />
         <p>Pick a chat to read it here.</p>
       </div>
     </div>

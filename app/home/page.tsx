@@ -94,7 +94,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
             <div className="hidden items-end justify-between gap-3 lg:flex">
               <div>
                 <h1 className="text-2xl font-semibold tracking-tight">Hey {firstName} 👋</h1>
-                <p className="font-hand text-xl font-bold text-brand">Creators to meet, and what they&apos;re making.</p>
+                <p className="font-hand text-xl font-bold text-brand-ink">Creators to meet, and what they&apos;re making.</p>
               </div>
             </div>
             {(welcome || created) && (
@@ -112,7 +112,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                 href="/network?tab=received"
                 className="flex items-center gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand-ink transition hover:brightness-[0.98]"
               >
-                <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-brand px-2 text-xs font-bold text-white">{requests}</span>
+                <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-brand px-2 text-xs font-bold text-ink">{requests}</span>
                 <span className="flex-1">{requests === 1 ? "creator wants" : "creators want"} to connect with you</span>
                 <ArrowRight size={16} />
               </Link>

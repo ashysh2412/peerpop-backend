@@ -8,22 +8,22 @@
  * ink, muted, brand) so the palette changes in one place.
  */
 :root {
-  --surface: #f5f6fa;
+  --surface: #f3f4f6;
   --card: #ffffff;
-  --card-hover: #fafaff;
-  --sunken: #f3f4f8;
-  --line: #ebebf2;
-  --ink: #0d0d17;
-  --muted: #6b6b80;
-  --brand: #4a4cf5;
-  --brand-hover: #3b3de0;
-  --brand-soft: #efefff;
-  --brand-ink: #2e2fb0;
-  --grad-1: #2e8bff;
-  --grad-2: #5b4dff;
-  --grad-3: #b04dff;
-  --glow-1: rgba(46,139,255,0.14);
-  --glow-2: rgba(176,77,255,0.12);
+  --card-hover: #fffdf5;
+  --sunken: #f3f4f6;
+  --line: #e5e7eb;
+  --ink: #111111;
+  --muted: #6b7280;
+  --brand: #f0b100;
+  --brand-hover: #e0a300;
+  --brand-soft: #fff6d6;
+  --brand-ink: #8a5a00;
+  --grad-1: #ffc81f;
+  --grad-2: #f5b400;
+  --grad-3: #f59e0b;
+  --glow-1: rgba(240, 177, 0, 0.16);
+  --glow-2: rgba(245, 158, 11, 0.12);
   /* Playful accents for the homepage stickers and doodles. */
   --pop-yellow: #ffd23f;
   --pop-coral: #ff6b6b;
@@ -31,7 +31,6 @@
   --pop-sky: #8fd3ff;
   --pop-lilac: #d9c9ff;
 }
-
 
 @theme inline {
   --color-pop-yellow: var(--pop-yellow);
@@ -98,7 +97,10 @@ body {
   @apply inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold whitespace-nowrap transition focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-brand-gradient text-white shadow-[0_8px_20px_-10px_color-mix(in_oklab,var(--brand)_90%,transparent)] hover:brightness-110;
+  @apply btn bg-brand text-ink shadow-[0_8px_20px_-12px_color-mix(in_oklab,var(--brand)_90%,transparent)] hover:bg-brand-hover;
+}
+@utility btn-dark {
+  @apply btn bg-ink text-white hover:bg-black;
 }
 @utility btn-secondary {
   @apply btn border border-line bg-card text-ink hover:bg-sunken;
@@ -147,7 +149,7 @@ body {
   @apply rounded-full px-4 py-1.5 font-medium text-muted transition hover:text-ink;
 }
 @utility tab-active {
-  @apply tab bg-ink text-card hover:text-card;
+  @apply tab bg-brand text-ink hover:text-ink;
 }
 
 /* Homepage motion. Everything stops for people who ask for reduced motion. */
@@ -162,41 +164,83 @@ body {
   --animate-spin-slow: spin 14s linear infinite;
 
   @keyframes float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-12px); }
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
   }
   @keyframes wiggle {
-    0%, 100% { transform: rotate(-4deg); }
-    50% { transform: rotate(4deg); }
+    0%,
+    100% {
+      transform: rotate(-4deg);
+    }
+    50% {
+      transform: rotate(4deg);
+    }
   }
   @keyframes kenburns {
-    from { transform: scale(1); }
-    to { transform: scale(1.12) translate(-2%, -2%); }
+    from {
+      transform: scale(1);
+    }
+    to {
+      transform: scale(1.12) translate(-2%, -2%);
+    }
   }
   @keyframes marquee {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
   }
   @keyframes shimmer {
-    to { background-position: 200% center; }
+    to {
+      background-position: 200% center;
+    }
   }
   @keyframes glow {
-    0%, 100% { opacity: 0.18; transform: scale(1); }
-    50% { opacity: 0.32; transform: scale(1.06); }
+    0%,
+    100% {
+      opacity: 0.18;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.32;
+      transform: scale(1.06);
+    }
   }
 }
 
 .reveal {
   opacity: 0;
   transform: translateY(28px);
-  transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    opacity 0.7s ease,
+    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
   transition-delay: var(--delay, 0ms);
 }
-.reveal-left { transform: translateX(-36px); }
-.reveal-right { transform: translateX(36px); }
-.reveal.in { opacity: 1; transform: none; }
+.reveal-left {
+  transform: translateX(-36px);
+}
+.reveal-right {
+  transform: translateX(36px);
+}
+.reveal.in {
+  opacity: 1;
+  transform: none;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .reveal { opacity: 1; transform: none; transition: none; }
-  [class*="animate-"] { animation: none !important; }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+  [class*="animate-"] {
+    animation: none !important;
+  }
 }

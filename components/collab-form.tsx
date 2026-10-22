@@ -15,15 +15,7 @@ export function CollabForm({ city }: { city: string | null }) {
         <input id="title" name="title" required minLength={5} maxLength={120} className={inputClass} aria-invalid={!!e.title} />
       </Field>
       <Field label="What's the collab?" name="description" hint="The idea, what you'll shoot, and what each side gets." error={e.description}>
-        <textarea
-          id="description"
-          name="description"
-          required
-          maxLength={1500}
-          rows={5}
-          aria-invalid={!!e.description}
-          className="textarea"
-        />
+        <textarea id="description" name="description" required maxLength={1500} rows={5} aria-invalid={!!e.description} className="textarea" />
       </Field>
       <ChipGroup label="Who do you need?" name="roles_needed" options={SKILLS} selected={[]} error={e.roles_needed} />
       <Field label="City" name="city_slug" error={e.city_slug}>

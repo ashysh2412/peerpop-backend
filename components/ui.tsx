@@ -5,19 +5,7 @@ import type { FormState } from "@/lib/profile/types";
 
 export const inputClass = "input";
 
-export function Field({
-  label,
-  name,
-  hint,
-  error,
-  children,
-}: {
-  label: string;
-  name: string;
-  hint?: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
+export function Field({ label, name, hint, error, children }: { label: string; name: string; hint?: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5">
       <label htmlFor={name} className="label">
@@ -54,13 +42,7 @@ export function ChipGroup({
       <div className="flex flex-wrap gap-2">
         {options.map(([value, text]) => (
           <label key={value} className="cursor-pointer">
-            <input
-              type="checkbox"
-              name={name}
-              value={value}
-              defaultChecked={selected.includes(value)}
-              className="peer sr-only"
-            />
+            <input type="checkbox" name={name} value={value} defaultChecked={selected.includes(value)} className="peer sr-only" />
             <span className="inline-flex h-9 items-center rounded-full border border-line bg-card px-4 text-sm font-medium text-muted transition select-none hover:border-brand/40 hover:text-ink peer-checked:border-brand peer-checked:bg-brand-soft peer-checked:text-brand-ink peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40">
               {text}
             </span>
@@ -75,11 +57,7 @@ export function ChipGroup({
 export function SubmitButton({ children, pendingText = "Saving…" }: { children: React.ReactNode; pendingText?: string }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="btn-primary h-11 px-6"
-    >
+    <button type="submit" disabled={pending} className="btn-primary h-11 px-6">
       {pending ? pendingText : children}
     </button>
   );

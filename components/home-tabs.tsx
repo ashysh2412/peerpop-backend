@@ -22,7 +22,7 @@ export function HomeTabs({ initial, collabCount, feed, collabs }: { initial: "fe
         <button type="button" onClick={() => show("collabs")} className={`flex flex-1 items-center justify-center gap-1.5 ${onCollabs ? "tab-active" : "tab"}`}>
           Collabs
           {collabCount > 0 && (
-            <span className={`rounded-full px-1.5 text-[11px] font-bold ${onCollabs ? "bg-card text-ink" : "bg-brand text-white"}`}>{collabCount}</span>
+            <span className={`rounded-full px-1.5 text-[11px] font-bold ${onCollabs ? "bg-card text-ink" : "bg-brand text-ink"}`}>{collabCount}</span>
           )}
         </button>
       </nav>

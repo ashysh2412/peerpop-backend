@@ -60,7 +60,15 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
         <div>
           <VideoEmbed
             compact={linkToPost}
-          video={{ id: post.id, platform: video.platform, url: video.url, external_id: video.externalId, title: null, thumbnail_url: video.thumbnailUrl, position: 0 }}
+            video={{
+              id: post.id,
+              platform: video.platform,
+              url: video.url,
+              external_id: video.externalId,
+              title: null,
+              thumbnail_url: video.thumbnailUrl,
+              position: 0,
+            }}
           />
         </div>
       ) : (
@@ -69,7 +77,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
             href={post.link_url}
             target="_blank"
             rel="noreferrer nofollow"
-            className="truncate rounded-2xl bg-sunken px-4 py-3 text-sm font-medium text-brand hover:underline"
+            className="truncate rounded-2xl bg-sunken px-4 py-3 text-sm font-medium text-brand-ink hover:underline"
           >
             {post.link_url.replace(/^https?:\/\//, "")}
           </a>

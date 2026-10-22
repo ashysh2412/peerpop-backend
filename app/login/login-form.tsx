@@ -78,7 +78,7 @@ function PasswordInput({ value, onChange, isNew }: { value: string; onChange: (v
   );
 }
 
-const linkButton = "font-semibold text-brand hover:underline";
+const linkButton = "font-semibold text-brand-ink hover:underline";
 
 export function LoginForm({ next }: { next: string }) {
   const [step, setStep] = useState<Step>({ name: "password" });

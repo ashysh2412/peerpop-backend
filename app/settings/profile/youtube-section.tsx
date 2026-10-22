@@ -66,7 +66,7 @@ function PendingCode({ account }: { account: OwnYouTube }) {
       <ol className="list-decimal space-y-1 pl-5 text-sm text-ink/90">
         <li>
           Open{" "}
-          <a href="https://studio.youtube.com" target="_blank" rel="noreferrer" className="text-brand underline">
+          <a href="https://studio.youtube.com" target="_blank" rel="noreferrer" className="text-brand-ink underline">
             YouTube Studio
           </a>{" "}
           and go to <b>Customisation</b> → <b>Profile</b> (or <b>Basic info</b>).

@@ -7,7 +7,17 @@ import { useEffect, useRef, type ReactNode } from "react";
  * A `<details>` popover that closes itself like a normal menu: on a click outside,
  * on Escape, after picking a link or submitting a form inside it, and on navigation.
  */
-export function Dropdown({ className, summary, summaryClassName, children }: { className?: string; summary: ReactNode; summaryClassName?: string; children: ReactNode }) {
+export function Dropdown({
+  className,
+  summary,
+  summaryClassName,
+  children,
+}: {
+  className?: string;
+  summary: ReactNode;
+  summaryClassName?: string;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDetailsElement>(null);
   const pathname = usePathname();
 

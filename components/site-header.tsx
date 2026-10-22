@@ -13,7 +13,7 @@ import { getSessionUser } from "@/lib/supabase/session";
 function Badge({ count }: { count: number }) {
   if (!count) return null;
   return (
-    <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-card">
+    <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-brand">
       {count > 9 ? "9+" : count}
     </span>
   );
@@ -22,7 +22,7 @@ function Badge({ count }: { count: number }) {
 // The blur lives on a pseudo-element: a blurred parent would pin the phone tab bar to the header.
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-line before:absolute before:inset-0 before:-z-10 before:bg-card/85 before:backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-black/5 before:absolute before:inset-0 before:-z-10 before:bg-brand">
       <div className="mx-auto flex h-16 w-full max-w-6xl items-center gap-2 px-4">
         <div className="mr-auto">
           <Logo />
@@ -49,10 +49,10 @@ async function AccountNav() {
           <NavLink href="/creators">Find creators</NavLink>
           <NavLink href="/collabs">Collabs</NavLink>
         </nav>
-        <Link href="/login" className="btn-ghost btn-sm">
+        <Link href="/login" className="btn-sm btn text-ink hover:bg-black/10">
           Sign in
         </Link>
-        <Link href="/login" className="btn-primary btn-sm">
+        <Link href="/login" className="btn-dark btn-sm">
           Join free
         </Link>
       </>
@@ -100,7 +100,7 @@ function SignedIn({
       <Link
         href="/messages"
         aria-label={messages ? `Messages, ${messages} unread` : "Messages"}
-        className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full text-muted transition hover:bg-sunken hover:text-ink"
+        className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full text-ink/75 transition hover:bg-black/10 hover:text-ink"
       >
         <MessageCircle size={20} />
         <Badge count={messages} />
@@ -108,7 +108,7 @@ function SignedIn({
       <Link
         href="/notifications"
         aria-label={unread ? `Notifications, ${unread} new` : "Notifications"}
-        className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full text-muted transition hover:bg-sunken hover:text-ink"
+        className="relative ml-1 flex h-10 w-10 items-center justify-center rounded-full text-ink/75 transition hover:bg-black/10 hover:text-ink"
       >
         <Bell size={20} />
         <Badge count={unread ?? 0} />
@@ -116,7 +116,7 @@ function SignedIn({
       {profile && (
         <Dropdown
           className="group relative"
-          summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-brand/30 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
+          summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-black/20 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
           summary={<Avatar path={profile.photo_path} name={profile.display_name} size={36} />}
         >
           <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">

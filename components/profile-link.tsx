@@ -8,7 +8,11 @@ const noSubscribe = () => () => {};
 /** The creator's short profile link, ready to copy into an Instagram bio. */
 export function ProfileLink({ handle }: { handle: string }) {
   // The site's address is only known in the browser (it differs between previews and the live site).
-  const origin = useSyncExternalStore(noSubscribe, () => window.location.host, () => "");
+  const origin = useSyncExternalStore(
+    noSubscribe,
+    () => window.location.host,
+    () => "",
+  );
   const [copied, setCopied] = useState(false);
   const link = `${origin}/${handle}`;
 
@@ -20,7 +24,7 @@ export function ProfileLink({ handle }: { handle: string }) {
 
   return (
     <div className="flex items-center gap-3 rounded-2xl bg-brand-soft px-4 py-3">
-      <Link2 size={18} className="shrink-0 text-brand" />
+      <Link2 size={18} className="shrink-0 text-brand-ink" />
       <div className="min-w-0 flex-1">
         <p className="text-xs font-semibold text-brand-ink">Your Peerpop link. Put it in your Instagram bio.</p>
         <p className="truncate text-sm font-semibold text-ink">{origin ? link : " "}</p>
