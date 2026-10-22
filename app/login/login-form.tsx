@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // "password": the usual email + password. "code": new people and forgotten passwords get a code by email,
@@ -18,7 +18,85 @@ function friendly(message: string) {
   return "Something went wrong. Please try again.";
 }
 
+type GoogleId = {
+  initialize(options: Record<string, unknown>): void;
+  renderButton(parent: HTMLElement, options: Record<string, unknown>): void;
+};
+declare global {
+  interface Window {
+    google?: { accounts: { id: GoogleId } };
+  }
+}
+
+const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+
+async function sha256Hex(text: string) {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Google's own button: the Google screen then says "Sign in to peerpop.in" instead of the
+ * Supabase address. Falls back to the redirect flow when no client ID is set.
+ */
 function GoogleButton({ next, onError }: { next: string; onError: (m: string) => void }) {
+  const slot = useRef<HTMLDivElement>(null);
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) return;
+    let cancelled = false;
+    const nonce = crypto.randomUUID();
+
+    async function setUp() {
+      const id = window.google?.accounts.id;
+      if (!id || !slot.current || cancelled) return;
+      id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        nonce: await sha256Hex(nonce),
+        ux_mode: "popup",
+        callback: async ({ credential }: { credential: string }) => {
+          const { error } = await createClient().auth.signInWithIdToken({ provider: "google", token: credential, nonce });
+          if (error) onError(friendly(error.message));
+          else window.location.href = `/auth/finish?next=${encodeURIComponent(next)}`;
+        },
+      });
+      id.renderButton(slot.current, {
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        text: "continue_with",
+        width: Math.min(slot.current.offsetWidth || 360, 400),
+      });
+      setReady(true);
+    }
+
+    if (window.google?.accounts) {
+      setUp();
+    } else {
+      const script = document.createElement("script");
+      script.src = "https://accounts.google.com/gsi/client";
+      script.async = true;
+      script.onload = setUp;
+      document.head.appendChild(script);
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, [next, onError]);
+
+  if (GOOGLE_CLIENT_ID) {
+    return (
+      <div className="flex min-h-12 w-full justify-center">
+        <div ref={slot} className="w-full max-w-[400px]" />
+        {!ready && <span className="sr-only">Loading Google sign-in</span>}
+      </div>
+    );
+  }
+  return <GoogleRedirectButton next={next} onError={onError} />;
+}
+
+function GoogleRedirectButton({ next, onError }: { next: string; onError: (m: string) => void }) {
   async function go() {
     const { error } = await createClient().auth.signInWithOAuth({
       provider: "google",
