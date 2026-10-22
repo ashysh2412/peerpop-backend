@@ -1,11 +1,22 @@
 import { Handshake, LayoutGrid, MapPin, MessageCircle, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { CITIES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
-import type { Profile } from "@/lib/profile/types";
+import type { PlatformAccount, Profile } from "@/lib/profile/types";
 import { Avatar } from "./avatar";
+import { SocialLinks } from "./social-links";
 
 /** The left-hand column on Home for wide screens: who you are at a glance, and shortcuts. */
-export function ProfileSummary({ profile, connections, posts }: { profile: Profile; connections: number; posts: number }) {
+export function ProfileSummary({
+  profile,
+  connections,
+  posts,
+  platforms,
+}: {
+  profile: Profile;
+  connections: number;
+  posts: number;
+  platforms: PlatformAccount[];
+}) {
   const what = [...profile.skills.map((s) => labelFor(SKILLS, s)), ...profile.niches.map((n) => labelFor(NICHES, n))].slice(0, 3);
   const links = [
     { href: "/messages", icon: MessageCircle, label: "Messages" },
@@ -42,6 +53,9 @@ export function ProfileSummary({ profile, connections, posts }: { profile: Profi
             <dt className="text-xs text-muted">Posts</dt>
           </Link>
         </dl>
+        <div className="flex justify-center border-t border-line p-3">
+          <SocialLinks platforms={platforms} addHref="/settings/profile#platforms" size="sm" className="sm:justify-center" />
+        </div>
         <div className="border-t border-line p-3">
           <Link href="/settings/profile" className="btn-secondary btn-sm w-full">
             <Pencil size={14} /> Edit profile

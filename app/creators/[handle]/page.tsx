@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { BadgeCheck, ChevronRight, Handshake, ImagePlus, MapPin, MessageCircle, Pencil, Plus, Users } from "lucide-react";
+import { BadgeCheck, ChevronRight, Handshake, ImagePlus, Lock, MapPin, MessageCircle, Pencil, Plus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProfileLink } from "@/components/profile-link";
+import { SocialLinks } from "@/components/social-links";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
@@ -45,9 +46,9 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
   if (!profile) notFound();
 
   const [
-    platforms,
-    videos,
-    photos,
+    allPlatforms,
+    allVideos,
+    allPhotos,
     collabs,
     {
       data: { user },
@@ -69,6 +70,11 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
         ])
       : [null, 0, null];
 
+  // Private profiles hide their work from people who aren't connected (the database enforces it too).
+  const locked = !!profile.is_private && !isMe && connection?.status !== "accepted";
+  const platforms = locked ? [] : allPlatforms;
+  const videos = locked ? [] : allVideos;
+  const photos = locked ? [] : allPhotos;
   const city = profile.city_slug ? labelFor(CITIES, profile.city_slug) : null;
   const verified = platforms.some((p) => p.source === "verified");
   const stats = headlineStats(platforms);
@@ -101,8 +107,15 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
                 </span>
               )}
               {profile.open_to_collab && <span className="chip-green">Open to collab</span>}
+              {isMe && profile.is_private && (
+                <span className="chip">
+                  <Lock size={12} /> Private
+                </span>
+              )}
             </p>
           </div>
+
+          <SocialLinks platforms={platforms} addHref={isMe ? "/settings/profile#platforms" : undefined} />
 
           {/* What they can do comes first: it's what collaborators look for. */}
           {profile.skills.length > 0 && (
@@ -166,6 +179,16 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
             </div>
           ))}
         </dl>
+      )}
+
+      {locked && (
+        <div className="empty">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-sunken text-ink">
+            <Lock size={22} />
+          </span>
+          <p className="font-semibold text-ink">This profile is private</p>
+          <p className="max-w-sm text-sm">Connect with {profile.display_name.split(" ")[0]} to see their posts, videos and Instagram or YouTube.</p>
+        </div>
       )}
 
       {contact && <ContactBox name={profile.display_name} contact={contact} />}

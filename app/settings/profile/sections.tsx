@@ -54,6 +54,20 @@ export function ProfileSection({ profile }: { profile: Profile }) {
           />
           <span>Show my profile in search</span>
         </label>
+        <label className="flex items-start gap-3">
+          <input type="hidden" name="is_private" value="off" />
+          <input
+            type="checkbox"
+            name="is_private"
+            value="on"
+            defaultChecked={profile.is_private ?? false}
+            className="mt-0.5 h-5 w-5 accent-[var(--brand)]"
+          />
+          <span>
+            Private profile
+            <span className="block text-sm text-muted">Only your connections see your posts, videos, photos and Instagram or YouTube. Others see your name, city and skills, so they can still send a request.</span>
+          </span>
+        </label>
         <div className="flex items-center gap-4">
           <SubmitButton>Save profile</SubmitButton>
           <FormMessage state={state} />
@@ -66,7 +80,7 @@ export function ProfileSection({ profile }: { profile: Profile }) {
 export function LinksSection({ platforms }: { platforms: PlatformAccount[] }) {
   const [state, action] = useActionState<FormState, FormData>(saveProfileLinks, {});
   return (
-    <Card title="Channels" description="Leave a field empty to remove that channel.">
+    <Card id="platforms" title="Channels" description="Leave a field empty to remove that channel.">
       <form action={action} className="flex flex-col gap-5">
         <LinkFields platforms={platforms} errors={state.errors} />
         <div className="flex items-center gap-4">

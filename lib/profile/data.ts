@@ -5,7 +5,7 @@ import type { AccountStats, Contacts, OwnYouTube, PlatformAccount, Profile, Prof
 import { getSessionUser } from "@/lib/supabase/session";
 
 const PROFILE_COLUMNS =
-  "user_id, handle, display_name, photo_path, bio, city_slug, niches, skills, languages, open_to_collab, is_listed";
+  "user_id, handle, display_name, photo_path, bio, city_slug, niches, skills, languages, open_to_collab, is_listed, is_private";
 
 /** The signed-in user, or a redirect to sign in. */
 export async function requireUser(next = "/home") {

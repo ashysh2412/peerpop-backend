@@ -53,6 +53,7 @@ export function validateProfile(form: FormData, { nichesOptional = false } = {})
       open_to_collab: form.get("open_to_collab") === "on",
       // Settings sends a hidden "off" plus "on" when ticked; onboarding sends neither.
       is_listed: form.has("is_listed") ? form.getAll("is_listed").includes("on") : true,
+      ...(form.has("is_private") && { is_private: form.getAll("is_private").includes("on") }),
     },
   };
 }

@@ -12,6 +12,8 @@ export type Profile = {
   languages: Language[];
   open_to_collab: boolean;
   is_listed: boolean;
+  /** Only connections see posts, videos and channels. */
+  is_private?: boolean;
 };
 
 export type PlatformAccount = {
