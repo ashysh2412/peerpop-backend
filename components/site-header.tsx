@@ -1,4 +1,4 @@
-import { Bell, Handshake, House, KeyRound, LogOut, MessageCircle, Search, User, Users } from "lucide-react";
+import { Bell, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { countReceived } from "@/lib/connections/data";
@@ -92,6 +92,9 @@ function SignedIn({
         <NavLink href="/collabs">
           <Handshake size={17} /> Collabs
         </NavLink>
+        <NavLink href="/groups">
+          <LayoutGrid size={17} /> Groups
+        </NavLink>
         <NavLink href="/network">
           <Users size={17} /> Network
           <Badge count={requests} />
@@ -149,6 +152,9 @@ function SignedIn({
         </NavLink>
         <NavLink href="/collabs" variant="tab">
           <Handshake size={22} /> Collabs
+        </NavLink>
+        <NavLink href="/groups" variant="tab">
+          <LayoutGrid size={22} /> Groups
         </NavLink>
         <NavLink href="/network" variant="tab">
           <span className="relative">

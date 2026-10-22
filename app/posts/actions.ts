@@ -28,6 +28,8 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   const { supabase, user } = await requireUser("/home");
   let body = str(form, "body");
   const image = str(form, "image_path") || null;
+  const group = str(form, "group_id") || null;
+  if (group && !UUID.test(group)) return { message: TRY_AGAIN };
   let linkRaw = str(form, "link_url");
   // A link pasted into the text becomes the post's link, so a video plays without an extra tap.
   const pasted = !linkRaw ? body.match(/https?:\/\/\S+/i)?.[0] : undefined;
@@ -43,8 +45,9 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   // Post photos follow the same <user id>/<file> layout as profile photos.
   if (image && !isOwnAvatarPath(image, user.id)) return { message: "That upload isn't yours." };
 
-  const { error } = await supabase.from("posts").insert({ author_id: user.id, body, link_url: link, image_path: image });
+  const { error } = await supabase.from("posts").insert({ author_id: user.id, body, link_url: link, image_path: image, group_id: group });
   if (error) {
+    if (error.message.includes("join the group")) return { message: "Join the group to post here." };
     if (error.message.includes("daily post limit")) return { message: "You've posted 20 times today. Try again tomorrow." };
     return { message: TRY_AGAIN };
   }

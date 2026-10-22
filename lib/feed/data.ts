@@ -50,9 +50,7 @@ export async function getPost(supabase: Client, me: string | null, id: string): 
   const [likes, comments, mine] = await Promise.all([
     supabase.from("post_likes").select("post_id", { count: "exact", head: true }).eq("post_id", id),
     supabase.from("post_comments").select("id", { count: "exact", head: true }).eq("post_id", id),
-    me
-      ? supabase.from("post_likes").select("post_id", { count: "exact", head: true }).eq("post_id", id).eq("user_id", me)
-      : Promise.resolve({ count: 0 }),
+    me ? supabase.from("post_likes").select("post_id", { count: "exact", head: true }).eq("post_id", id).eq("user_id", me) : Promise.resolve({ count: 0 }),
   ]);
   return {
     id: post.id,
@@ -85,11 +83,7 @@ export async function getComments(supabase: Client, postId: string) {
 export type Suggestion = { user_id: string; handle: string; display_name: string; photo_path: string | null; city_slug: string | null };
 
 /** Listed creators in your city or sharing a niche, that you aren't connected to or waiting on yet. */
-export async function getSuggestions(
-  supabase: Client,
-  me: { user_id: string; city_slug: string | null; niches: string[] },
-  limit = 5,
-) {
+export async function getSuggestions(supabase: Client, me: { user_id: string; city_slug: string | null; niches: string[] }, limit = 5) {
   const { data: links } = await supabase
     .from("connections")
     .select("from_user, to_user")
@@ -97,9 +91,7 @@ export async function getSuggestions(
     .in("status", ["pending", "accepted"]);
   const skip = new Set([me.user_id, ...(links ?? []).flatMap((l) => [l.from_user, l.to_user])]);
 
-  const ors = [me.city_slug ? `city_slug.eq.${me.city_slug}` : null, me.niches.length ? `niches.ov.{${me.niches.join(",")}}` : null]
-    .filter(Boolean)
-    .join(",");
+  const ors = [me.city_slug ? `city_slug.eq.${me.city_slug}` : null, me.niches.length ? `niches.ov.{${me.niches.join(",")}}` : null].filter(Boolean).join(",");
   let query = supabase.from("creator_profiles").select("user_id, handle, display_name, photo_path, city_slug").eq("is_listed", true);
   if (ors) query = query.or(ors);
   const { data } = await query.order("updated_at", { ascending: false }).limit(30);
@@ -114,6 +106,7 @@ export async function getPhotosBy(supabase: Client, authorId: string, limit = 12
     .from("posts")
     .select("id, image_path")
     .eq("author_id", authorId)
+    .is("group_id", null)
     .not("image_path", "is", null)
     .order("created_at", { ascending: false })
     .limit(limit);

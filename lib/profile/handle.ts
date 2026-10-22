@@ -1,7 +1,25 @@
 // Top-level pages. A profile link like /riyasharma must never collide with one of these.
 export const RESERVED_HANDLES = new Set([
-  "api", "auth", "collabs", "messages", "creators", "home", "login", "network", "notifications", "onboarding",
-  "posts", "privacy", "settings", "terms", "design-preview", "characters", "admin", "about", "help",
+  "api",
+  "auth",
+  "collabs",
+  "groups",
+  "messages",
+  "creators",
+  "home",
+  "login",
+  "network",
+  "notifications",
+  "onboarding",
+  "posts",
+  "privacy",
+  "settings",
+  "terms",
+  "design-preview",
+  "characters",
+  "admin",
+  "about",
+  "help",
 ]);
 
 /** A handle made from someone's name, like "Riya Sharma" → "riyasharma". Always 3 to 24 valid characters. */

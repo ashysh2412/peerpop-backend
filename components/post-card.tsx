@@ -16,7 +16,19 @@ export function postImageUrl(path: string) {
 }
 
 /** One post as it appears in the feed and on its own page. */
-export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost; me: string | null; now: number; linkToPost?: boolean }) {
+export function PostCard({
+  post,
+  me,
+  now,
+  linkToPost = true,
+  canModerate = false,
+}: {
+  post: FeedPost;
+  me: string | null;
+  now: number;
+  linkToPost?: boolean;
+  canModerate?: boolean;
+}) {
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
@@ -39,7 +51,7 @@ export function PostCard({ post, me, now, linkToPost = true }: { post: FeedPost;
             </Link>
           </p>
         </div>
-        {me === post.author_id && (
+        {(me === post.author_id || canModerate) && (
           <form action={deletePost}>
             <input type="hidden" name="id" value={post.id} />
             <button aria-label="Delete post" className="btn-ghost btn-sm h-9 w-9 px-0">

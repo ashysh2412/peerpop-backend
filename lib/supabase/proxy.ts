@@ -4,7 +4,7 @@ import { RESERVED_HANDLES } from "@/lib/profile/handle";
 import { supabaseEnv } from "./env";
 
 // Routes that need a signed-in user. Everything else is public.
-const PROTECTED_PREFIXES = ["/home", "/onboarding", "/settings", "/network", "/notifications", "/messages"];
+const PROTECTED_PREFIXES = ["/home", "/onboarding", "/settings", "/network", "/notifications", "/messages", "/groups"];
 
 export async function updateSession(request: NextRequest) {
   // Short profile links for Instagram bios: /riyasharma → /creators/riyasharma.
@@ -22,13 +22,9 @@ export async function updateSession(request: NextRequest) {
         return request.cookies.getAll();
       },
       setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value }) =>
-          request.cookies.set(name, value),
-        );
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
         response = NextResponse.next({ request });
-        cookiesToSet.forEach(({ name, value, options }) =>
-          response.cookies.set(name, value, options),
-        );
+        cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
       },
     },
   });

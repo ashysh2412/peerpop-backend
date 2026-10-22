@@ -14,7 +14,21 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /** "Start a post" box: text, an optional link (YouTube links play inline) and an optional photo. */
-export function PostComposer({ userId, firstName, name, photo }: { userId: string; firstName: string; name: string; photo: string | null }) {
+export function PostComposer({
+  userId,
+  firstName,
+  name,
+  photo,
+  groupId,
+  placeholder,
+}: {
+  userId: string;
+  firstName: string;
+  name: string;
+  photo: string | null;
+  groupId?: string;
+  placeholder?: string;
+}) {
   const [image, setImage] = useState<string | null>(null);
   const [showLink, setShowLink] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -55,12 +69,13 @@ export function PostComposer({ userId, firstName, name, photo }: { userId: strin
           required
           maxLength={3000}
           rows={1}
-          placeholder={showLink ? "Give your video a title, or say a line about it" : `What are you making today, ${firstName}?`}
+          placeholder={showLink ? "Give your video a title, or say a line about it" : (placeholder ?? `What are you making today, ${firstName}?`)}
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>
       {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube videos play right in the feed." className="input" />}
       <input type="hidden" name="image_path" value={image ?? ""} />
+      {groupId && <input type="hidden" name="group_id" value={groupId} />}
       {preview && (
         <div className="relative aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl">
           <Image src={preview} alt="Photo to post" fill sizes="384px" className="object-cover" />

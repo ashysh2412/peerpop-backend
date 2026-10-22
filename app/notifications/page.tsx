@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check, Handshake, Heart, Megaphone, MessageCircle, UserPlus } from "lucide-react";
+import { Check, Handshake, Heart, LayoutGrid, Megaphone, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
@@ -12,7 +12,16 @@ export const metadata: Metadata = { title: "Notifications · Peerpop" };
 
 type Notification = {
   id: string;
-  kind: "connection_request" | "connection_accepted" | "collab_interest" | "collab_accepted" | "post_like" | "post_comment" | "collab_new";
+  kind:
+    | "connection_request"
+    | "connection_accepted"
+    | "collab_interest"
+    | "collab_accepted"
+    | "post_like"
+    | "post_comment"
+    | "collab_new"
+    | "group_request"
+    | "group_accepted";
   actor_id: string | null;
   entity_id: string | null;
   read_at: string | null;
@@ -29,6 +38,8 @@ const KIND_ICON: Record<Notification["kind"], { icon: typeof Heart; tone: string
   post_like: { icon: Heart, tone: "bg-rose-500" },
   post_comment: { icon: MessageCircle, tone: "bg-sky-500" },
   collab_new: { icon: Megaphone, tone: "bg-brand" },
+  group_request: { icon: LayoutGrid, tone: "bg-brand" },
+  group_accepted: { icon: Check, tone: "bg-emerald-500" },
 };
 
 const TEXT: Record<Notification["kind"], string> = {
@@ -39,6 +50,8 @@ const TEXT: Record<Notification["kind"], string> = {
   post_like: "liked your post",
   post_comment: "commented on your post",
   collab_new: "posted a collab that fits you",
+  group_request: "asked to join your group",
+  group_accepted: "let you into their group",
 };
 
 function currentTime() {
@@ -71,15 +84,16 @@ async function Notifications() {
     : { data: [] };
   // Collab notifications point at the interest; look up its post so the link opens the collab.
   const interestIds = items.filter((n) => n.kind.startsWith("collab_") && n.kind !== "collab_new" && n.entity_id).map((n) => n.entity_id!);
-  const { data: interests } = interestIds.length
-    ? await supabase.from("collab_interests").select("id, post_id").in("id", interestIds)
-    : { data: [] };
+  const { data: interests } = interestIds.length ? await supabase.from("collab_interests").select("id, post_id").in("id", interestIds) : { data: [] };
+  const groupIds = items.filter((n) => n.kind.startsWith("group_") && n.entity_id).map((n) => n.entity_id!);
+  const { data: groups } = groupIds.length ? await supabase.from("groups").select("id, slug").in("id", groupIds) : { data: [] };
+  const groupSlug = new Map((groups ?? []).map((g) => [g.id as string, g.slug as string]));
   const postFor = new Map((interests ?? []).map((i) => [i.id as string, i.post_id as string]));
   const byId = new Map(((actors ?? []) as Actor[]).map((a) => [a.user_id, a]));
   // A request that was withdrawn and sent again shows once, as the latest.
   const seen = new Set<string>();
   const shown = items.filter((n) => {
-    const key = `${n.kind}:${n.actor_id}:${n.kind.startsWith("post_") || n.kind === "collab_new" ? n.entity_id : ""}`;
+    const key = `${n.kind}:${n.actor_id}:${n.kind.startsWith("post_") || n.kind.startsWith("group_") || n.kind === "collab_new" ? n.entity_id : ""}`;
     if (!n.actor_id || !byId.has(n.actor_id) || seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -108,17 +122,16 @@ async function Notifications() {
             ? "/network?tab=received"
             : n.kind.startsWith("post_") && n.entity_id
               ? `/posts/${n.entity_id}`
-              : n.kind === "collab_new" && n.entity_id
-                ? `/collabs/${n.entity_id}`
-              : n.entity_id && postFor.has(n.entity_id)
-                ? `/collabs/${postFor.get(n.entity_id)}`
-                : `/creators/${actor.handle}`;
+              : n.kind.startsWith("group_") && n.entity_id && groupSlug.has(n.entity_id)
+                ? `/groups/${groupSlug.get(n.entity_id)}${n.kind === "group_request" ? "?tab=requests" : ""}`
+                : n.kind === "collab_new" && n.entity_id
+                  ? `/collabs/${n.entity_id}`
+                  : n.entity_id && postFor.has(n.entity_id)
+                    ? `/collabs/${postFor.get(n.entity_id)}`
+                    : `/creators/${actor.handle}`;
         return (
           <li key={n.id}>
-            <Link
-              href={href}
-              className={`flex items-center gap-3 p-4 transition hover:bg-card-hover ${n.read_at ? "" : "bg-brand-soft/60"}`}
-            >
+            <Link href={href} className={`flex items-center gap-3 p-4 transition hover:bg-card-hover ${n.read_at ? "" : "bg-brand-soft/60"}`}>
               <div className="relative shrink-0">
                 <Avatar path={actor.photo_path} name={actor.display_name} size={44} />
                 <span className={`absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full text-white ring-2 ring-card ${tone}`}>
