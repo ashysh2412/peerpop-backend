@@ -27,44 +27,45 @@ const STYLE = {
   youtube: { name: "YouTube", Icon: YouTubeIcon, className: "bg-red-600 text-white" },
 } as const;
 
-/** Instagram and YouTube buttons that open the creator's channels. With `addHref`, someone with none gets an add link. */
+/**
+ * Instagram and YouTube buttons that open the creator's channels. With `addHref`, a channel
+ * that isn't added yet shows as an "Add" button in the same colours. `stack` puts them one below the other.
+ */
 export function SocialLinks({
   platforms,
   addHref,
   size = "md",
+  stack = false,
   className = "",
 }: {
   platforms: PlatformAccount[];
   addHref?: string;
   size?: "sm" | "md";
+  stack?: boolean;
   className?: string;
 }) {
   const links = (["instagram", "youtube"] as const).flatMap((kind) => {
-    const p = platforms.find((a) => a.platform === kind && a.url);
-    return p ? [{ kind, url: p.url! }] : [];
+    const url = platforms.find((a) => a.platform === kind && a.url)?.url;
+    if (url) return [{ kind, href: url, added: true }];
+    return addHref ? [{ kind, href: addHref, added: false }] : [];
   });
-  if (links.length === 0) {
-    return addHref ? (
-      <Link href={addHref} className={`btn-secondary btn-sm ${className}`}>
-        <Plus size={14} /> Add Instagram or YouTube
-      </Link>
-    ) : null;
-  }
+  if (links.length === 0) return null;
   const pad = size === "sm" ? "px-3 py-1.5 text-xs" : "px-3.5 py-2 text-sm";
+  const layout = stack ? "flex-col" : "flex-wrap justify-center sm:justify-start";
   return (
-    <div className={`flex flex-wrap justify-center gap-2 sm:justify-start ${className}`}>
-      {links.map(({ kind, url }) => {
+    <div className={`flex gap-2 ${layout} ${className}`}>
+      {links.map(({ kind, href, added }) => {
         const { name, Icon, className: tint } = STYLE[kind];
-        return (
-          <a
-            key={kind}
-            href={url}
-            target="_blank"
-            rel="noreferrer"
-            className={`inline-flex items-center gap-1.5 rounded-full font-semibold shadow-sm transition hover:opacity-90 ${pad} ${tint}`}
-          >
-            <Icon size={size === "sm" ? 14 : 16} /> {name}
+        const look = `inline-flex items-center gap-1.5 rounded-full font-semibold shadow-sm transition hover:opacity-90 ${stack ? "justify-center" : ""} ${pad} ${tint}`;
+        const icon = <Icon size={size === "sm" ? 14 : 16} />;
+        return added ? (
+          <a key={kind} href={href} target="_blank" rel="noreferrer" className={look}>
+            {icon} {name}
           </a>
+        ) : (
+          <Link key={kind} href={href} className={`${look} opacity-80`}>
+            <Plus size={size === "sm" ? 13 : 15} /> {icon} Add {name}
+          </Link>
         );
       })}
     </div>

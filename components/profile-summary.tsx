@@ -54,7 +54,7 @@ export function ProfileSummary({
           </Link>
         </dl>
         <div className="flex justify-center border-t border-line p-3">
-          <SocialLinks platforms={platforms} addHref="/settings/profile#platforms" size="sm" className="sm:justify-center" />
+          <SocialLinks platforms={platforms} addHref="/settings/profile#platforms" size="sm" stack className="w-full" />
         </div>
         <div className="border-t border-line p-3">
           <Link href="/settings/profile" className="btn-secondary btn-sm w-full">
