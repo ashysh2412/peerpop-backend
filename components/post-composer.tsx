@@ -4,6 +4,7 @@ import { ImagePlus, Link2, X } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { createPost } from "@/app/posts/actions";
+import { shrinkImage } from "@/lib/image/shrink";
 import { createClient } from "@/lib/supabase/client";
 import type { FormState } from "@/lib/profile/types";
 import { Avatar } from "./avatar";
@@ -11,6 +12,8 @@ import { FormMessage, SubmitButton } from "./ui";
 
 const BUCKET = "post-images";
 const MAX_BYTES = 5 * 1024 * 1024;
+// Phone photos can be big; they get shrunk before upload.
+const MAX_PICK_BYTES = 25 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 /** "Start a post" box: text, an optional link (YouTube links play inline) and an optional photo. */
@@ -56,11 +59,16 @@ export function PostComposer({
     return result;
   }, {});
 
-  async function onFile(f: File) {
+  async function onFile(picked: File) {
     setError(null);
-    if (!TYPES.includes(f.type)) return setError("Use a JPG, PNG or WebP image.");
-    if (f.size > MAX_BYTES) return setError("Use an image under 5 MB.");
+    if (!TYPES.includes(picked.type)) return setError("Use a JPG, PNG or WebP image.");
+    if (picked.size > MAX_PICK_BYTES) return setError("Use an image under 25 MB.");
     setBusy(true);
+    const f = await shrinkImage(picked, 1600);
+    if (f.size > MAX_BYTES) {
+      setBusy(false);
+      return setError("That image is too big. Please try another one.");
+    }
     const ext = f.type.split("/")[1].replace("jpeg", "jpg");
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
     const { error: uploadError } = await createClient().storage.from(BUCKET).upload(path, f, { contentType: f.type, cacheControl: "31536000" });

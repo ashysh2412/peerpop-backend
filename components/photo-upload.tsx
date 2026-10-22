@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { shrinkImage } from "@/lib/image/shrink";
 import { AVATAR_BUCKET, AVATAR_MAX_BYTES, AVATAR_TYPES, avatarUrl } from "@/lib/profile/avatar";
 import { createClient } from "@/lib/supabase/client";
 import { secondaryButton } from "./ui";
@@ -28,11 +29,16 @@ export function PhotoUpload({
   const input = useRef<HTMLInputElement>(null);
   const url = avatarUrl(path);
 
-  async function onFile(file: File) {
+  async function onFile(picked: File) {
     setError(null);
-    if (!AVATAR_TYPES.includes(file.type)) return setError("Use a JPG, PNG or WebP image.");
-    if (file.size > AVATAR_MAX_BYTES) return setError("Use an image under 2 MB.");
+    if (!AVATAR_TYPES.includes(picked.type)) return setError("Use a JPG, PNG or WebP image.");
+    if (picked.size > 25 * 1024 * 1024) return setError("Use an image under 25 MB.");
     setBusy(true);
+    const file = await shrinkImage(picked, 640);
+    if (file.size > AVATAR_MAX_BYTES) {
+      setBusy(false);
+      return setError("That image is too big. Please try another one.");
+    }
     const ext = file.type.split("/")[1].replace("jpeg", "jpg");
     const newPath = `${userId}/${Date.now()}.${ext}`;
     const { error: uploadError } = await createClient().storage.from(AVATAR_BUCKET).upload(newPath, file, { contentType: file.type, cacheControl: "31536000" });
