@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { connectionRequestEmail, escapeHtml, simpleEmail } from "./templates";
+import { connectionRequestEmail, escapeHtml, inviteEmail, simpleEmail } from "./templates";
 
 describe("connectionRequestEmail", () => {
   const base = { name: "Riya", handle: "riya_eats", city: "Pune", message: null, siteUrl: "https://peerpop.example" };
@@ -35,5 +35,18 @@ describe("simpleEmail", () => {
     expect(e.html).toContain("&lt;b&gt;Riya&lt;/b&gt;");
     expect(e.html).toContain("a &amp; b");
     expect(e.text).toContain("Open: https://peerpop.example/collabs/1");
+  });
+});
+
+describe("inviteEmail", () => {
+  it("greets by name and links to sign-in", () => {
+    const e = inviteEmail({ name: "<Asha>", siteUrl: "https://peerpop.in" });
+    expect(e.text).toContain("Hi <Asha>,");
+    expect(e.html).toContain("Hi &lt;Asha&gt;,");
+    expect(e.html).toContain('href="https://peerpop.in/login"');
+  });
+
+  it("works without a name", () => {
+    expect(inviteEmail({ name: null, siteUrl: "https://peerpop.in" }).text.startsWith("Hi,")).toBe(true);
   });
 });

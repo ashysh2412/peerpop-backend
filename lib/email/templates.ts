@@ -39,3 +39,23 @@ ${note ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52525
 </div>`;
   return { text, html };
 }
+
+/** The launch invite for people from the old Peerpop waiting list and app. */
+export function inviteEmail({ name, siteUrl }: { name: string | null; siteUrl: string }) {
+  const subject = "Peerpop is open. Come on in!";
+  const hi = name ? `Hi ${name},` : "Hi,";
+  const body = [
+    "Peerpop is now open, and because you signed up early, you're one of the first in.",
+    "Make your free profile in a minute, then find creators across India to shoot, edit and collab with.",
+  ];
+  const url = `${siteUrl}/login`;
+  const reason = "You're getting this because you signed up for early access to Peerpop. If you'd rather not hear from us, just reply and tell us.";
+  const text = [hi, "", ...body, "", `Join Peerpop: ${url}`, "", reason].join("\n");
+  const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:480px">
+<p>${escapeHtml(hi)}</p>
+${body.map((b) => `<p>${escapeHtml(b)}</p>`).join("\n")}
+<p><a href="${url}" style="display:inline-block;background:#111111;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:600">Join Peerpop</a></p>
+<p style="font-size:12px;color:#71717a">${escapeHtml(reason)}</p>
+</div>`;
+  return { subject, text, html };
+}

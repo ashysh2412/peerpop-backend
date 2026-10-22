@@ -23,7 +23,7 @@ export type AdminOverview = {
 
 const DAY = 24 * 60 * 60 * 1000;
 
-async function allAuthUsers(admin: ReturnType<typeof createAdminClient>) {
+export async function allAuthUsers(admin: ReturnType<typeof createAdminClient>) {
   const users = [];
   for (let page = 1; page <= 20; page++) {
     const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
