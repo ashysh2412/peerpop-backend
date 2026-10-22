@@ -58,6 +58,8 @@ function GoogleButton({ next, onError }: { next: string; onError: (m: string) =>
         callback: async ({ credential }: { credential: string }) => {
           const { error } = await createClient().auth.signInWithIdToken({ provider: "google", token: credential, nonce });
           if (error) onError(friendly(error.message));
+          // A full page load: /auth/finish is a route handler that sets up the profile and redirects.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           else window.location.href = `/auth/finish?next=${encodeURIComponent(next)}`;
         },
       });
