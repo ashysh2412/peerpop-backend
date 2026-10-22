@@ -1,7 +1,7 @@
 "use client";
 
 import { Eye, EyeOff } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 // "password": the usual email + password. "code": new people and forgotten passwords get a code by email,
@@ -30,6 +30,14 @@ declare global {
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
 
+// Google only accepts its own button on the addresses listed in Google Cloud, so everywhere
+// else (the vercel.app address, previews, local) keeps the redirect flow.
+const noSubscribe = () => () => {};
+
+function onGoogleOrigin() {
+  return /(^|\.)peerpop\.in$/.test(window.location.hostname);
+}
+
 async function sha256Hex(text: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
   return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
@@ -43,8 +51,15 @@ function GoogleButton({ next, onError }: { next: string; onError: (m: string) =>
   const slot = useRef<HTMLDivElement>(null);
   const [ready, setReady] = useState(false);
 
+  // The server renders the redirect button; the browser switches once it knows its address.
+  const useGoogleButton = useSyncExternalStore(
+    noSubscribe,
+    () => !!GOOGLE_CLIENT_ID && onGoogleOrigin(),
+    () => false,
+  );
+
   useEffect(() => {
-    if (!GOOGLE_CLIENT_ID) return;
+    if (!useGoogleButton) return;
     let cancelled = false;
     const nonce = crypto.randomUUID();
 
@@ -85,9 +100,9 @@ function GoogleButton({ next, onError }: { next: string; onError: (m: string) =>
     return () => {
       cancelled = true;
     };
-  }, [next, onError]);
+  }, [next, onError, useGoogleButton]);
 
-  if (GOOGLE_CLIENT_ID) {
+  if (useGoogleButton) {
     return (
       <div className="flex min-h-12 w-full justify-center">
         <div ref={slot} className="w-full max-w-[400px]" />
