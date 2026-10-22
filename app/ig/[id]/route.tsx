@@ -8,6 +8,15 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LABEL = { tip: "For creators", collab: "New collab call", milestone: "This week on Peerpop" } as const;
 
+const CHARACTERS = ["arjun", "dev", "isha", "kabir", "meera", "neha", "om", "riya", "rohan", "sana"];
+
+/** The same post always gets the same cartoon creator. */
+function characterFor(id: string) {
+  let h = 0;
+  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
+  return CHARACTERS[h % CHARACTERS.length];
+}
+
 const fonts = Promise.all([
   readFile(join(process.cwd(), "assets/fonts/Inter-Bold.ttf")),
   readFile(join(process.cwd(), "assets/fonts/Inter-Medium.ttf")),
@@ -22,7 +31,12 @@ export async function GET(_request: Request, { params }: RouteContext<"/ig/[id]"
 
   const [bold, medium, logo] = await fonts;
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
-  const size = post.headline.length > 60 ? 84 : post.headline.length > 36 ? 100 : 116;
+  const character = await readFile(join(process.cwd(), `public/characters/${characterFor(id)}.svg`));
+  const characterSrc = `data:image/svg+xml;base64,${character.toString("base64")}`;
+  const len = post.headline.length;
+  const size = len > 70 ? 72 : len > 60 ? 84 : len > 36 ? 100 : 116;
+  // Long headlines need more room, so the cartoon gets smaller.
+  const circle = len > 70 ? 300 : len > 50 ? 380 : 470;
 
   const png = new ImageResponse(
     <div
@@ -39,6 +53,24 @@ export async function GET(_request: Request, { params }: RouteContext<"/ig/[id]"
       }}
     >
       <div style={{ position: "absolute", right: -160, top: -160, width: 560, height: 560, borderRadius: 999, background: "#ffc81f", display: "flex" }} />
+      <div
+        style={{
+          position: "absolute",
+          right: 70,
+          bottom: 200,
+          width: circle,
+          height: circle,
+          borderRadius: 999,
+          background: "#ffffff",
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "center",
+        }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={characterSrc} width={circle} height={circle} alt="" style={{ marginBottom: -20 }} />
+      </div>
       <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
         <div style={{ width: 104, height: 104, borderRadius: 28, background: "#111111", display: "flex", alignItems: "center", justifyContent: "center" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -53,7 +85,7 @@ export async function GET(_request: Request, { params }: RouteContext<"/ig/[id]"
       </div>
       <div style={{ marginTop: 44, fontSize: size, fontWeight: 700, lineHeight: 1.04, letterSpacing: -3, maxWidth: 920, display: "flex" }}>{post.headline}</div>
       {post.subline && (
-        <div style={{ marginTop: 36, fontSize: 44, fontWeight: 500, lineHeight: 1.3, color: "rgba(17,17,17,0.78)", maxWidth: 880, display: "flex" }}>
+        <div style={{ marginTop: 36, fontSize: 42, fontWeight: 500, lineHeight: 1.3, color: "rgba(17,17,17,0.78)", maxWidth: 440, display: "flex" }}>
           {post.subline}
         </div>
       )}

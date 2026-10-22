@@ -14,7 +14,7 @@ const nextConfig: NextConfig = {
     return [{ source: "/onboarding", destination: "/settings/profile", permanent: false }];
   },
   // The Instagram post images are drawn with these fonts at request time.
-  outputFileTracingIncludes: { "/ig/[id]": ["./assets/fonts/*.ttf", "./public/logo.png"] },
+  outputFileTracingIncludes: { "/ig/[id]": ["./assets/fonts/*.ttf", "./public/logo.png", "./public/characters/*.svg"] },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
