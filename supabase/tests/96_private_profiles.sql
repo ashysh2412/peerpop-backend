@@ -29,5 +29,19 @@ select t.check(exists (select 1 from public_platform_accounts where user_id = 'a
 select set_config('request.jwt.claims', '{"sub":"a7a7a7a7-2222-0000-0000-000000000000","role":"authenticated"}', false);
 select t.check(exists (select 1 from posts where author_id = 'a7a7a7a7-2222-0000-0000-000000000000'), 'the owner sees their own posts');
 reset role;
+
+-- A private creator who taps Interested on a stranger's collab shows that author their work.
+insert into collab_posts (id, author_id, title, description) values
+  ('d7d7d7d7-2222-0000-0000-000000000000', :S, 'Food reel this Sunday', 'Need an editor');
+set role authenticated;
+select set_config('request.jwt.claims', '{"sub":"c7c7c7c7-2222-0000-0000-000000000000","role":"authenticated"}', false);
+select t.check(not can_see_work('a7a7a7a7-2222-0000-0000-000000000000'), 'before applying, the collab author cannot see private work');
+reset role;
+insert into collab_interests (post_id, user_id) values ('d7d7d7d7-2222-0000-0000-000000000000', :P);
+set role authenticated;
+select t.check(can_see_work('a7a7a7a7-2222-0000-0000-000000000000'), 'after applying, the collab author can see private work');
+select t.check(exists (select 1 from posts where author_id = 'a7a7a7a7-2222-0000-0000-000000000000'), 'the collab author sees the applicant''s posts');
+select t.check(exists (select 1 from public_platform_accounts where user_id = 'a7a7a7a7-2222-0000-0000-000000000000'), 'the collab author sees the applicant''s channels');
+reset role;
 select set_config('request.jwt.claims', '', false);
 \echo 'private profile tests: all checks passed'

@@ -70,8 +70,13 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
         ])
       : [null, 0, null];
 
-  // Private profiles hide their work from people who aren't connected (the database enforces it too).
-  const locked = !!profile.is_private && !isMe && connection?.status !== "accepted";
+  // Private profiles hide their work from people who aren't connected, unless they applied to your collab.
+  // The database decides (can_see_work), so this matches what it lets through.
+  const locked =
+    !!profile.is_private &&
+    !isMe &&
+    connection?.status !== "accepted" &&
+    !(await supabase.rpc("can_see_work", { owner: profile.user_id })).data;
   const platforms = locked ? [] : allPlatforms;
   const videos = locked ? [] : allVideos;
   const photos = locked ? [] : allPhotos;
