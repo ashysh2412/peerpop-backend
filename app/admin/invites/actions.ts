@@ -27,7 +27,13 @@ async function siteUrl() {
 export async function addInvites(form: FormData) {
   const { db } = await admin();
   const people = parseInvitees(String(form.get("list") ?? "").slice(0, 500_000)).slice(0, 5000);
-  if (people.length) await db.from("invites").upsert(people, { onConflict: "email", ignoreDuplicates: true });
+  if (people.length) {
+    const { error } = await db.from("invites").upsert(people, { onConflict: "email", ignoreDuplicates: true });
+    if (error) {
+      console.error(`Saving invites failed: ${error.code}`);
+      redirect("/admin/invites?note=save-failed");
+    }
+  }
   revalidatePath("/admin/invites");
   redirect(`/admin/invites?note=added&n=${people.length}`);
 }

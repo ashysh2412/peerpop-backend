@@ -33,6 +33,8 @@ function noteText(note: unknown, n: unknown) {
   switch (note) {
     case "added":
       return count ? `Found ${count} email${count === 1 ? "" : "s"}. Anyone already on the list was skipped.` : "No emails found in what you pasted.";
+    case "save-failed":
+      return "Those emails didn't save. Please try again.";
     case "test-sent":
       return "A test invite is on its way to your inbox.";
     case "sent":
