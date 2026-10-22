@@ -8,7 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LABEL = { tip: "For creators", collab: "New collab call", milestone: "This week on Peerpop" } as const;
 
-const CHARACTERS = ["arjun", "dev", "isha", "kabir", "meera", "neha", "om", "riya", "rohan", "sana"];
+// Kabir is left out: his cartoon has tears, which reads as sad on a post.
+const CHARACTERS = ["arjun", "dev", "isha", "meera", "neha", "om", "riya", "rohan", "sana"];
 
 /** The same post always gets the same cartoon creator. */
 function characterFor(id: string) {
