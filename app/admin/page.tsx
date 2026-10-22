@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Download, Search } from "lucide-react";
+import { Camera, Download, Search } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -57,6 +57,9 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
           <h1 className="page-title">Admin</h1>
           <p className="mt-1 text-muted">Who has joined Peerpop and what they&apos;re doing. Only you can see this page.</p>
         </div>
+        <Link href="/admin/instagram" className="btn-dark">
+          <Camera size={16} /> Instagram posts
+        </Link>
         <a href="/admin/users.csv" className="btn-secondary">
           <Download size={16} /> Download as spreadsheet
         </a>

@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
 
-const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL
-  ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname
-  : "placeholder.supabase.co";
+const supabaseHost = process.env.NEXT_PUBLIC_SUPABASE_URL ? new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname : "placeholder.supabase.co";
 
 const nextConfig: NextConfig = {
   images: {
@@ -15,6 +13,8 @@ const nextConfig: NextConfig = {
   async redirects() {
     return [{ source: "/onboarding", destination: "/settings/profile", permanent: false }];
   },
+  // The Instagram post images are drawn with these fonts at request time.
+  outputFileTracingIncludes: { "/ig/[id]": ["./assets/fonts/*.ttf", "./public/logo.png"] },
   cacheComponents: true,
   partialPrefetching: true,
   turbopack: {
