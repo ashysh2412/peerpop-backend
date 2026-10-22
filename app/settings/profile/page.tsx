@@ -6,6 +6,7 @@ import { getOwnContacts, getOwnPlatforms, getVideos, requireUser } from "@/lib/p
 import { ensureProfile } from "@/lib/profile/ensure";
 import { ContactsSection, LinksSection, PhotoSection, ProfileSection, VideosSection } from "./sections";
 import { YouTubeSection } from "./youtube-section";
+import { BlockedList } from "@/components/blocked-list";
 
 export const metadata: Metadata = { title: "Edit profile · Peerpop" };
 
@@ -48,6 +49,7 @@ async function Settings() {
       <YouTubeSection account={platforms.find((p) => p.platform === "youtube")} />
       <LinksSection platforms={platforms} />
       <ContactsSection contacts={contacts} />
+      <BlockedList supabase={supabase} />
     </>
   );
 }

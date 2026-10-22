@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Camera, Download, Mail, Search } from "lucide-react";
+import { Camera, Download, Flag, Mail, Search } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -9,6 +9,7 @@ import { isConfirmedAdmin } from "@/lib/admin/access";
 import { getAdminOverview } from "@/lib/admin/data";
 import { CITIES, labelFor } from "@/lib/catalog";
 import { requireUser } from "@/lib/profile/data";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const metadata: Metadata = { title: "Admin · Peerpop", robots: { index: false } };
 
@@ -35,7 +36,10 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
   const { q } = await searchParams;
   const query = typeof q === "string" ? q.trim().toLowerCase() : "";
   const now = currentTime();
-  const { users, totals } = await getAdminOverview(now);
+  const [{ users, totals }, { count: openReports }] = await Promise.all([
+    getAdminOverview(now),
+    createAdminClient().from("reports").select("id", { count: "exact", head: true }).is("resolved_at", null),
+  ]);
   const shown = query ? users.filter((u) => [u.name, u.email, u.handle, u.city].some((v) => v?.toLowerCase().includes(query))) : users;
 
   const stats: [string, number][] = [
@@ -57,6 +61,9 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
           <h1 className="page-title">Admin</h1>
           <p className="mt-1 text-muted">Who has joined Peerpop and what they&apos;re doing. Only you can see this page.</p>
         </div>
+        <Link href="/admin/reports" className="btn-secondary">
+          <Flag size={16} /> Reports{!!openReports && <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{openReports}</span>}
+        </Link>
         <Link href="/admin/invites" className="btn-secondary">
           <Mail size={16} /> Invite waiting list
         </Link>

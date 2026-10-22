@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, SendHorizontal } from "lucide-react";
+import { ArrowLeft, Flag, SendHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { markRead, sendMessage } from "@/app/messages/actions";
@@ -63,6 +63,14 @@ export function ChatThread({ me, other, initial, canSend }: { me: string; other:
         <Link href={`/creators/${other.handle}`} className="flex min-w-0 items-center gap-3 hover:underline">
           <Avatar path={other.photo} name={other.name} size={40} />
           <span className="truncate font-semibold">{other.name}</span>
+        </Link>
+        <Link
+          href={`/creators/${other.handle}/report`}
+          className="ml-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-muted hover:bg-sunken hover:text-ink"
+          aria-label={`Report or block ${other.name}`}
+          title="Report or block"
+        >
+          <Flag size={17} />
         </Link>
       </header>
 

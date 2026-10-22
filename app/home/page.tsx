@@ -40,7 +40,7 @@ function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string
 async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) {
   const { supabase, user } = await requireUser("/home");
   const { profile, created } = await ensureProfile(supabase, user);
-  const { before, tab, welcome } = await searchParams;
+  const { before, tab, welcome, note } = await searchParams;
   const showCollabs = tab === "collabs";
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
@@ -94,6 +94,16 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         {!cursor && (
           <>
             <HomeHeader firstName={firstName} people={people} />
+            {(note === "blocked" || note === "reported-blocked") && (
+              <p className="rounded-2xl bg-sunken px-4 py-3 text-sm">
+                {note === "blocked" ? "Blocked." : "Thanks for telling us. They're blocked."} You won&apos;t see each other on Peerpop. You can unblock
+                them in{" "}
+                <Link href="/settings/profile#blocked" className="font-semibold underline">
+                  Settings
+                </Link>
+                .
+              </p>
+            )}
             {(welcome || created) && (
               <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
                 🎉 <span className="font-semibold">You&apos;re in!</span> Say hello with a post, or{" "}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BadgeCheck, ChevronRight, Handshake, ImagePlus, Lock, MapPin, MessageCircle, Pencil, Plus, Users } from "lucide-react";
+import { BadgeCheck, ChevronRight, Flag, Handshake, ImagePlus, Lock, MapPin, MessageCircle, MoreHorizontal, Pencil, Plus, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { ProfileLink } from "@/components/profile-link";
@@ -8,6 +8,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
 import { ContactBox } from "@/components/contact-box";
+import { Dropdown } from "@/components/dropdown";
 import { postImageUrl } from "@/components/post-card";
 import { ConnectPanel } from "@/components/connect-panel";
 import { VideoEmbed } from "@/components/video-embed";
@@ -29,18 +30,19 @@ function currentTime() {
   return Date.now();
 }
 
-export default function CreatorPage({ params }: PageProps<"/creators/[handle]">) {
+export default function CreatorPage({ params, searchParams }: PageProps<"/creators/[handle]">) {
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-7 px-4 py-6 sm:py-10">
       <Suspense fallback={<CardsSkeleton />}>
-        <Creator params={params} />
+        <Creator params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params">) {
+async function Creator({ params, searchParams }: PageProps<"/creators/[handle]">) {
   const { handle } = await params;
+  const { note } = await searchParams;
   const supabase = await createClient();
   const profile = await getProfileByHandle(supabase, decodeURIComponent(handle));
   if (!profile) notFound();
@@ -87,6 +89,9 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
   return (
     <>
       {isMe && <ProfileLink handle={profile.handle} />}
+      {note === "reported" && (
+        <p className="rounded-xl bg-sunken px-4 py-3 text-sm">Thanks for telling us. We&apos;ll look at this profile and act if it breaks the rules.</p>
+      )}
 
       <header className="flex flex-col items-center gap-5 pt-2 text-center sm:flex-row sm:items-start sm:gap-7 sm:text-left">
         <div className="shrink-0 rounded-full bg-brand-gradient p-[3px]">
@@ -157,6 +162,19 @@ async function Creator({ params }: Pick<PageProps<"/creators/[handle]">, "params
               <Link href={`/messages/${profile.handle}`} className="btn-primary">
                 <MessageCircle size={16} /> Message
               </Link>
+            )}
+            {user && !isMe && (
+              <Dropdown
+                className="relative"
+                summary={<><MoreHorizontal size={18} /><span className="sr-only">More options</span></>}
+                summaryClassName="btn-secondary h-10 w-10 cursor-pointer list-none p-0 [&::-webkit-details-marker]:hidden"
+              >
+                <div className="card absolute right-0 z-20 mt-2 w-48 p-1.5 text-left shadow-lg sm:left-0 sm:right-auto">
+                  <Link href={`/creators/${profile.handle}/report`} className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-sunken">
+                    <Flag size={15} /> Report or block
+                  </Link>
+                </div>
+              </Dropdown>
             )}
             {!user && (
               <Link href={`/login?next=${encodeURIComponent(`/creators/${profile.handle}`)}`} className="btn-primary">
