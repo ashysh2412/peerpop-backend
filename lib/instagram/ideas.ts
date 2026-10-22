@@ -18,6 +18,16 @@ function caption(lines: string[]) {
 // Posts that always make sense, even before many people have joined.
 const TIPS: { key: string; headline: string; subline: string; lines: string[] }[] = [
   {
+    key: "followers-stuck",
+    headline: "My followers stopped growing.",
+    subline: "Collab with a creator and reach their followers too.",
+    lines: [
+      "Posting alone keeps you in front of the same people.",
+      "A collab puts you in front of another creator's followers, and them in front of yours. Two creators, one reel, two audiences.",
+      "Find your collab partner on Peerpop.",
+    ],
+  },
+  {
     key: "find-partner",
     headline: "Find your next collab partner",
     subline: "Editors, shooters, dancers, foodies. All in one place.",
