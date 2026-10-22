@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { ArrowRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
-import { CreatorStories } from "@/components/creator-stories";
+import { HomeHeader } from "@/components/home-header";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
 import { PostCard } from "@/components/post-card";
@@ -95,12 +95,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
           <>
-            <div className="hidden items-end justify-between gap-3 lg:flex">
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight">Hey {firstName} 👋</h1>
-                <p className="font-hand text-xl font-bold text-brand-ink">Creators to meet, and what they&apos;re making.</p>
-              </div>
-            </div>
+            <HomeHeader firstName={firstName} people={people} requests={requests} />
             {(welcome || created) && (
               <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
                 🎉 <span className="font-semibold">You&apos;re in!</span> Say hello with a post, or{" "}
@@ -109,17 +104,6 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                 </Link>
                 .
               </p>
-            )}
-            <CreatorStories me={profile} people={people} />
-            {requests > 0 && (
-              <Link
-                href="/network?tab=received"
-                className="flex items-center gap-3 rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand-ink transition hover:brightness-[0.98]"
-              >
-                <span className="flex h-7 min-w-7 items-center justify-center rounded-full bg-brand px-2 text-xs font-bold text-ink">{requests}</span>
-                <span className="flex-1">{requests === 1 ? "creator wants" : "creators want"} to connect with you</span>
-                <ArrowRight size={16} />
-              </Link>
             )}
           </>
         )}
