@@ -4,7 +4,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { Arrow, Heart, Scribble, Sparks, Squiggle, Star, Zigzag } from "@/components/doodles";
 import { Reveal } from "@/components/reveal";
-import { NICHES, SKILLS } from "@/lib/catalog";
+import { NICHES, POPULAR_NICHES, SKILLS } from "@/lib/catalog";
 
 // The characters in /public/characters are Open Peeps by Pablo Stanley (CC0), drawn with DiceBear.
 // Names and numbers on this page are made-up examples, not real accounts.
@@ -384,7 +384,7 @@ export default function LandingPage() {
               {l}s
             </span>
           ))}
-          {NICHES.filter(([v]) => v !== "other").map(([v, l], i) => (
+          {NICHES.filter(([v]) => (POPULAR_NICHES as readonly string[]).includes(v)).map(([v, l], i) => (
             <span
               key={v}
               className={`rounded-full border-2 border-ink bg-card px-4 py-1.5 text-sm font-semibold ${i % 3 === 0 ? "rotate-1" : i % 3 === 1 ? "-rotate-1" : ""}`}

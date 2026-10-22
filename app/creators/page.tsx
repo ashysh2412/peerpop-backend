@@ -5,7 +5,7 @@ import { Suspense } from "react";
 import { CreatorCard, type CreatorRow as Row } from "@/components/creator-card";
 import { Dropdown } from "@/components/dropdown";
 import { ChipGroup } from "@/components/ui";
-import { CITIES, LANGUAGES, NICHES, SKILLS } from "@/lib/catalog";
+import { CITIES, LANGUAGES, NICHES, POPULAR_NICHES, SKILLS } from "@/lib/catalog";
 import { getStates, type ConnectionState } from "@/lib/connections/data";
 import {
   FOLLOWER_BUCKETS,
@@ -63,7 +63,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         <QuickChip href={`/creators${toQueryString(filters, { niches: [], page: 1 })}`} on={filters.niches.length === 0}>
           All
         </QuickChip>
-        {NICHES.map(([value, label]) => {
+        {NICHES.filter(([value]) => (POPULAR_NICHES as readonly string[]).includes(value) || filters.niches.includes(value)).map(([value, label]) => {
           const on = filters.niches.includes(value);
           return (
             <QuickChip key={value} href={`/creators${toQueryString(filters, { niches: on ? [] : [value], page: 1 })}`} on={on}>
