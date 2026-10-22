@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Check, Handshake, Heart, LayoutGrid, Megaphone, MessageCircle, UserPlus } from "lucide-react";
+import { Check, Handshake, Heart, LayoutGrid, Megaphone, MessageCircle, Sparkles, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
@@ -21,7 +21,8 @@ type Notification = {
     | "post_comment"
     | "collab_new"
     | "group_request"
-    | "group_accepted";
+    | "group_accepted"
+    | "new_member";
   actor_id: string | null;
   entity_id: string | null;
   read_at: string | null;
@@ -40,6 +41,7 @@ const KIND_ICON: Record<Notification["kind"], { icon: typeof Heart; tone: string
   collab_new: { icon: Megaphone, tone: "bg-brand" },
   group_request: { icon: LayoutGrid, tone: "bg-brand" },
   group_accepted: { icon: Check, tone: "bg-emerald-500" },
+  new_member: { icon: Sparkles, tone: "bg-violet-500" },
 };
 
 const TEXT: Record<Notification["kind"], string> = {
@@ -52,6 +54,7 @@ const TEXT: Record<Notification["kind"], string> = {
   collab_new: "posted a collab that fits you",
   group_request: "asked to join your group",
   group_accepted: "let you into their group",
+  new_member: "just joined Peerpop near you or in your niche. Say hi!",
 };
 
 function currentTime() {
@@ -106,7 +109,7 @@ async function Notifications() {
       <div className="empty">
         <span className="text-4xl">🔔</span>
         <p className="font-semibold text-ink">You&apos;re all caught up</p>
-        <p className="text-sm">Requests, likes, comments and collab replies will show up here.</p>
+        <p className="text-sm">Requests, likes, comments, collab replies and new creators near you will show up here.</p>
       </div>
     );
   }
