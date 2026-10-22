@@ -1,6 +1,7 @@
-import { Bell, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, User, Users } from "lucide-react";
+import { Bell, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, ShieldCheck, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { isAdminEmail } from "@/lib/admin/access";
 import { countReceived } from "@/lib/connections/data";
 import { countUnreadMessages } from "@/lib/messages/data";
 import { createClient } from "@/lib/supabase/server";
@@ -66,7 +67,7 @@ async function AccountNav() {
     supabase.from("creator_profiles").select("handle, display_name, photo_path").eq("user_id", user.id).maybeSingle(),
   ]);
 
-  return <SignedIn requests={requests} messages={messages} unread={unread ?? 0} profile={profile} />;
+  return <SignedIn requests={requests} messages={messages} unread={unread ?? 0} profile={profile} isAdmin={isAdminEmail(user.email)} />;
 }
 
 function SignedIn({
@@ -74,11 +75,13 @@ function SignedIn({
   messages,
   unread,
   profile,
+  isAdmin,
 }: {
   requests: number;
   messages: number;
   unread: number;
   profile: { handle: string; display_name: string; photo_path: string | null } | null;
+  isAdmin: boolean;
 }) {
   return (
     <>
@@ -130,6 +133,11 @@ function SignedIn({
             <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
               <User size={16} className="text-muted" /> My profile
             </Link>
+            {isAdmin && (
+              <Link href="/admin" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+                <ShieldCheck size={16} className="text-muted" /> Admin
+              </Link>
+            )}
             <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
               <KeyRound size={16} className="text-muted" /> Change password
             </Link>

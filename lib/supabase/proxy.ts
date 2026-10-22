@@ -4,7 +4,7 @@ import { RESERVED_HANDLES } from "@/lib/profile/handle";
 import { supabaseEnv } from "./env";
 
 // Routes that need a signed-in user. Everything else is public.
-const PROTECTED_PREFIXES = ["/home", "/onboarding", "/settings", "/network", "/notifications", "/messages", "/groups"];
+const PROTECTED_PREFIXES = ["/home", "/onboarding", "/settings", "/network", "/notifications", "/messages", "/groups", "/admin"];
 
 export async function updateSession(request: NextRequest) {
   // Short profile links for Instagram bios: /riyasharma → /creators/riyasharma.
