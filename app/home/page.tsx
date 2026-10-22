@@ -10,7 +10,6 @@ import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
-import { countReceived } from "@/lib/connections/data";
 import { FEED_PAGE, getFeed, getNewCreators, getStarterSteps, getSuggestions } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
@@ -46,9 +45,8 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, requests, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
     getFeed(supabase, cursor),
-    countReceived(supabase, user.id),
     cursor ? Promise.resolve([]) : getSuggestions(supabase, profile, 12),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
@@ -95,7 +93,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
           <>
-            <HomeHeader firstName={firstName} people={people} requests={requests} />
+            <HomeHeader firstName={firstName} people={people} />
             {(welcome || created) && (
               <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
                 🎉 <span className="font-semibold">You&apos;re in!</span> Say hello with a post, or{" "}
