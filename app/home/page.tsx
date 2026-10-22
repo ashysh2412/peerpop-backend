@@ -10,7 +10,7 @@ import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
-import { FEED_PAGE, getFeed, getNewCreators, getStarterSteps, getSuggestions } from "@/lib/feed/data";
+import { FEED_PAGE, getFeed, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
 import { CardsSkeleton } from "@/components/skeleton";
@@ -47,7 +47,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const now = currentTime();
   const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
     getFeed(supabase, cursor),
-    cursor ? Promise.resolve([]) : getSuggestions(supabase, profile, 12),
+    cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),

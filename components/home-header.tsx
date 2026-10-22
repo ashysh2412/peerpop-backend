@@ -4,8 +4,8 @@ import type { Suggestion } from "@/lib/feed/data";
 import { Avatar } from "./avatar";
 
 /**
- * The top of Home in one calm card: a greeting, and a swipeable row of creators to meet
- * (left out when there's nobody to suggest yet).
+ * The top of Home in one calm card: a greeting, and a swipeable row of who joined most recently
+ * (left out when nobody else has joined yet).
  */
 export function HomeHeader({ firstName, people }: { firstName: string; people: Suggestion[] }) {
   return (
@@ -18,7 +18,7 @@ export function HomeHeader({ firstName, people }: { firstName: string; people: S
       {people.length > 0 && (
         <div className="border-t border-line pt-4 pb-4">
           <div className="flex items-center justify-between px-5">
-            <h2 className="text-sm font-semibold">Creators to meet</h2>
+            <h2 className="text-sm font-semibold">Just joined</h2>
             <Link href="/creators" className="text-sm font-semibold text-brand-ink hover:underline">
               See all
             </Link>

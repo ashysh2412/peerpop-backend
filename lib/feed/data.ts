@@ -114,6 +114,18 @@ export async function getNewCreators(supabase: Client, me: string, limit = 5) {
   return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }
 
+/** Everyone who joined most recently (connections too), newest first, for the circles at the top of Home. */
+export async function getRecentJoins(supabase: Client, me: string, limit = 12) {
+  const { data } = await supabase
+    .from("creator_profiles")
+    .select("user_id, handle, display_name, photo_path, city_slug")
+    .eq("is_listed", true)
+    .neq("user_id", me)
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  return (data ?? []) as Suggestion[];
+}
+
 export type Photo = { id: string; image_path: string };
 
 /** A creator's latest posts that have a photo, for the grid on their profile. */
