@@ -33,7 +33,8 @@ export function InterestFields({ profile, errors }: { profile?: Partial<Profile>
   return (
     <>
       <Field label="City" name="city_slug" error={errors?.city_slug}>
-        <select id="city_slug" name="city_slug" defaultValue={profile?.city_slug ?? "pune"} className={inputClass}>
+        <select id="city_slug" name="city_slug" defaultValue={profile?.city_slug ?? ""} className={inputClass}>
+          <option value="">Choose your city</option>
           {CITIES.map(([v, label]) => (
             <option key={v} value={v}>
               {label}

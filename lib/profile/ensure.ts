@@ -33,7 +33,7 @@ export async function ensureProfile(supabase: Client, user: SessionUser) {
   const base = handleFromName(display_name);
   for (let attempt = 0; attempt < 6; attempt++) {
     const handle = attempt === 0 ? base : withSuffix(base);
-    const { error } = await supabase.from("creator_profiles").insert({ user_id: user.id, handle, display_name, photo_path, city_slug: "pune", open_to_collab: true });
+    const { error } = await supabase.from("creator_profiles").insert({ user_id: user.id, handle, display_name, photo_path, open_to_collab: true });
     if (!error || error.code !== "23505") break;
   }
   // Read it back: this also covers another tab having made it at the same moment.

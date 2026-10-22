@@ -8,7 +8,7 @@ export type IgIdea = {
   caption: string;
 };
 
-const TAGS = "#peerpop #punecreators #contentcreator #creatorcommunity #collab #instagramcreators #punebloggers #reelsindia";
+const TAGS = "#peerpop #indiancreators #contentcreator #creatorcommunity #collab #instagramcreators #creatorsofindia #reelsindia";
 const CTA = "Join free: link in bio.";
 
 function caption(lines: string[]) {
@@ -19,7 +19,7 @@ function caption(lines: string[]) {
 const TIPS: { key: string; headline: string; subline: string; lines: string[] }[] = [
   {
     key: "find-partner",
-    headline: "Find your next collab partner in Pune",
+    headline: "Find your next collab partner",
     subline: "Editors, shooters, dancers, foodies. All in one place.",
     lines: ["Looking for someone to shoot, edit or star in your next reel?", "Peerpop shows you creators near you who are open to collab."],
   },
@@ -84,13 +84,13 @@ const TIPS: { key: string; headline: string; subline: string; lines: string[] }[
     key: "editor-find",
     headline: "Shoot more, edit less",
     subline: "Find an editor near you on Peerpop.",
-    lines: ["Editing eating your whole weekend?", "Peerpop has editors in Pune open to collabs and paid work."],
+    lines: ["Editing eating your whole weekend?", "Peerpop has editors across India open to collabs and paid work."],
   },
   {
-    key: "pune-spots",
-    headline: "Pune has a shoot spot for every niche",
-    subline: "Koregaon Park cafes, FC Road food, Sinhagad sunrises.",
-    lines: ["Pune is full of places that look great on camera.", "Team up with a local creator on Peerpop and plan your next shoot together."],
+    key: "city-spots",
+    headline: "Your city has a shoot spot for every niche",
+    subline: "Cafes, street food, rooftops and sunrises.",
+    lines: ["Every Indian city is full of places that look great on camera.", "Team up with a local creator on Peerpop and plan your next shoot together."],
   },
   {
     key: "consistency",
@@ -151,9 +151,9 @@ const TIPS: { key: string; headline: string; subline: string; lines: string[] }[
   },
   {
     key: "food-creators",
-    headline: "Food creators of Pune, unite",
+    headline: "Food creators of India, unite",
     subline: "Find shooters and editors for your food walks.",
-    lines: ["Pune's food scene deserves great content.", "Find food creators, shooters and editors on Peerpop."],
+    lines: ["India's food scene deserves great content.", "Find food creators, shooters and editors on Peerpop."],
   },
   {
     key: "dance",

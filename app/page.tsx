@@ -61,7 +61,7 @@ const STEPS = [
 const FAQ = [
   {
     q: "Who can join Peerpop?",
-    a: "Any creator in India: YouTubers, Instagram creators, anchors, editors, scriptwriters, videographers, photographers and voiceover artists. We started in Pune and you can join from any of 181 cities.",
+    a: "Any creator in India: YouTubers, Instagram creators, anchors, editors, scriptwriters, videographers, photographers and voiceover artists. You can join from any of 181 cities.",
   },
   { q: "Is it free?", a: "Yes. Creating a profile, searching, connecting and posting collabs are all free." },
   {
@@ -318,7 +318,7 @@ export default function LandingPage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-ink opacity-50" />
                 <span className="relative inline-flex h-2 w-2 rounded-full bg-ink" />
               </span>
-              Now live in Pune · free for creators
+              Now live across India · free for creators
             </span>
             <h1 className="text-5xl leading-[1.02] font-semibold tracking-tight sm:text-7xl">
               Where creators find their{" "}
@@ -414,7 +414,7 @@ export default function LandingPage() {
           eyebrow="discover"
           title="Find the right creator in seconds"
           text="Filter by city, niche, skill, language and audience size. Every result shows real numbers, so you know who you're talking to."
-          points={["181 Indian cities, starting with Pune", "Filter by the language they shoot in", "See who is open to collab right now"]}
+          points={["181 Indian cities, from metros to small towns", "Filter by the language they shoot in", "See who is open to collab right now"]}
           note="found you!"
           visual={<SearchMock />}
         />
