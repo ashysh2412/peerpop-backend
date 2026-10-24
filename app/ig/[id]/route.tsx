@@ -9,13 +9,20 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const LABEL = { tip: "For creators", collab: "New collab call", milestone: "This week on Peerpop" } as const;
 
 // Kabir is left out: his cartoon has tears, which reads as sad on a post.
-const CHARACTERS = ["arjun", "dev", "isha", "meera", "neha", "om", "riya", "rohan", "sana"];
+const CHARACTERS = [
+  "arjun", "dev", "isha", "meera", "neha", "om", "riya", "rohan", "sana",
+  "aarav", "aditya", "aisha", "ananya", "anika", "arnav", "aryan", "avni", "dhruv", "diya", "ira", "ishaan",
+  "jiya", "karan", "kavya", "kiara", "kunal", "laksh", "manav", "myra", "naina", "neel", "nikhil", "nisha",
+  "pooja", "priya", "rahul", "reyansh", "ritu", "rudra", "samar", "sara", "simran", "sneha", "tara", "veer",
+  "vikram", "vivaan", "yash", "zoya",
+];
 
-/** The same post always gets the same cartoon creator. */
-function characterFor(id: string) {
-  let h = 0;
-  for (const c of id) h = (h * 31 + c.charCodeAt(0)) >>> 0;
-  return CHARACTERS[h % CHARACTERS.length];
+/**
+ * Posts take the characters in turn, in the order they were drafted, so a cartoon only
+ * comes round again after every other one has been used.
+ */
+function characterFor(position: number) {
+  return CHARACTERS[position % CHARACTERS.length];
 }
 
 const fonts = Promise.all([
@@ -27,12 +34,19 @@ const fonts = Promise.all([
 export async function GET(_request: Request, { params }: RouteContext<"/ig/[id]">) {
   const { id } = await params;
   if (!UUID.test(id)) return new Response("Not found", { status: 404 });
-  const { data: post } = await createAdminClient().from("ig_posts").select("kind, headline, subline, status").eq("id", id).maybeSingle();
+  const db = createAdminClient();
+  const { data: post } = await db.from("ig_posts").select("kind, headline, subline, status, created_at").eq("id", id).maybeSingle();
   if (!post || post.status === "skipped") return new Response("Not found", { status: 404 });
+  // A weekly batch is drafted all at once, so posts drafted at the same moment are ordered by id.
+  const at = `"${post.created_at}"`;
+  const { count: before } = await db
+    .from("ig_posts")
+    .select("id", { count: "exact", head: true })
+    .or(`created_at.lt.${at},and(created_at.eq.${at},id.lt.${id})`);
 
   const [bold, medium, logo] = await fonts;
   const logoSrc = `data:image/png;base64,${logo.toString("base64")}`;
-  const character = await readFile(join(process.cwd(), `public/characters/${characterFor(id)}.svg`));
+  const character = await readFile(join(process.cwd(), `public/characters/${characterFor(before ?? 0)}.svg`));
   const characterSrc = `data:image/svg+xml;base64,${character.toString("base64")}`;
   const len = post.headline.length;
   const size = len > 70 ? 72 : len > 60 ? 84 : len > 36 ? 100 : 116;
