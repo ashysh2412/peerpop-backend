@@ -2,6 +2,7 @@ import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { CITIES, SKILLS, labelFor } from "@/lib/catalog";
 import { publishImage, refreshToken } from "./api";
+import { batchIdeas } from "./batches";
 import { collabIdea, milestoneIdea, tipIdeas, weekKey, type IgIdea } from "./ideas";
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -21,11 +22,19 @@ export type IgAccount = { ig_user_id: string; username: string | null; access_to
 const DAY = 24 * 60 * 60 * 1000;
 const KEEP_DRAFTS = 6;
 
-/** Keeps a few fresh drafts waiting for approval: new collab calls first, then milestones, then evergreen tips. */
+/**
+ * Adds this week's batch as drafts, then keeps a few fresh drafts waiting for approval:
+ * new collab calls first, then milestones, then evergreen tips.
+ */
 export async function topUpDrafts(admin: Admin, now: number) {
+  const { data: usedBatch } = await admin.from("ig_posts").select("idea_key").like("idea_key", "batch:%").limit(5000);
+  const doneBatch = new Set((usedBatch ?? []).map((u) => u.idea_key as string));
+  const newBatch = batchIdeas().filter((i) => !doneBatch.has(i.idea_key));
+  if (newBatch.length) await admin.from("ig_posts").insert(newBatch);
+
   const { count } = await admin.from("ig_posts").select("id", { count: "exact", head: true }).eq("status", "draft");
   const missing = KEEP_DRAFTS - (count ?? 0);
-  if (missing <= 0) return 0;
+  if (missing <= 0) return newBatch.length;
 
   const weekAgo = new Date(now - 7 * DAY).toISOString();
   const [{ data: collabs }, { count: joined }, { data: used }] = await Promise.all([
@@ -49,7 +58,7 @@ export async function topUpDrafts(admin: Admin, now: number) {
 
   const fresh = ideas.slice(0, missing);
   if (fresh.length) await admin.from("ig_posts").insert(fresh);
-  return fresh.length;
+  return newBatch.length + fresh.length;
 }
 
 export async function getIgQueue(admin: Admin) {

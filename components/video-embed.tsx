@@ -93,9 +93,6 @@ export function VideoEmbed({ video, compact = false }: { video: ProfileVideo; co
       ) : (
         <span className={`absolute inset-0 ${TILES[video.platform]}`} />
       )}
-      {!video.thumbnail_url && video.title && (
-        <span className="absolute inset-x-0 bottom-0 line-clamp-2 bg-gradient-to-t from-black/60 p-3 text-left text-sm font-semibold text-white">{video.title}</span>
-      )}
       <span className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/30">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-red-600 text-2xl text-white">▶</span>
       </span>

@@ -29,3 +29,17 @@ describe("Instagram ideas", () => {
     expect(weekKey(new Date("2027-01-01T10:00:00Z"))).toBe("2026-W53");
   });
 });
+
+describe("weekly batches", () => {
+  it("fit Instagram's limits and have unique keys", async () => {
+    const { batchIdeas } = await import("./batches");
+    const ideas = batchIdeas();
+    expect(ideas.length).toBeGreaterThanOrEqual(7);
+    expect(new Set(ideas.map((i) => i.idea_key)).size).toBe(ideas.length);
+    for (const i of ideas) {
+      expect(i.headline.length).toBeLessThanOrEqual(120);
+      expect((i.subline ?? "").length).toBeLessThanOrEqual(200);
+      expect(i.caption.length).toBeLessThanOrEqual(2200);
+    }
+  });
+});

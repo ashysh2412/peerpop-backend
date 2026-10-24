@@ -11,7 +11,7 @@ export type IgIdea = {
 const TAGS = "#peerpop #indiancreators #contentcreator #creatorcommunity #collab #instagramcreators #creatorsofindia #reelsindia";
 const CTA = "Join free: link in bio.";
 
-function caption(lines: string[]) {
+export function caption(lines: string[]) {
   return [...lines, "", CTA, "", TAGS].join("\n");
 }
 

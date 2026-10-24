@@ -92,6 +92,8 @@ export function LinksSection({ platforms }: { platforms: PlatformAccount[] }) {
   );
 }
 
+const VIDEO_SOURCE = { youtube: "YouTube", instagram: "Instagram", drive: "Drive", vimeo: "Vimeo" } as const;
+
 export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
   const [state, action] = useActionState<FormState, FormData>(addVideo, {});
   return (
@@ -108,7 +110,7 @@ export function VideosSection({ videos }: { videos: ProfileVideo[] }) {
                 {v.thumbnail_url ? (
                   <Image src={v.thumbnail_url} alt="" fill sizes="96px" className="object-cover" />
                 ) : (
-                  <span className="flex h-full items-center justify-center text-xs text-muted">Instagram</span>
+                  <span className="flex h-full items-center justify-center text-xs text-muted">{VIDEO_SOURCE[v.platform]}</span>
                 )}
               </div>
               <a href={v.url} target="_blank" rel="noreferrer" className="min-w-0 flex-1 truncate text-sm hover:underline">
