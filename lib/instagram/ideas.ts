@@ -11,6 +11,11 @@ export type IgIdea = {
 const TAGS = "#peerpop #indiancreators #contentcreator #creatorcommunity #collab #instagramcreators #creatorsofindia #reelsindia";
 const CTA = "Join free: link in bio.";
 
+/** Headlines can mark the part to highlight on the image with "|"; this drops the mark. */
+export function plainHeadline(headline: string) {
+  return headline.replace("|", "");
+}
+
 export function caption(lines: string[]) {
   return [...lines, "", CTA, "", TAGS].join("\n");
 }

@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { CardsSkeleton } from "@/components/skeleton";
 import { isConfirmedAdmin } from "@/lib/admin/access";
 import { getIgQueue, topUpDrafts, type IgPost } from "@/lib/instagram/queue";
+import { plainHeadline } from "@/lib/instagram/ideas";
 import { requireUser } from "@/lib/profile/data";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { approvePost, postNow, retryPost, setAutoPost, skipPost } from "./actions";
@@ -108,7 +109,7 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
                 <img src={`/ig/${p.id}`} alt="" className="h-20 w-16 rounded-lg object-cover" />
                 <div className="mr-auto min-w-0">
                   <p className="text-xs font-medium text-muted">{i === 0 ? "Goes out next" : `Post ${i + 1} in line`}</p>
-                  <p className="truncate font-semibold">{p.headline}</p>
+                  <p className="truncate font-semibold">{plainHeadline(p.headline)}</p>
                 </div>
                 {account && (
                   <form action={postNow}>
@@ -133,7 +134,7 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
             {done.map((p) => (
               <li key={p.id} className="flex items-center gap-3 p-3">
                 <div className="mr-auto min-w-0">
-                  <p className="truncate font-semibold">{p.headline}</p>
+                  <p className="truncate font-semibold">{plainHeadline(p.headline)}</p>
                   {p.status === "posted" ? (
                     <p className="flex items-center gap-1 text-xs text-emerald-700">
                       <CheckCircle2 size={13} /> Posted {p.posted_at ? dateFormat.format(new Date(p.posted_at)) : ""}
@@ -168,7 +169,7 @@ function DraftCard({ post }: { post: IgPost }) {
   return (
     <article className="card flex flex-col overflow-hidden">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={`/ig/${post.id}`} alt={post.headline} className="aspect-[4/5] w-full bg-brand object-cover" loading="lazy" />
+      <img src={`/ig/${post.id}`} alt={plainHeadline(post.headline)} className="aspect-[4/5] w-full bg-brand object-cover" loading="lazy" />
       <form action={approvePost} className="flex flex-1 flex-col gap-3 p-4">
         <input type="hidden" name="id" value={post.id} />
         <label className="text-xs font-semibold text-muted" htmlFor={`caption-${post.id}`}>
