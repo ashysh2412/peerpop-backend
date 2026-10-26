@@ -127,6 +127,43 @@ const BATCHES: Record<string, BatchPost[]> = {
       ],
     },
   ],
+  "2026-11-02": [
+    {
+      headline: "Sharma ji ke bete ne |collab kar liya.",
+      subline: "Aap kab karoge?",
+      lines: ["Sharma ji ka beta is at it again.", "Don't let him win. Find a collab partner on Peerpop.", LINE],
+    },
+    {
+      headline: "14 friends ko bola 'shoot kar de'. |0 aaye.",
+      subline: "Peerpop pe log sach mein aate hai.",
+      lines: ["Friends are busy. Creators on Peerpop actually want to shoot.", "Post a collab call and see who's in.", LINE],
+    },
+    {
+      headline: "Chai pe charcha. |Collab pe charcha bhi?",
+      subline: "Creators near you are on Peerpop.",
+      lines: ["The best collab ideas start over chai.", "Find a creator in your city on Peerpop and plan your next shoot together.", LINE],
+    },
+    {
+      headline: "Content calendar: full. |Collab calendar: khaali.",
+      subline: "Ek collab toh banta hai.",
+      lines: ["Thirty posts planned. Zero collabs.", "Add one this month: find a partner on Peerpop.", LINE],
+    },
+    {
+      headline: "4,000 photos in your phone. |Zero with a co-creator.",
+      subline: "Fix that this weekend.",
+      lines: ["Your gallery is full of solo shots.", "Find someone to create with on Peerpop.", LINE],
+    },
+    {
+      headline: "Weekend plan: Netflix. |Better plan: shoot with a creator.",
+      subline: "Find someone in your city.",
+      lines: ["Netflix will still be there on Sunday night.", "Find a creator near you on Peerpop and shoot something this weekend.", LINE],
+    },
+    {
+      headline: "Mic, camera, light, action. |Partner? Not found.",
+      subline: "Search by skill and city on Peerpop.",
+      lines: ["You've got all the gear. You just need the people.", "Search Peerpop by skill and city to find yours.", LINE],
+    },
+  ],
 };
 
 /** Every batch post, oldest batch first, ready to become drafts. */
