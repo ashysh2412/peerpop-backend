@@ -1,0 +1,12 @@
+{
+  "_comment": "Rhubarb mouth shape -> ARKit blend shapes, for characters from Character Creator, VRoid, Ready Player Me and similar. Weights are a starting point; tune them in Blender.",
+  "X": {},
+  "A": {"mouthClose": 0.6},
+  "B": {"jawOpen": 0.15, "mouthStretchLeft": 0.3, "mouthStretchRight": 0.3},
+  "C": {"jawOpen": 0.45},
+  "D": {"jawOpen": 0.9, "mouthStretchLeft": 0.2, "mouthStretchRight": 0.2},
+  "E": {"jawOpen": 0.4, "mouthFunnel": 0.6},
+  "F": {"jawOpen": 0.2, "mouthPucker": 1.0},
+  "G": {"jawOpen": 0.1, "mouthRollLower": 0.7},
+  "H": {"jawOpen": 0.5, "tongueOut": 0.3}
+}

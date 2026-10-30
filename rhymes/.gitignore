@@ -1,0 +1,7 @@
+venv/
+.venv/
+__pycache__/
+out/
+work/
+*.blend1
+*.mp4

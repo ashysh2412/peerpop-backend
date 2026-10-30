@@ -1,0 +1,3 @@
+# Blender as a Python module. Needs the Python version the wheel is built for (3.11 for bpy 4.x, 3.13 for bpy 5.x).
+bpy>=4.2
+numpy>=1.26

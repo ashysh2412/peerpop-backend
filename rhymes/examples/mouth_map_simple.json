@@ -1,0 +1,10 @@
+{
+  "_comment": "For a character that only has a few mouth shapes. Missing letters fall back: G->B, H->C, X->A, and anything else -> X.",
+  "X": "mouth_closed",
+  "A": "mouth_closed",
+  "B": "mouth_small",
+  "C": "mouth_open",
+  "D": "mouth_wide",
+  "E": "mouth_round",
+  "F": "mouth_oo"
+}
