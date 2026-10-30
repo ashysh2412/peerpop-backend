@@ -88,3 +88,23 @@ def make_plan(duration: float, fps: float, tempo: Tempo, sections: list[Section]
         if plan.dance:
             plan.dance.insert(0, DanceStrip(plan.dance[0].clip, 0.0, sections[0].start))
     return plan
+
+
+def read_choreo(path: str, duration: float) -> list[DanceStrip]:
+    """'start end clip' per line, seconds; '#' starts a comment. Gaps are filled by extending the previous strip."""
+    strips: list[DanceStrip] = []
+    with open(path) as f:
+        for line in f:
+            line = line.split("#")[0].strip()
+            if not line:
+                continue
+            a, b, clip = line.split()[:3]
+            if not clip.startswith("dance_"):
+                clip = "dance_" + clip
+            strips.append(DanceStrip(clip=clip, start=float(a), end=min(float(b), duration)))
+    strips.sort(key=lambda s: s.start)
+    for prev, nxt in zip(strips, strips[1:]):
+        prev.end = nxt.start
+    if strips and strips[-1].end < duration:
+        strips[-1].end = duration
+    return strips

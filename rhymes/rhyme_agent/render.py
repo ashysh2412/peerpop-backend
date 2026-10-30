@@ -136,8 +136,24 @@ def apply_blinks(obj: bpy.types.Object, n_frames: int, fps: float, rng: random.R
         f += int(rng.uniform(2.0, 5.0) * fps)
 
 
+def match_rotation_modes(rig: bpy.types.Object, actions: list[bpy.types.Action]) -> None:
+    """A bone only follows rotation curves of its own rotation mode, so set each bone to the mode its clips use."""
+    modes: dict[str, str] = {}
+    for a in actions:
+        for fc in fcurves_of(a):
+            dp = fc.data_path
+            if dp.startswith('pose.bones["') and (".rotation_euler" in dp or ".rotation_quaternion" in dp):
+                bone = dp.split('"')[1]
+                modes[bone] = "XYZ" if ".rotation_euler" in dp else "QUATERNION"
+    for bone, mode in modes.items():
+        pb = rig.pose.bones.get(bone)
+        if pb and pb.rotation_mode != mode and not (mode == "XYZ" and pb.rotation_mode in {"XYZ", "XZY", "YXZ", "YZX", "ZXY", "ZYX"}):
+            pb.rotation_mode = mode
+
+
 def apply_dance(rig: bpy.types.Object, plan: Plan, clips: dict[str, DanceClip]) -> None:
     """Lays the plan's clips on two alternating NLA tracks, each stretched to the song's tempo and cross-faded."""
+    match_rotation_modes(rig, [a for a in bpy.data.actions if a.name in clips])
     ad = rig.animation_data or rig.animation_data_create()
     ad.action = None
     for t in list(ad.nla_tracks):
@@ -179,8 +195,13 @@ def character_bounds(rigs: list[bpy.types.Object]) -> tuple[Vector, float]:
 
 
 def setup_camera(plan: Plan, rigs: list[bpy.types.Object]) -> None:
+    """Places and cuts the camera. With several characters, wide shots show everyone and the other shots visit them in turn."""
     scene = bpy.context.scene
-    centre, height = character_bounds(rigs)
+    group_centre, group_height = character_bounds(rigs)
+    singles = [character_bounds([r]) for r in rigs] if len(rigs) > 1 else []
+    if singles:
+        xs = [(o.matrix_world @ Vector(c)).x for o in bpy.data.objects if o.type == "MESH" and o.parent in rigs for c in o.bound_box]
+        group_height = max(group_height, (max(xs) - min(xs)) * 0.62)
     cam = scene.camera
     if cam is None or cam.get("rhyme_auto", True):
         cam_data = bpy.data.cameras.new("Camera")
@@ -196,15 +217,17 @@ def setup_camera(plan: Plan, rigs: list[bpy.types.Object]) -> None:
     con.track_axis = "TRACK_NEGATIVE_Z"
     con.up_axis = "UP_Y"
     fps = plan.fps
-    head = centre + Vector((0, 0, height * 0.3))
+    # (distance in heights, camera height factor) at the start and end of the shot, and where to look (in heights above centre)
     shots = {
-        "wide": ((2.1, 1.1), (2.1, 1.1), centre),
-        "medium": ((1.6, 1.2), (1.6, 1.2), centre + Vector((0, 0, height * 0.1))),
-        "push": ((2.0, 1.15), (1.45, 1.2), centre + Vector((0, 0, height * 0.15))),
-        "close": ((1.0, 1.3), (1.0, 1.3), head),
+        "wide": ((2.1, 1.1), (2.1, 1.1), 0.0),
+        "medium": ((1.6, 1.2), (1.6, 1.2), 0.1),
+        "push": ((2.0, 1.15), (1.45, 1.2), 0.15),
+        "close": ((1.0, 1.3), (1.0, 1.3), 0.3),
     }
-    for s in plan.shots:
-        (d0, h0), (d1, h1), look = shots.get(s.kind, shots["wide"])
+    for si, s in enumerate(plan.shots):
+        (d0, h0), (d1, h1), look_up = shots.get(s.kind, shots["wide"])
+        centre, height = (singles[si % len(singles)] if singles and s.kind != "wide" else (group_centre, group_height))
+        look = centre + Vector((0, 0, height * look_up))
         f0, f1 = int(round(s.start * fps)) + 1, max(int(round(s.end * fps)), int(round(s.start * fps)) + 1)
         for f, d, h in ((f0, d0, h0), (f1, d1, h1)):
             cam.location = Vector((centre.x + d * height * 0.15, centre.y - d * height, centre.z + (h - 1) * height * 0.6 + height * 0.1))
@@ -253,6 +276,7 @@ def render_frames(frames_dir: str, fps: float, n_frames: int, width: int, height
     scene.cycles.device = "GPU" if gpu and enable_gpu() else "CPU"
     scene.cycles.samples = samples
     scene.cycles.max_bounces = 3
+    scene.cycles.transparent_max_bounces = 32  # layered cut-outs stack many transparent planes
     scene.cycles.use_adaptive_sampling = True
     has_denoiser = bool(scene.cycles.bl_rna.properties["denoiser"].enum_items)
     scene.cycles.use_denoising = denoise and has_denoiser

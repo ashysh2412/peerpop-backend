@@ -67,20 +67,24 @@ def add_mouth_shapes(mouth: bpy.types.Object) -> None:
     basis = [v.co.copy() for v in mouth.data.vertices]
     for letter in VISEMES:
         sx, sz = MOUTH_SHAPES[letter]
-        kb = mouth.shape_key_add(name=letter)
+        kb = mouth.shape_key_add(name=letter, from_mix=False)
+        kb.value = 0.0
         for i, co in enumerate(basis):
             kb.data[i].co = Vector((co.x * sx, co.y, co.z * sz))
 
 
 def add_blink(eye: bpy.types.Object) -> None:
     eye.shape_key_add(name="Basis")
-    kb = eye.shape_key_add(name="blink")
+    kb = eye.shape_key_add(name="blink", from_mix=False)
+    kb.value = 0.0
     for i, v in enumerate(eye.data.vertices):
         kb.data[i].co = Vector((v.co.x, v.co.y, v.co.z * 0.08))
 
 
 def make_action(arm: bpy.types.Object, name: str, loop_beats: int, energy: str, keys: dict[str, dict[str, list[tuple[float, tuple]]]]) -> None:
     """keys: bone -> channel ("location"|"rotation_euler"|"scale") -> [(beat, value), ...]; the last key must equal the first."""
+    if name in bpy.data.actions:  # a second rig with the same bone names shares the clip
+        return
     action = bpy.data.actions.new(name)
     action["loop_beats"] = loop_beats
     action["energy"] = energy
@@ -94,6 +98,7 @@ def make_action(arm: bpy.types.Object, name: str, loop_beats: int, energy: str, 
                 setattr(pb, channel, value)
                 pb.keyframe_insert(channel, frame=1 + beat * REF_FPB)
     arm.animation_data.action = None
+    reset_pose(arm)
     for layer in action.layers:
         for strip in layer.strips:
             for cb in strip.channelbags:
@@ -101,6 +106,15 @@ def make_action(arm: bpy.types.Object, name: str, loop_beats: int, energy: str, 
                     for kp in fc.keyframe_points:
                         kp.interpolation = "BEZIER"
                     fc.modifiers.new("CYCLES")
+
+
+def reset_pose(arm: bpy.types.Object) -> None:
+    """Keyframing leaves the last pose on the bones; put them back to rest so parenting and blending start clean."""
+    for pb in arm.pose.bones:
+        pb.location = (0, 0, 0)
+        pb.rotation_euler = (0, 0, 0)
+        pb.rotation_quaternion = (1, 0, 0, 0)
+        pb.scale = (1, 1, 1)
 
 
 def rad(deg: float) -> float:

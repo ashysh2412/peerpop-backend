@@ -138,3 +138,33 @@ def split_sections(samples: np.ndarray, sr: int, tempo: Tempo, bars: int = 4, be
         out[-2].end = out[-1].end
         out.pop()
     return out
+
+
+def decode_stereo(path: str, sr: int = SR) -> np.ndarray:
+    cmd = ["ffmpeg", "-v", "error", "-i", path, "-vn", "-ac", "2", "-ar", str(sr), "-f", "f32le", "-"]
+    pcm = subprocess.run(cmd, check=True, capture_output=True).stdout
+    return np.frombuffer(pcm, dtype=np.float32).reshape(-1, 2).copy()
+
+
+def bandpass(x: np.ndarray, sr: int, lo: float, hi: float) -> np.ndarray:
+    spec = np.fft.rfft(x)
+    freqs = np.fft.rfftfreq(x.size, 1 / sr)
+    spec[(freqs < lo) | (freqs > hi)] = 0
+    return np.fft.irfft(spec, n=x.size).astype(np.float32)
+
+
+def vocal_loudness(path: str, fps: float, n_frames: int) -> np.ndarray:
+    """Loudness of the (probably) vocal in a full mix, per video frame.
+
+    Vocals sit in the centre of the stereo image and in the 200-4000 Hz band, so this takes the centre
+    channel, drops what the sides have, and band-passes. It is a stand-in for a real vocal separation
+    (pass --vocals from Demucs for that); it removes most of the wide instruments but not centred drums.
+    """
+    st = decode_stereo(path)
+    mid, side = (st[:, 0] + st[:, 1]) / 2, (st[:, 0] - st[:, 1]) / 2
+    mid, side = bandpass(mid, SR, 200, 4000), bandpass(side, SR, 200, 4000)
+    lm = loudness_per_frame(mid, SR, fps, n_frames)
+    ls = loudness_per_frame(side, SR, fps, n_frames)
+    v = np.clip(lm - 0.8 * ls, 0, None)
+    ref = np.percentile(v, 95) if v.size else 0.0
+    return v / ref if ref > 0 else v

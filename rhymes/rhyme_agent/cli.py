@@ -41,8 +41,11 @@ def analyse(args, work: str) -> tuple[choreo.Plan, list[lipsync.Cue], list[str]]
         cues = lipsync.rhubarb_cues(vocal_path, work, rhubarb, args.lyrics, args.recognizer)
     else:
         log("Rhubarb not found, lip sync from vocal loudness (install Rhubarb for phoneme-accurate mouths)")
-        vocal, vsr = audio.decode(vocal_path) if vocal_path != args.audio else (mix, sr)
-        cues = lipsync.loudness_cues(vocal, vsr, fps, n_frames)
+        if vocal_path != args.audio:
+            vocal, vsr = audio.decode(vocal_path)
+            cues = lipsync.loudness_cues(vocal, vsr, fps, n_frames)
+        else:
+            cues = lipsync.loudness_cues(mix, sr, fps, n_frames, loud=audio.vocal_loudness(args.audio, fps, n_frames))
     per_frame = lipsync.cues_per_frame(cues, fps, n_frames)
     return choreo.Plan(fps=fps, duration=total, tempo=tempo, sections=sections), cues, per_frame
 
@@ -61,6 +64,9 @@ def make(args) -> str:
     render.load_character(args.character)
     clips = render.dance_clips()
     plan = choreo.make_plan(plan.duration, plan.fps, plan.tempo, plan.sections, clips, seed=args.seed)
+    if args.choreo:
+        plan.dance = choreo.read_choreo(args.choreo, plan.duration)
+        log(f"dance from {args.choreo}")
     with open(os.path.join(work, "plan.json"), "w") as f:
         json.dump(plan.to_dict(), f, indent=1)
     log("dance: " + " ".join(f"{d.clip[6:]}" for d in plan.dance))
@@ -80,9 +86,8 @@ def make(args) -> str:
     for b in render.find_blinkers():
         render.apply_blinks(b, len(per_frame), plan.fps, rng)
     clip_map = {c.name: c for c in clips}
-    for i, rig in enumerate(rigs):
-        rig_plan = plan if i == 0 else choreo.make_plan(plan.duration, plan.fps, plan.tempo, plan.sections, clips, seed=args.seed + i)
-        render.apply_dance(rig, rig_plan, clip_map)
+    for rig in rigs:  # everyone dances the same steps, like a real kids' show
+        render.apply_dance(rig, plan, clip_map)
     render.ensure_light()
     render.setup_camera(plan, rigs)
 
@@ -214,6 +219,7 @@ def add_common(p: argparse.ArgumentParser) -> None:
     p.add_argument("--gpu", action="store_true", help="render on the GPU (needs a full Blender install, see blender_run.py)")
     p.add_argument("--bars", type=int, default=4, help="bars per dance section")
     p.add_argument("--seed", type=int, default=0, help="changes which dance clips get picked")
+    p.add_argument("--choreo", help="text file 'start end dance_clip' per line (seconds) to set the dance by hand")
     p.add_argument("--max-seconds", type=float, help="only animate the first N seconds (for quick tests)")
     p.add_argument("--preview", action="store_true", help="640x360, 12 fps, 8 samples")
     p.add_argument("--keep-frames", action="store_true")
@@ -251,6 +257,12 @@ def main(argv: list[str] | None = None) -> None:
     k.add_argument("--character", required=True)
     k.add_argument("--mouth-map")
 
+    bc = sub.add_parser("build-cutout", help="make a cut-out puppet scene (.blend) from flat character art and spec JSONs")
+    bc.add_argument("--spec", nargs="+", required=True, help="one or more character spec JSON files")
+    bc.add_argument("--out", required=True, help="output .blend")
+    bc.add_argument("--work-dir", help="where the cut part images go")
+    bc.add_argument("--no-background", action="store_true")
+
     d = sub.add_parser("demo-character", help="save the built-in rabbit as a .blend to study or edit")
     d.add_argument("--out", required=True)
 
@@ -264,6 +276,11 @@ def main(argv: list[str] | None = None) -> None:
         cues_only(args)
     elif args.cmd == "check-character":
         sys.exit(check_character(args))
+    elif args.cmd == "build-cutout":
+        from . import cutout
+
+        cutout.build(args.spec, args.out, args.work_dir or tempfile.mkdtemp(prefix="cutout_"), not args.no_background)
+        log(f"saved {args.out}")
     elif args.cmd == "demo-character":
         from . import demo_character
 

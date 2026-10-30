@@ -1,0 +1,184 @@
+{
+  "_comment": "Dhruv, cut from the front view of the character sheet. Pixel coordinates are in the sheet image.",
+  "name": "dhruv",
+  "image": "dhruv_tara_sheet.jpg",
+  "box": [
+    208,
+    22,
+    436,
+    490
+  ],
+  "x": -2.6,
+  "parts": [
+    {
+      "name": "head",
+      "bone": "head",
+      "rect": [
+        208,
+        22,
+        436,
+        219
+      ],
+      "depth": -2
+    },
+    {
+      "name": "arm.L",
+      "bone": "arm.L",
+      "polygon": [
+        [
+          226,
+          219
+        ],
+        [
+          268,
+          219
+        ],
+        [
+          268,
+          330
+        ],
+        [
+          260,
+          372
+        ],
+        [
+          226,
+          372
+        ]
+      ],
+      "cap": [
+        266,
+        236,
+        22
+      ],
+      "depth": 1
+    },
+    {
+      "name": "arm.R",
+      "bone": "arm.R",
+      "polygon": [
+        [
+          382,
+          219
+        ],
+        [
+          426,
+          219
+        ],
+        [
+          426,
+          372
+        ],
+        [
+          388,
+          372
+        ],
+        [
+          388,
+          330
+        ]
+      ],
+      "cap": [
+        384,
+        236,
+        22
+      ],
+      "depth": 1
+    },
+    {
+      "name": "body",
+      "bone": "body",
+      "rest": true,
+      "depth": 0
+    }
+  ],
+  "bones": [
+    {
+      "name": "root",
+      "head": [
+        322,
+        488
+      ],
+      "tail": [
+        322,
+        430
+      ]
+    },
+    {
+      "name": "body",
+      "head": [
+        322,
+        395
+      ],
+      "tail": [
+        322,
+        225
+      ],
+      "parent": "root"
+    },
+    {
+      "name": "head",
+      "head": [
+        322,
+        219
+      ],
+      "tail": [
+        322,
+        40
+      ],
+      "parent": "body"
+    },
+    {
+      "name": "arm.L",
+      "head": [
+        266,
+        236
+      ],
+      "tail": [
+        248,
+        355
+      ],
+      "parent": "body"
+    },
+    {
+      "name": "arm.R",
+      "head": [
+        384,
+        236
+      ],
+      "tail": [
+        402,
+        355
+      ],
+      "parent": "body"
+    }
+  ],
+  "mouth": [
+    322,
+    188,
+    52
+  ],
+  "eyes": [
+    [
+      288,
+      152,
+      19,
+      16
+    ],
+    [
+      353,
+      152,
+      19,
+      16
+    ]
+  ],
+  "skin_sample": [
+    300,
+    210
+  ],
+  "eyelid_sample": [
+    300,
+    210
+  ],
+  "mouth_style": "boy"
+}

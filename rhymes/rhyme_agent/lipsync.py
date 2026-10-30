@@ -46,9 +46,10 @@ def rhubarb_cues(audio_path: str, work_dir: str, rhubarb_bin: str, lyrics: str |
     return [Cue(float(c["start"]), float(c["end"]), str(c["value"])) for c in data["mouthCues"]]
 
 
-def loudness_cues(samples: np.ndarray, sr: int, fps: float, n_frames: int) -> list[Cue]:
+def loudness_cues(samples: np.ndarray, sr: int, fps: float, n_frames: int, loud: np.ndarray | None = None) -> list[Cue]:
     """Opens the mouth with the loudness of the vocal, changing vowel shape at each new syllable."""
-    loud = audio.loudness_per_frame(samples, sr, fps, n_frames)
+    if loud is None:
+        loud = audio.loudness_per_frame(samples, sr, fps, n_frames)
     vowels = ["D", "C", "E", "F", "D", "B"]
     cues: list[Cue] = []
     vowel_i = 0

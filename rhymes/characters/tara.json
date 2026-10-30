@@ -1,0 +1,174 @@
+{
+  "_comment": "Tara, cut from the front view of the character sheet. Pixel coordinates are in the sheet image.",
+  "name": "tara",
+  "image": "dhruv_tara_sheet.jpg",
+  "box": [
+    200,
+    562,
+    442,
+    906
+  ],
+  "x": 2.4,
+  "parts": [
+    {
+      "name": "head",
+      "bone": "head",
+      "rect": [
+        200,
+        562,
+        442,
+        740
+      ],
+      "depth": -2
+    },
+    {
+      "name": "arm.L",
+      "bone": "arm.L",
+      "rect": [
+        232,
+        742,
+        267,
+        830
+      ],
+      "cap": [
+        265,
+        756,
+        18
+      ],
+      "depth": 1
+    },
+    {
+      "name": "arm.R",
+      "bone": "arm.R",
+      "rect": [
+        382,
+        742,
+        424,
+        830
+      ],
+      "cap": [
+        384,
+        756,
+        18
+      ],
+      "depth": 1
+    },
+    {
+      "name": "body",
+      "bone": "body",
+      "rest": true,
+      "depth": 0
+    }
+  ],
+  "bones": [
+    {
+      "name": "root",
+      "head": [
+        322,
+        904
+      ],
+      "tail": [
+        322,
+        860
+      ]
+    },
+    {
+      "name": "body",
+      "head": [
+        322,
+        850
+      ],
+      "tail": [
+        322,
+        745
+      ],
+      "parent": "root"
+    },
+    {
+      "name": "head",
+      "head": [
+        322,
+        740
+      ],
+      "tail": [
+        322,
+        575
+      ],
+      "parent": "body"
+    },
+    {
+      "name": "arm.L",
+      "head": [
+        265,
+        756
+      ],
+      "tail": [
+        245,
+        818
+      ],
+      "parent": "body"
+    },
+    {
+      "name": "arm.R",
+      "head": [
+        384,
+        756
+      ],
+      "tail": [
+        403,
+        818
+      ],
+      "parent": "body"
+    }
+  ],
+  "mouth": [
+    323,
+    716,
+    50
+  ],
+  "eyes": [
+    [
+      282,
+      682,
+      23,
+      20
+    ],
+    [
+      352,
+      682,
+      23,
+      20
+    ]
+  ],
+  "skin_sample": [
+    300,
+    728
+  ],
+  "eyelid_sample": [
+    320,
+    660
+  ],
+  "mouth_style": "monkey",
+  "background_seeds": [
+    [
+      222,
+      780
+    ],
+    [
+      236,
+      795
+    ],
+    [
+      398,
+      834
+    ],
+    [
+      240,
+      836
+    ],
+    [
+      232,
+      826
+    ]
+  ]
+}
