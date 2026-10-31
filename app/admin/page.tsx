@@ -6,6 +6,7 @@ import { Suspense } from "react";
 import { CardsSkeleton } from "@/components/skeleton";
 import { updatedLabel } from "@/components/youtube-stats";
 import { isConfirmedAdmin } from "@/lib/admin/access";
+import { PROFILE_STEPS } from "@/lib/admin/completeness";
 import { getAdminOverview } from "@/lib/admin/data";
 import { CITIES, labelFor } from "@/lib/catalog";
 import { requireUser } from "@/lib/profile/data";
@@ -59,7 +60,7 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
       <div className="flex flex-wrap items-end gap-4">
         <div className="mr-auto">
           <h1 className="page-title">Admin</h1>
-          <p className="mt-1 text-muted">Who has joined Peerpop and what they&apos;re doing. Only you can see this page.</p>
+          <p className="mt-1 text-muted">Who has joined Peerpop and what they&apos;re doing. Click a name to see their whole profile. Only you can see this page.</p>
         </div>
         <Link href="/admin/reports" className="btn-secondary">
           <Flag size={16} /> Reports{!!openReports && <span className="rounded-full bg-red-600 px-1.5 text-xs text-white">{openReports}</span>}
@@ -95,10 +96,11 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
           )}
         </form>
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left text-sm">
+          <table className="w-full min-w-[1080px] text-left text-sm">
             <thead className="bg-sunken text-xs text-muted">
               <tr>
                 <th className="px-4 py-2.5 font-semibold">Name</th>
+                <th className="px-4 py-2.5 font-semibold">Profile</th>
                 <th className="px-4 py-2.5 font-semibold">Email</th>
                 <th className="px-4 py-2.5 font-semibold">City</th>
                 <th className="px-4 py-2.5 font-semibold">Joined</th>
@@ -112,14 +114,22 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
               {shown.map((u) => (
                 <tr key={u.id}>
                   <td className="px-4 py-3">
-                    {u.handle ? (
-                      <Link href={`/creators/${u.handle}`} className="font-semibold hover:underline">
-                        {u.name}
-                      </Link>
+                    <Link href={`/admin/users/${u.id}`} className="font-semibold hover:underline">
+                      {u.name ?? <span className="font-normal text-muted">No profile yet</span>}
+                    </Link>
+                    {u.isPrivate && <span className="chip ml-2 py-0.5 text-[11px]">Private</span>}
+                  </td>
+                  <td className="px-4 py-3">
+                    {u.gaps.length === 0 ? (
+                      <span className="font-semibold text-green-700">Complete</span>
+                    ) : u.gaps[0] === "Profile" ? (
+                      <span className="text-muted">Not started</span>
                     ) : (
-                      <span className="text-muted">No profile yet</span>
+                      <span title={`Missing: ${u.gaps.join(", ")}`}>
+                        {PROFILE_STEPS - u.gaps.length}/{PROFILE_STEPS}
+                        <span className="ml-2 text-xs text-muted">needs {u.gaps.join(", ")}</span>
+                      </span>
                     )}
-                    {u.handle && !u.hasPhoto && <span className="chip ml-2 py-0.5 text-[11px]">No photo</span>}
                   </td>
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3">{u.city ? labelFor(CITIES, u.city) : "–"}</td>
@@ -132,7 +142,7 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
               ))}
               {shown.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-4 py-10 text-center text-muted">
+                  <td colSpan={9} className="px-4 py-10 text-center text-muted">
                     {query ? "Nobody matches that search." : "Nobody has joined yet."}
                   </td>
                 </tr>

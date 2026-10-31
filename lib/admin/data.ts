@@ -1,5 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { profileGaps } from "./completeness";
 
 export type AdminUser = {
   id: string;
@@ -12,6 +13,9 @@ export type AdminUser = {
   city: string | null;
   listed: boolean;
   hasPhoto: boolean;
+  isPrivate: boolean;
+  /** Parts of the profile not filled in yet; empty when complete. */
+  gaps: string[];
   posts: number;
   connections: number;
 };
@@ -56,17 +60,23 @@ function countBy(rows: { id: string }[] | null) {
 export async function getAdminOverview(now: number): Promise<AdminOverview> {
   const admin = createAdminClient();
   const head = { count: "exact" as const, head: true };
-  const [authUsers, profiles, posts, links, collabs, groups, messages] = await Promise.all([
+  const [authUsers, profiles, posts, links, collabs, groups, messages, channels, videos] = await Promise.all([
     allAuthUsers(admin),
-    allRows((a, b) => admin.from("creator_profiles").select("user_id, handle, display_name, city_slug, is_listed, photo_path").order("user_id").range(a, b)),
+    allRows((a, b) =>
+      admin.from("creator_profiles").select("user_id, handle, display_name, city_slug, is_listed, is_private, photo_path, bio, niches, skills").order("user_id").range(a, b),
+    ),
     allRows((a, b) => admin.from("posts").select("id:author_id").order("id").range(a, b)),
     allRows((a, b) => admin.from("connections").select("from_user, to_user").eq("status", "accepted").order("from_user").order("to_user").range(a, b)),
     admin.from("collab_posts").select("id", head),
     admin.from("groups").select("id", head),
     admin.from("messages").select("id", head),
+    allRows((a, b) => admin.from("platform_accounts").select("id:user_id").order("user_id").range(a, b)),
+    allRows((a, b) => admin.from("profile_videos").select("id:user_id").order("user_id").range(a, b)),
   ]);
   const byId = new Map(profiles.map((p) => [p.user_id as string, p]));
   const postCount = countBy(posts as { id: string }[]);
+  const channelCount = countBy(channels as { id: string }[]);
+  const videoCount = countBy(videos as { id: string }[]);
   const linkRows = links as { from_user: string; to_user: string }[];
   const connCount = countBy(linkRows.flatMap((l) => [{ id: l.from_user }, { id: l.to_user }]));
 
@@ -84,6 +94,17 @@ export async function getAdminOverview(now: number): Promise<AdminOverview> {
         city: (p?.city_slug as string) ?? null,
         listed: !!p?.is_listed,
         hasPhoto: !!p?.photo_path,
+        isPrivate: !!p?.is_private,
+        gaps: profileGaps({
+          hasProfile: !!p,
+          photo: !!p?.photo_path,
+          city: !!p?.city_slug,
+          bio: !!(p?.bio as string | null)?.trim(),
+          skills: ((p?.skills as string[] | null) ?? []).length,
+          niches: ((p?.niches as string[] | null) ?? []).length,
+          channels: channelCount.get(u.id) ?? 0,
+          videos: videoCount.get(u.id) ?? 0,
+        }),
         posts: postCount.get(u.id) ?? 0,
         connections: connCount.get(u.id) ?? 0,
       };
