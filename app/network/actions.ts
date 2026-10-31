@@ -4,7 +4,7 @@ import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { after } from "next/server";
 import { getConnection } from "@/lib/connections/data";
-import { emailConnectionRequest } from "@/lib/email/connection";
+import { emailConnectionAccepted, emailConnectionRequest } from "@/lib/email/connection";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
 
@@ -30,6 +30,8 @@ export async function sendConnectionRequest(_prev: FormState, form: FormData): P
     // They asked first, so connecting means accepting their request.
     const { error } = await supabase.from("connections").update({ status: "accepted" }).eq("id", existing.id);
     if (error) return { message: TRY_AGAIN };
+    const site = `https://${(await headers()).get("host")}`;
+    after(() => emailConnectionAccepted(user.id, other, site).catch(() => console.error("Accepted email failed")));
     refresh();
     return { ok: true, message: "You're connected." };
   }
@@ -62,7 +64,12 @@ async function answer(form: FormData, status: "accepted" | "declined") {
   const { supabase, user } = await requireUser("/network");
   const id = str(form, "id");
   if (!id) return;
-  await supabase.from("connections").update({ status }).eq("id", id).eq("to_user", user.id);
+  const { data } = await supabase.from("connections").update({ status }).eq("id", id).eq("to_user", user.id).select("from_user");
+  const requester = data?.[0]?.from_user as string | undefined;
+  if (status === "accepted" && requester) {
+    const site = `https://${(await headers()).get("host")}`;
+    after(() => emailConnectionAccepted(user.id, requester, site).catch(() => console.error("Accepted email failed")));
+  }
   refresh();
 }
 

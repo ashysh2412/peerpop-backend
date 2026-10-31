@@ -1,8 +1,9 @@
 import "server-only";
 import { CITIES, labelFor } from "@/lib/catalog";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { recipientFor } from "./prefs";
 import { sendEmail } from "./send";
-import { connectionRequestEmail } from "./templates";
+import { connectionRequestEmail, simpleEmail } from "./templates";
 
 const DAY_MS = 24 * 3600 * 1000;
 
@@ -19,12 +20,11 @@ export async function emailConnectionRequest(fromUser: string, toUser: string, m
     .gte("created_at", new Date(Date.now() - DAY_MS).toISOString());
   if ((count ?? 0) > 1) return;
 
-  const [{ data: profile }, { data: recipient }] = await Promise.all([
+  const [{ data: profile }, recipient] = await Promise.all([
     admin.from("creator_profiles").select("display_name, handle, city_slug").eq("user_id", fromUser).maybeSingle(),
-    admin.auth.admin.getUserById(toUser),
+    recipientFor(admin, toUser, "network", siteUrl),
   ]);
-  const to = recipient?.user?.email;
-  if (!profile || !to) return;
+  if (!profile || !recipient) return;
 
   const email = connectionRequestEmail({
     name: profile.display_name,
@@ -32,6 +32,24 @@ export async function emailConnectionRequest(fromUser: string, toUser: string, m
     city: profile.city_slug ? labelFor(CITIES, profile.city_slug) : null,
     message,
     siteUrl,
+    unsubscribe: recipient.unsubscribe,
   });
-  await sendEmail({ to, ...email });
+  await sendEmail({ to: recipient.to, ...email });
+}
+
+/** Tells the person who sent a request that it was accepted. */
+export async function emailConnectionAccepted(accepterId: string, requesterId: string, siteUrl: string) {
+  const admin = createAdminClient();
+  const [{ data: profile }, recipient] = await Promise.all([
+    admin.from("creator_profiles").select("display_name, handle").eq("user_id", accepterId).maybeSingle(),
+    recipientFor(admin, requesterId, "network", siteUrl),
+  ]);
+  if (!profile || !recipient) return;
+  const body = simpleEmail({
+    lead: `${profile.display_name} accepted your connection request on Peerpop. You can message each other now.`,
+    button: { text: "Say hi", url: `${siteUrl}/messages/${encodeURIComponent(profile.handle)}` },
+    reason: "You're getting this because you sent a connection request on Peerpop.",
+    unsubscribe: recipient.unsubscribe,
+  });
+  await sendEmail({ to: recipient.to, subject: `${profile.display_name} accepted your request`, ...body });
 }

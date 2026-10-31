@@ -2,9 +2,9 @@ export function escapeHtml(text: string) {
   return text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }
 
-export type RequestEmail = { name: string; handle: string; city: string | null; message: string | null; siteUrl: string };
+export type RequestEmail = { name: string; handle: string; city: string | null; message: string | null; siteUrl: string; unsubscribe?: string };
 
-export function connectionRequestEmail({ name, handle, city, message, siteUrl }: RequestEmail) {
+export function connectionRequestEmail({ name, handle, city, message, siteUrl, unsubscribe }: RequestEmail) {
   const reviewUrl = `${siteUrl}/network?tab=received`;
   const profileUrl = `${siteUrl}/creators/${encodeURIComponent(handle)}`;
   const who = city ? `${name} (@${handle}, ${city})` : `${name} (@${handle})`;
@@ -15,13 +15,14 @@ export function connectionRequestEmail({ name, handle, city, message, siteUrl }:
     `\nReview the request: ${reviewUrl}`,
     `See their profile: ${profileUrl}`,
     `\nYou're getting this because someone sent you a connection request on Peerpop.`,
+    ...(unsubscribe ? [`Turn off these emails: ${unsubscribe}`] : []),
   ].join("\n");
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:480px">
 <p><b>${escapeHtml(who)}</b> wants to connect with you on Peerpop.</p>
-${message ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52525b">${escapeHtml(message)}</p>` : ""}
-<p><a href="${reviewUrl}" style="display:inline-block;background:#7c3aed;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Review request</a></p>
-<p><a href="${profileUrl}" style="color:#7c3aed">See their profile</a></p>
-<p style="font-size:12px;color:#71717a">You're getting this because someone sent you a connection request on Peerpop.</p>
+${message ? `<p style="border-left:3px solid #f0b100;padding-left:12px;color:#52525b">${escapeHtml(message)}</p>` : ""}
+<p><a href="${reviewUrl}" style="display:inline-block;background:#111111;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">Review request</a></p>
+<p><a href="${profileUrl}" style="color:#111111">See their profile</a></p>
+<p style="font-size:12px;color:#71717a">You're getting this because someone sent you a connection request on Peerpop.${unsubscribe ? ` <a href="${unsubscribe}" style="color:#71717a">Turn off these emails</a>` : ""}</p>
 </div>`;
   return { subject, text, html };
 }
@@ -29,13 +30,27 @@ ${message ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52
 type Button = { text: string; url: string };
 
 /** A short email: one bold lead line, an optional quoted note, a button and a footer reason. */
-export function simpleEmail({ lead, note, button, reason }: { lead: string; note?: string | null; button: Button; reason: string }) {
-  const text = [lead, note ? `\n"${note}"` : "", `\n${button.text}: ${button.url}`, `\n${reason}`].join("\n");
+export function simpleEmail({
+  lead,
+  note,
+  button,
+  reason,
+  unsubscribe,
+}: {
+  lead: string;
+  note?: string | null;
+  button: Button;
+  reason: string;
+  /** Link that turns this kind of email off, shown in the footer. */
+  unsubscribe?: string;
+}) {
+  const footer = unsubscribe ? [`Turn off these emails: ${unsubscribe}`] : [];
+  const text = [lead, note ? `\n"${note}"` : "", `\n${button.text}: ${button.url}`, `\n${reason}`, ...footer].join("\n");
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:480px">
 <p>${escapeHtml(lead)}</p>
-${note ? `<p style="border-left:3px solid #7c3aed;padding-left:12px;color:#52525b">${escapeHtml(note)}</p>` : ""}
-<p><a href="${button.url}" style="display:inline-block;background:#7c3aed;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">${escapeHtml(button.text)}</a></p>
-<p style="font-size:12px;color:#71717a">${escapeHtml(reason)}</p>
+${note ? `<p style="border-left:3px solid #f0b100;padding-left:12px;color:#52525b">${escapeHtml(note)}</p>` : ""}
+<p><a href="${button.url}" style="display:inline-block;background:#111111;color:#fff;padding:10px 18px;border-radius:999px;text-decoration:none">${escapeHtml(button.text)}</a></p>
+<p style="font-size:12px;color:#71717a">${escapeHtml(reason)}${unsubscribe ? ` <a href="${unsubscribe}" style="color:#71717a">Turn off these emails</a>` : ""}</p>
 </div>`;
   return { text, html };
 }

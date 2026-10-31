@@ -3,6 +3,7 @@
   "regions": ["bom1"],
   "crons": [
     { "path": "/api/cron/refresh-youtube", "schedule": "30 20 * * *" },
-    { "path": "/api/cron/instagram", "schedule": "30 13 * * *" }
+    { "path": "/api/cron/instagram", "schedule": "30 13 * * *" },
+    { "path": "/api/cron/email-digest", "schedule": "0 14 * * *" }
   ]
 }

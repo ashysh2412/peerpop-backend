@@ -1,5 +1,8 @@
 "use server";
 
+import { headers } from "next/headers";
+import { after } from "next/server";
+import { emailNewMessage } from "@/lib/email/messages";
 import { requireUser } from "@/lib/profile/data";
 import { MESSAGE_COLUMNS, type Message } from "@/lib/messages/data";
 
@@ -16,7 +19,11 @@ export async function sendMessage(to: string, body: string): Promise<{ message?:
     if (error.message.includes("daily message limit")) return { error: "You've sent a lot of messages today. Try again tomorrow." };
     return { error: "Couldn't send. Please try again." };
   }
-  return { message: data as Message };
+  const message = data as Message;
+  const siteUrl = `https://${(await headers()).get("host")}`;
+  // Sent after the reply, so email never slows down or breaks sending a message.
+  after(() => emailNewMessage(message.id, user.id, to, siteUrl).catch(() => console.error("Message email failed")));
+  return { message };
 }
 
 export async function markRead(other: string) {

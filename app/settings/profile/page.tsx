@@ -7,6 +7,8 @@ import { ensureProfile } from "@/lib/profile/ensure";
 import { ContactsSection, LinksSection, PhotoSection, ProfileSection, VideosSection } from "./sections";
 import { YouTubeSection } from "./youtube-section";
 import { BlockedList } from "@/components/blocked-list";
+import { getEmailSettings } from "@/lib/email/settings";
+import { EmailSection } from "./email-section";
 
 export const metadata: Metadata = { title: "Edit profile · Peerpop" };
 
@@ -23,10 +25,11 @@ export default function SettingsProfilePage() {
 async function Settings() {
   const { supabase, user } = await requireUser("/settings/profile");
   const { profile } = await ensureProfile(supabase, user);
-  const [platforms, videos, contacts] = await Promise.all([
+  const [platforms, videos, contacts, emailSettings] = await Promise.all([
     getOwnPlatforms(supabase, user.id),
     getVideos(supabase, user.id),
     getOwnContacts(supabase, user.id),
+    getEmailSettings(supabase, user.id),
   ]);
 
   return (
@@ -49,6 +52,7 @@ async function Settings() {
       <YouTubeSection account={platforms.find((p) => p.platform === "youtube")} />
       <LinksSection platforms={platforms} />
       <ContactsSection contacts={contacts} />
+      <EmailSection settings={emailSettings} />
       <BlockedList supabase={supabase} />
     </>
   );
