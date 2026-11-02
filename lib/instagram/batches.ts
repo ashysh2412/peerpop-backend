@@ -164,6 +164,43 @@ const BATCHES: Record<string, BatchPost[]> = {
       lines: ["You've got all the gear. You just need the people.", "Search Peerpop by skill and city to find yours.", LINE],
     },
   ],
+  "2026-11-09": [
+    {
+      headline: "Gimbal kharida. |Cameraman nahi mila.",
+      subline: "Peerpop pe mil jayega.",
+      lines: ["New gear, no crew? Classic.", "Find videographers near you on Peerpop and put that gimbal to work.", LINE],
+    },
+    {
+      headline: "Ek reel, 47 drafts. |Ek editor, zero tension.",
+      subline: "Find editors across India.",
+      lines: ["Stop exporting draft number 48.", "Find an editor on Peerpop, check their work and team up.", LINE],
+    },
+    {
+      headline: "Trending audio mil gaya. |Dance partner nahi.",
+      subline: "Find dancers near you.",
+      lines: ["The audio won't trend forever.", "Find a dancer near you on Peerpop and shoot it this week.", LINE],
+    },
+    {
+      headline: "Group project mein sab kaam aapne kiya? |Ab collab mein baant lo.",
+      subline: "Everyone on Peerpop is here to make things.",
+      lines: ["We all remember that one group project.", "On Peerpop, people join a collab because they actually want to create.", LINE],
+    },
+    {
+      headline: "Golden hour: 20 minutes. |Akele setup: 2 ghante.",
+      subline: "Get a partner. Catch the light.",
+      lines: ["By the time the tripod is level, the sun is gone.", "Find a shoot partner on Peerpop and catch golden hour together.", LINE],
+    },
+    {
+      headline: "Ideas: 100. |Haath: sirf 2.",
+      subline: "Get more hands on Peerpop.",
+      lines: ["Too many ideas, not enough hands.", "Find editors, shooters and co-creators on Peerpop and start making them.", LINE],
+    },
+    {
+      headline: "Shaadi season = |content season. Crew ready?",
+      subline: "Find shooters and editors near you.",
+      lines: ["Wedding season is here, and so are the shoots.", "Find photographers, videographers and editors near you on Peerpop.", LINE],
+    },
+  ],
 };
 
 /** Every batch post, oldest batch first, ready to become drafts. */
