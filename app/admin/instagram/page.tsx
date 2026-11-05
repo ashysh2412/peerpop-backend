@@ -156,6 +156,12 @@ async function InstagramAdmin({ searchParams }: Pick<PageProps<"/admin/instagram
                     </button>
                   </form>
                 )}
+                {p.status === "failed" && (
+                  <form action={skipPost}>
+                    <input type="hidden" name="id" value={p.id} />
+                    <button className="btn-ghost btn-sm">Remove</button>
+                  </form>
+                )}
               </li>
             ))}
           </ul>
