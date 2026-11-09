@@ -6,6 +6,7 @@ import { CollabCall } from "@/components/collab-call";
 import { HomeHeader } from "@/components/home-header";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
+import { PixelSignedUp } from "@/components/meta-pixel";
 import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
@@ -104,6 +105,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                 .
               </p>
             )}
+            {(welcome || created) && <PixelSignedUp userId={user.id} />}
             {(welcome || created) && (
               <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm text-brand-ink">
                 🎉 <span className="font-semibold">You&apos;re in!</span> Say hello with a post, or{" "}

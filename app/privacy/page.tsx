@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Privacy policy · Peerpop" };
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated="22 October 2026">
+    <LegalPage title="Privacy policy" updated="6 November 2026">
       <p>
         Peerpop helps content creators in India find each other and collaborate. This page explains what we collect,
         why, and the choices you have. Questions? Write to <a className="text-brand-ink" href="mailto:hello@peerpop.in">hello@peerpop.in</a>.
@@ -30,11 +30,27 @@ export default function PrivacyPage() {
         <li>To email you about connection requests and other activity on your account.</li>
         <li>To keep Peerpop safe, for example by limiting spam requests.</li>
       </ul>
-      <p>We don&apos;t sell your data and we don&apos;t show ads.</p>
+      <p>We don&apos;t sell your data and we don&apos;t show ads inside Peerpop.</p>
+      <h2>Meta Pixel (for our ads)</h2>
+      <p>
+        We advertise Peerpop on Instagram and Facebook. On peerpop.in we use the Meta Pixel, a small piece of code from
+        Meta, to learn which of our ads bring people to the site and to sign up. It tells Meta which page was visited and
+        when someone creates an account, along with technical details such as your browser and IP address. We don&apos;t
+        send Meta your password, messages or anything you write on Peerpop. Meta handles this under its own{" "}
+        <a className="text-brand-ink" href="https://www.facebook.com/privacy/policy/">
+          privacy policy
+        </a>
+        , and you can control ads based on this in your{" "}
+        <a className="text-brand-ink" href="https://accountscenter.facebook.com/ad_preferences">
+          Meta ad preferences
+        </a>
+        .
+      </p>
       <h2>Who we share it with</h2>
       <p>
-        We use a few providers to run Peerpop: Supabase (database and sign-in), Vercel (hosting), Resend (email) and
-        Google (sign-in and YouTube data). They process data only to provide their service to us. Our use of
+        We use a few providers to run Peerpop: Supabase (database and sign-in), Vercel (hosting), Resend (email),
+        Google (sign-in and YouTube data) and Meta (measuring our ads, see above).
+        They process data only to provide their service to us. Our use of
         information received from Google APIs follows the{" "}
         <a className="text-brand-ink" href="https://developers.google.com/terms/api-services-user-data-policy">
           Google API Services User Data Policy
