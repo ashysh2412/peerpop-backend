@@ -201,6 +201,43 @@ const BATCHES: Record<string, BatchPost[]> = {
       lines: ["Wedding season is here, and so are the shoots.", "Find photographers, videographers and editors near you on Peerpop.", LINE],
     },
   ],
+  "2026-11-16": [
+    {
+      headline: "Diwali khatam. |Ab content shuru.",
+      subline: "Find your next collab on Peerpop.",
+      lines: ["The sweets are finished. The ideas aren't.", "Find creators across India on Peerpop and start the next shoot.", LINE],
+    },
+    {
+      headline: "Thumbnail: 3 ghante. |Video: 3 minute.",
+      subline: "Find thumbnail designers on Peerpop.",
+      lines: ["Let someone who loves thumbnails make them.", "Search Peerpop for thumbnail and graphic designers and team up.", LINE],
+    },
+    {
+      headline: "Comments mein 'collab?' |DM mein sannata.",
+      subline: "On Peerpop, say why you want to collab.",
+      lines: ["Everyone says collab. Nobody follows up.", "On Peerpop, you send a request with a short note so people know you mean it.", LINE],
+    },
+    {
+      headline: "Apni awaaz mein voiceover? |Bhai, rehne do.",
+      subline: "Find voiceover artists on Peerpop.",
+      lines: ["Some voices are made for reels. Maybe not yours. That's okay.", "Find voiceover artists on Peerpop and give your video the voice it deserves.", LINE],
+    },
+    {
+      headline: "Script ready. Location ready. |Hero missing.",
+      subline: "Find actors near you.",
+      lines: ["The story is written. Now cast it.", "Find actors near you on Peerpop and shoot your short film.", LINE],
+    },
+    {
+      headline: "Followers ka shortcut? |Nahi hai. Collab hai.",
+      subline: "Find creators across India.",
+      lines: ["There's no magic trick. There's teamwork.", "Find creators to collab with on Peerpop and grow together.", LINE],
+    },
+    {
+      headline: "Mumbai ka creator, Pune ka editor. |Distance? Ek request.",
+      subline: "Peerpop works across India.",
+      lines: ["Your editor doesn't have to live in your city.", "Find creators anywhere in India on Peerpop and work together online.", LINE],
+    },
+  ],
 };
 
 /** Every batch post, oldest batch first, ready to become drafts. */
