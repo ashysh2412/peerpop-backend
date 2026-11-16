@@ -1,4 +1,4 @@
-import { Bell, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, ShieldCheck, User, Users } from "lucide-react";
+import { Bell, Eye, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, ShieldCheck, User, Users } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { isAdminEmail } from "@/lib/admin/access";
@@ -146,6 +146,9 @@ function SignedIn({
               <div className="my-1 h-px bg-line" />
               <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
                 <User size={16} className="text-muted" /> My profile
+              </Link>
+              <Link href="/profile-views" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+                <Eye size={16} className="text-muted" /> Who viewed me
               </Link>
             </>
           )}

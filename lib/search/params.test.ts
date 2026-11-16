@@ -43,3 +43,16 @@ describe("toQueryString", () => {
     expect(toQueryString(parseFilters({}))).toBe("");
   });
 });
+
+describe("name search", () => {
+  it("keeps names in any language and drops symbols", () => {
+    expect(parseFilters({ q: "  Ashish   Jain " }).q).toBe("Ashish Jain");
+    expect(parseFilters({ q: "आशीष" }).q).toBe("आशीष");
+    expect(parseFilters({ q: "a%_,()*b" }).q).toBe("a b");
+    expect(parseFilters({ q: "   " }).q).toBeNull();
+    expect(parseFilters({ q: "x".repeat(80) }).q).toHaveLength(50);
+  });
+  it("keeps the name in links", () => {
+    expect(toQueryString(parseFilters({ q: "riya", niche: "food" }), { page: 2 })).toBe("?q=riya&niche=food&page=2");
+  });
+});

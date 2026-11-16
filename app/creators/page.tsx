@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { CreatorNameSearch } from "@/components/creator-name-search";
 import { CreatorCard, type CreatorRow as Row } from "@/components/creator-card";
 import { Dropdown } from "@/components/dropdown";
 import { ChipGroup } from "@/components/ui";
@@ -15,6 +16,7 @@ import {
   toRpcArgs,
   type SearchFilters,
 } from "@/lib/search/params";
+import { searchByName } from "@/lib/search/by-name";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/supabase/session";
 import { CardsSkeleton } from "@/components/skeleton";
@@ -29,7 +31,7 @@ export default function CreatorsPage({ searchParams }: PageProps<"/creators">) {
     <main className="page flex flex-col gap-6">
       <div>
         <h1 className="page-title">Find creators</h1>
-        <p className="mt-1 text-muted">Tap a niche to start. Verified numbers come straight from YouTube.</p>
+        <p className="mt-1 text-muted">Search a name or tap a niche. Verified numbers come straight from YouTube.</p>
       </div>
       <Suspense fallback={<CardsSkeleton />}>
         <Search searchParams={searchParams} />
@@ -41,7 +43,9 @@ export default function CreatorsPage({ searchParams }: PageProps<"/creators">) {
 async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchParams">) {
   const filters = parseFilters(await searchParams);
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("search_creators", toRpcArgs(filters));
+  const { data, error } = filters.q
+    ? await searchByName(supabase, { ...filters, q: filters.q })
+    : await supabase.rpc("search_creators", toRpcArgs(filters));
   const rows = (data ?? []) as Row[];
   const {
     data: { user },
@@ -58,6 +62,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
 
   return (
     <div className="flex flex-col gap-5">
+      <CreatorNameSearch q={filters.q} />
       {/* Quick picks as chips; everything else folds into "More filters". */}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
         <QuickChip href={`/creators${toQueryString(filters, { niches: [], page: 1 })}`} on={filters.niches.length === 0}>
@@ -106,8 +111,10 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         ) : rows.length === 0 ? (
           <div className="empty">
             <span className="text-4xl">🔍</span>
-            <p className="font-semibold text-ink">No creators match</p>
-            <p className="text-sm">Try removing a filter or picking another city.</p>
+            <p className="font-semibold text-ink">{filters.q ? `No creators named “${filters.q}”` : "No creators match"}</p>
+            <p className="text-sm">
+              {filters.q ? "Check the spelling, or try just the first name." : "Try removing a filter or picking another city."}
+            </p>
             <Link href="/creators" className="btn-secondary btn-sm mt-1">
               Clear filters
             </Link>
@@ -163,6 +170,7 @@ function QuickChip({ href, on, outline, children }: { href: string; on: boolean;
 function Filters({ filters }: { filters: SearchFilters }) {
   return (
     <form method="get" action="/creators" className="flex flex-col gap-5">
+      {filters.q && <input type="hidden" name="q" value={filters.q} />}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-1">
         <label className="label flex flex-col gap-1.5">
           City

@@ -1,4 +1,4 @@
-import { Handshake, LayoutGrid, MapPin, MessageCircle, Pencil, Users } from "lucide-react";
+import { ChevronRight, Eye, Handshake, LayoutGrid, MapPin, MessageCircle, Pencil, Users } from "lucide-react";
 import Link from "next/link";
 import { CITIES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import type { PlatformAccount, Profile } from "@/lib/profile/types";
@@ -11,11 +11,13 @@ export function ProfileSummary({
   connections,
   posts,
   platforms,
+  views,
 }: {
   profile: Profile;
   connections: number;
   posts: number;
   platforms: PlatformAccount[];
+  views: number;
 }) {
   const what = [...profile.skills.map((s) => labelFor(SKILLS, s)), ...profile.niches.map((n) => labelFor(NICHES, n))].slice(0, 3);
   const links = [
@@ -53,6 +55,12 @@ export function ProfileSummary({
             <dt className="text-xs text-muted">Posts</dt>
           </Link>
         </dl>
+        <Link href="/profile-views" className="flex items-center gap-2 border-t border-line px-4 py-3 text-sm transition hover:bg-sunken">
+          <Eye size={16} className="text-muted" />
+          <span className="flex-1 text-left">Profile views</span>
+          <span className="font-bold">{views}</span>
+          <ChevronRight size={15} className="text-muted" />
+        </Link>
         <div className="flex justify-center border-t border-line p-3">
           <SocialLinks platforms={platforms} addHref="/settings/profile#platforms" size="sm" stack className="w-full" />
         </div>

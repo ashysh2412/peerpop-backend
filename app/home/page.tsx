@@ -14,6 +14,7 @@ import { type Collab, listCollabs } from "@/lib/collabs/data";
 import { FEED_PAGE, getFeed, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
+import { getProfileViewCount } from "@/lib/profile/views";
 import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Home · Peerpop" };
@@ -46,13 +47,14 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, views] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
+    getProfileViewCount(supabase),
   ]);
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
@@ -90,11 +92,11 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
 
   return (
     <div className="mx-auto grid w-full max-w-[1000px] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:max-w-[1240px] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
-      <ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} platforms={platforms} />
+      <ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} platforms={platforms} views={views} />
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
           <>
-            <HomeHeader firstName={firstName} people={people} />
+            <HomeHeader firstName={firstName} people={people} views={views} />
             {(note === "blocked" || note === "reported-blocked") && (
               <p className="rounded-2xl bg-sunken px-4 py-3 text-sm">
                 {note === "blocked" ? "Blocked." : "Thanks for telling us. They're blocked."} You won&apos;t see each other on Peerpop. You can unblock
