@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import { Search as SearchIcon, SlidersHorizontal, X } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
+import { CreatorNameSearch } from "@/components/creator-name-search";
 import { CreatorCard, type CreatorRow as Row } from "@/components/creator-card";
 import { Dropdown } from "@/components/dropdown";
 import { ChipGroup } from "@/components/ui";
@@ -61,7 +62,7 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
 
   return (
     <div className="flex flex-col gap-5">
-      <NameSearch q={filters.q} />
+      <CreatorNameSearch q={filters.q} />
       {/* Quick picks as chips; everything else folds into "More filters". */}
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
         <QuickChip href={`/creators${toQueryString(filters, { niches: [], page: 1 })}`} on={filters.niches.length === 0}>
@@ -150,38 +151,6 @@ async function Search({ searchParams }: Pick<PageProps<"/creators">, "searchPara
         )}
       </section>
     </div>
-  );
-}
-
-/** Typing a name searches everyone; the chips below can then narrow it down. */
-function NameSearch({ q }: { q: string | null }) {
-  return (
-    <form method="get" action="/creators" role="search" className="relative">
-      <SearchIcon size={18} className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-muted" />
-      <input
-        type="search"
-        name="q"
-        defaultValue={q ?? ""}
-        placeholder="Search creators by name"
-        aria-label="Search creators by name"
-        maxLength={50}
-        autoComplete="off"
-        enterKeyHint="search"
-        className="input h-12 rounded-full pr-24 pl-11 [&::-webkit-search-cancel-button]:hidden"
-      />
-      {q && (
-        <Link
-          href="/creators"
-          aria-label="Clear search"
-          className="absolute top-1/2 right-[5.25rem] flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:bg-sunken"
-        >
-          <X size={16} />
-        </Link>
-      )}
-      <button type="submit" className="btn-dark absolute top-1/2 right-1.5 h-9 -translate-y-1/2 rounded-full px-4 text-sm">
-        Search
-      </button>
-    </form>
   );
 }
 
