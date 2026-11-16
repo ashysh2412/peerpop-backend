@@ -19,6 +19,7 @@ import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/co
 import { getPhotosBy } from "@/lib/feed/data";
 import { compactNumber } from "@/lib/format";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
+import { recordProfileView } from "@/lib/profile/views";
 import type { PlatformAccount } from "@/lib/profile/types";
 import { createClient } from "@/lib/supabase/server";
 import { getSessionUser } from "@/lib/supabase/session";
@@ -69,6 +70,7 @@ async function Creator({ params, searchParams }: PageProps<"/creators/[handle]">
           getConnection(supabase, user.id, profile.user_id),
           getMutualCount(supabase, profile.user_id),
           getContactFor(supabase, profile.user_id),
+          recordProfileView(supabase, profile.user_id),
         ])
       : [null, 0, null];
 

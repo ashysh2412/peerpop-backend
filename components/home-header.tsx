@@ -7,12 +7,22 @@ import { Avatar } from "./avatar";
  * The top of Home in one calm card: a greeting, and a swipeable row of who joined most recently
  * (left out when nobody else has joined yet).
  */
-export function HomeHeader({ firstName, people }: { firstName: string; people: Suggestion[] }) {
+export function HomeHeader({ firstName, people, views }: { firstName: string; people: Suggestion[]; views: number }) {
   return (
     <section className="card overflow-hidden">
       <div className="p-5">
         <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">Hey {firstName} 👋</h1>
-        <p className="mt-0.5 text-sm text-muted">See what creators are making, and find your next collab.</p>
+        {views > 0 ? (
+          <>
+            {/* Wide screens show this in the left card instead. */}
+            <Link href="/profile-views" className="mt-0.5 inline-flex items-center gap-1 text-sm font-medium text-brand-ink hover:underline xl:hidden">
+              👀 {views === 1 ? "1 person" : `${views} people`} viewed your profile →
+            </Link>
+            <p className="mt-0.5 hidden text-sm text-muted xl:block">See what creators are making, and find your next collab.</p>
+          </>
+        ) : (
+          <p className="mt-0.5 text-sm text-muted">See what creators are making, and find your next collab.</p>
+        )}
       </div>
 
       {people.length > 0 && (
