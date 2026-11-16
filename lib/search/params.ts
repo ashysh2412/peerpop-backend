@@ -10,6 +10,8 @@ export const FOLLOWER_BUCKETS = [
 ] as const;
 
 export type SearchFilters = {
+  /** Name typed in the search box, already cleaned up (see cleanName). */
+  q: string | null;
   city: string | null;
   niches: Niche[];
   skills: Skill[];
@@ -33,11 +35,21 @@ function one(raw: Query[string]) {
   return (Array.isArray(raw) ? raw[0] : raw) ?? null;
 }
 
+/**
+ * Keeps letters (any language), numbers, spaces and . - ' so the name is safe
+ * to drop into a database filter; anything else becomes a space.
+ */
+export function cleanName(raw: string | null) {
+  const s = (raw ?? "").replace(/[^\p{L}\p{M}\p{N} .'-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 50);
+  return s.length ? s : null;
+}
+
 export function parseFilters(query: Query): SearchFilters {
   const city = one(query.city);
   const followers = one(query.followers);
   const page = Number(one(query.page));
   return {
+    q: cleanName(one(query.q)),
     city: CITIES.some(([c]) => c === city) ? city : null,
     niches: list(query.niche, NICHES),
     skills: list(query.skill, SKILLS),
@@ -72,6 +84,7 @@ export function toRpcArgs(f: SearchFilters) {
 export function toQueryString(f: SearchFilters, overrides: Partial<SearchFilters> = {}) {
   const v = { ...f, ...overrides };
   const q = new URLSearchParams();
+  if (v.q) q.set("q", v.q);
   if (v.city) q.set("city", v.city);
   if (v.niches.length) q.set("niche", v.niches.join(","));
   if (v.skills.length) q.set("skill", v.skills.join(","));
