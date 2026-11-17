@@ -1,5 +1,4 @@
 import { MessageCircle, Trash2 } from "lucide-react";
-import Image from "next/image";
 import Link from "next/link";
 import { deletePost } from "@/app/posts/actions";
 import { CITIES, labelFor } from "@/lib/catalog";
@@ -8,7 +7,7 @@ import { parseVideoUrl } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
 import { ExpandableText } from "./expandable-text";
 import { LikeButton } from "./like-button";
-import { PhotoCarousel } from "./photo-carousel";
+import { FittedPhoto, PhotoCarousel } from "./photo-carousel";
 import { VideoEmbed } from "./video-embed";
 import { updatedLabel } from "./youtube-stats";
 
@@ -68,7 +67,7 @@ export function PostCard({
         <PhotoCarousel urls={[post.image_path, ...(post.more_images ?? [])].map(postImageUrl)} />
       ) : post.image_path && (
         <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken">
-          <Image src={postImageUrl(post.image_path)} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-cover" />
+          <FittedPhoto src={postImageUrl(post.image_path)} />
         </div>
       )}
       {video ? (

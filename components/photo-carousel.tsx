@@ -4,6 +4,19 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 
+/**
+ * Shows the whole photo, whatever its shape: a soft blurred copy fills the
+ * empty space around it, so nothing gets cropped.
+ */
+export function FittedPhoto({ src }: { src: string }) {
+  return (
+    <>
+      <Image src={src} alt="" aria-hidden fill sizes="64px" className="scale-110 object-cover opacity-60 blur-2xl" />
+      <Image src={src} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-contain" />
+    </>
+  );
+}
+
 /** A post's photos: swipe on phones, arrows on computers, dots and a counter to show where you are. */
 export function PhotoCarousel({ urls }: { urls: string[] }) {
   const track = useRef<HTMLDivElement>(null);
@@ -29,7 +42,7 @@ export function PhotoCarousel({ urls }: { urls: string[] }) {
       >
         {urls.map((src, i) => (
           <div key={src} className="relative h-full w-full flex-none snap-center" aria-label={`Photo ${i + 1} of ${count}`}>
-            <Image src={src} alt="" fill sizes="(min-width: 640px) 620px, 100vw" className="object-cover" priority={false} />
+            <FittedPhoto src={src} />
           </div>
         ))}
       </div>
