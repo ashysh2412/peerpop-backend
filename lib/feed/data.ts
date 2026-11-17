@@ -13,6 +13,8 @@ export type FeedPost = {
   body: string;
   link_url: string | null;
   image_path: string | null;
+  /** Photos after the first, in order. Empty for one-photo and text posts. */
+  more_images?: string[];
   created_at: string;
   author_handle: string;
   author_name: string;
@@ -32,9 +34,26 @@ export type Comment = {
   author: { handle: string; display_name: string; photo_path: string | null } | null;
 };
 
+export const POST_MAX_PHOTOS = 10;
+
+/**
+ * Adds each post's extra photos. The feed functions return only the first
+ * photo, so the rest come from one small extra read. If it fails (for example
+ * before the database change is run), posts simply show their first photo.
+ */
+export async function withMoreImages(supabase: Client, posts: FeedPost[]): Promise<FeedPost[]> {
+  const ids = posts.filter((p) => p.image_path).map((p) => p.id);
+  if (ids.length === 0) return posts;
+  const { data, error } = await supabase.from("posts").select("id, more_images").in("id", ids);
+  if (error || !data) return posts;
+  const more = new Map((data as { id: string; more_images: string[] | null }[]).map((r) => [r.id, r.more_images ?? []]));
+  return posts.map((p) => ({ ...p, more_images: more.get(p.id) ?? [] }));
+}
+
 export async function getFeed(supabase: Client, before: string | null) {
   const { data } = await supabase.rpc("get_feed", { p_before: before, p_limit: FEED_PAGE });
-  return ((data ?? []) as FeedPost[]).map((p) => ({ ...p, like_count: Number(p.like_count), comment_count: Number(p.comment_count) }));
+  const posts = ((data ?? []) as FeedPost[]).map((p) => ({ ...p, like_count: Number(p.like_count), comment_count: Number(p.comment_count) }));
+  return withMoreImages(supabase, posts);
 }
 
 /** One post in the same shape as the feed, or null if it's gone or hidden. */
@@ -52,7 +71,7 @@ export async function getPost(supabase: Client, me: string | null, id: string): 
     supabase.from("post_comments").select("id", { count: "exact", head: true }).eq("post_id", id),
     me ? supabase.from("post_likes").select("post_id", { count: "exact", head: true }).eq("post_id", id).eq("user_id", me) : Promise.resolve({ count: 0 }),
   ]);
-  return {
+  const result: FeedPost = {
     id: post.id,
     author_id: post.author_id,
     body: post.body,
@@ -68,6 +87,7 @@ export async function getPost(supabase: Client, me: string | null, id: string): 
     liked_by_me: (mine.count ?? 0) > 0,
     is_connection: false,
   };
+  return (await withMoreImages(supabase, [result]))[0];
 }
 
 export async function getComments(supabase: Client, postId: string) {

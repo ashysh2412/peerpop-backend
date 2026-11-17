@@ -54,10 +54,18 @@ export function ChipGroup({
   );
 }
 
-export function SubmitButton({ children, pendingText = "Saving…" }: { children: React.ReactNode; pendingText?: string }) {
+export function SubmitButton({
+  children,
+  pendingText = "Saving…",
+  disabled = false,
+}: {
+  children: React.ReactNode;
+  pendingText?: string;
+  disabled?: boolean;
+}) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="btn-primary h-11 px-6">
+    <button type="submit" disabled={pending || disabled} className="btn-primary h-11 px-6">
       {pending ? pendingText : children}
     </button>
   );

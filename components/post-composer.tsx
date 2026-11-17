@@ -15,8 +15,9 @@ const MAX_BYTES = 5 * 1024 * 1024;
 // Phone photos can be big; they get shrunk before upload.
 const MAX_PICK_BYTES = 25 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
+const MAX_PHOTOS = 10;
 
-/** "Start a post" box: text, an optional link (YouTube links play inline) and an optional photo. */
+/** "Start a post" box: text, an optional link (YouTube links play inline) and up to 10 photos. */
 export function PostComposer({
   userId,
   firstName,
@@ -32,9 +33,9 @@ export function PostComposer({
   groupId?: string;
   placeholder?: string;
 }) {
-  const [image, setImage] = useState<string | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(0);
   const [showLink, setShowLink] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -53,31 +54,42 @@ export function PostComposer({
     const result = await createPost(prev, data);
     if (result.ok) {
       form.current?.reset();
-      setImage(null);
+      setImages([]);
       setShowLink(false);
     }
     return result;
   }, {});
 
-  async function onFile(picked: File) {
-    setError(null);
-    if (!TYPES.includes(picked.type)) return setError("Use a JPG, PNG or WebP image.");
-    if (picked.size > MAX_PICK_BYTES) return setError("Use an image under 25 MB.");
-    setBusy(true);
+  /** Shrinks and uploads one photo; returns its storage path, or an error to show. */
+  async function upload(picked: File): Promise<{ path: string } | { error: string }> {
+    if (!TYPES.includes(picked.type)) return { error: "Use JPG, PNG or WebP images." };
+    if (picked.size > MAX_PICK_BYTES) return { error: "Use images under 25 MB." };
     const f = await shrinkImage(picked, 1600);
-    if (f.size > MAX_BYTES) {
-      setBusy(false);
-      return setError("That image is too big. Please try another one.");
-    }
+    if (f.size > MAX_BYTES) return { error: "One image is too big. Please try another one." };
     const ext = f.type.split("/")[1].replace("jpeg", "jpg");
     const path = `${userId}/${crypto.randomUUID()}.${ext}`;
     const { error: uploadError } = await createClient().storage.from(BUCKET).upload(path, f, { contentType: f.type, cacheControl: "31536000" });
-    setBusy(false);
-    if (uploadError) return setError("Upload failed. Please try again.");
-    setImage(path);
+    return uploadError ? { error: "Upload failed. Please try again." } : { path };
   }
 
-  const preview = image ? `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${image}` : null;
+  async function onFiles(picked: File[]) {
+    setError(null);
+    const room = MAX_PHOTOS - images.length - uploading;
+    if (room <= 0) return setError(`You can add up to ${MAX_PHOTOS} photos.`);
+    const batch = picked.slice(0, room);
+    if (picked.length > room) setError(`Only the first ${room} added. A post can have up to ${MAX_PHOTOS} photos.`);
+    setUploading((n) => n + batch.length);
+    // One at a time, so the photos keep the order they were picked in.
+    for (const f of batch) {
+      const result = await upload(f);
+      setUploading((n) => n - 1);
+      if ("path" in result) setImages((list) => [...list, result.path].slice(0, MAX_PHOTOS));
+      else setError(result.error);
+    }
+  }
+
+  const url = (path: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
+  const busy = uploading > 0;
 
   return (
     <form id="compose" ref={form} action={action} className="card flex scroll-mt-24 flex-col gap-3 rounded-3xl p-4 sm:p-5">
@@ -94,35 +106,48 @@ export function PostComposer({
         />
       </div>
       {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube, Google Drive and Vimeo videos play right in the feed." className="input" />}
-      <input type="hidden" name="image_path" value={image ?? ""} />
+      {images.map((path) => (
+        <input key={path} type="hidden" name="image_path" value={path} />
+      ))}
       {groupId && <input type="hidden" name="group_id" value={groupId} />}
-      {preview && (
-        <div className="relative aspect-[4/3] w-full max-w-sm overflow-hidden rounded-xl">
-          <Image src={preview} alt="Photo to post" fill sizes="384px" className="object-cover" />
-          <button
-            type="button"
-            onClick={() => setImage(null)}
-            aria-label="Remove photo"
-            className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
-          >
-            <X size={16} />
-          </button>
+      {(images.length > 0 || busy) && (
+        <div className="flex gap-2 overflow-x-auto pb-1">
+          {images.map((path, i) => (
+            <div key={path} className="relative h-24 w-24 flex-none overflow-hidden rounded-xl bg-sunken">
+              <Image src={url(path)} alt={`Photo ${i + 1} to post`} fill sizes="96px" className="object-cover" />
+              {images.length > 1 && (
+                <span className="absolute bottom-1 left-1 rounded-full bg-black/60 px-1.5 text-[11px] font-bold text-white tabular-nums">{i + 1}</span>
+              )}
+              <button
+                type="button"
+                onClick={() => setImages((list) => list.filter((p) => p !== path))}
+                aria-label={`Remove photo ${i + 1}`}
+                className="absolute top-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          ))}
+          {Array.from({ length: uploading }, (_, i) => (
+            <div key={`up-${i}`} className="h-24 w-24 flex-none animate-pulse rounded-xl bg-sunken" aria-label="Uploading photo" />
+          ))}
         </div>
       )}
       <input
         ref={file}
         type="file"
         accept={TYPES.join(",")}
+        multiple
         className="sr-only"
         onChange={(e) => {
-          const f = e.target.files?.[0];
-          if (f) void onFile(f);
+          const picked = Array.from(e.target.files ?? []);
+          if (picked.length) void onFiles(picked);
           e.target.value = "";
         }}
       />
       <div className="-mx-2 flex flex-wrap items-center gap-1 border-t border-line pt-3">
-        <button type="button" disabled={busy} onClick={() => file.current?.click()} className="btn-ghost btn-sm">
-          <ImagePlus size={17} className="text-emerald-500" /> {busy ? "Uploading…" : "Photo"}
+        <button type="button" disabled={busy || images.length >= MAX_PHOTOS} onClick={() => file.current?.click()} className="btn-ghost btn-sm">
+          <ImagePlus size={17} className="text-emerald-500" /> {busy ? "Uploading…" : images.length ? `Photos ${images.length}/${MAX_PHOTOS}` : "Photos"}
         </button>
         {!showLink && (
           <button type="button" onClick={() => setShowLink(true)} className="btn-ghost btn-sm">
@@ -130,7 +155,9 @@ export function PostComposer({
           </button>
         )}
         <div className="ml-auto">
-          <SubmitButton pendingText="Posting…">Post</SubmitButton>
+          <SubmitButton pendingText="Posting…" disabled={busy}>
+            Post
+          </SubmitButton>
         </div>
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}

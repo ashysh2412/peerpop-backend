@@ -1,7 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { POST_IMAGE_BUCKET } from "@/lib/feed/data";
+import { POST_IMAGE_BUCKET, POST_MAX_PHOTOS } from "@/lib/feed/data";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
@@ -27,7 +27,14 @@ function normaliseLink(raw: string) {
 export async function createPost(_prev: FormState, form: FormData): Promise<FormState> {
   const { supabase, user } = await requireUser("/home");
   let body = str(form, "body");
-  const image = str(form, "image_path") || null;
+  // Photos come in the order the person arranged them; the first one leads the post.
+  const images = form
+    .getAll("image_path")
+    .map((v) => (typeof v === "string" ? v.trim() : ""))
+    .filter(Boolean);
+  if (images.length > POST_MAX_PHOTOS) return { message: `Add up to ${POST_MAX_PHOTOS} photos.` };
+  const image = images[0] ?? null;
+  const moreImages = images.slice(1);
   const group = str(form, "group_id") || null;
   if (group && !UUID.test(group)) return { message: TRY_AGAIN };
   let linkRaw = str(form, "link_url");
@@ -43,9 +50,11 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };
   // Post photos follow the same <user id>/<file> layout as profile photos.
-  if (image && !isOwnAvatarPath(image, user.id)) return { message: "That upload isn't yours." };
+  if (images.some((path) => !isOwnAvatarPath(path, user.id))) return { message: "That upload isn't yours." };
 
-  const { error } = await supabase.from("posts").insert({ author_id: user.id, body, link_url: link, image_path: image, group_id: group });
+  const row: Record<string, unknown> = { author_id: user.id, body, link_url: link, image_path: image, group_id: group };
+  // more_images is only sent when there is more than one photo, so one-photo posts work the same as before.
+  const { error } = await supabase.from("posts").insert(moreImages.length ? { ...row, more_images: moreImages } : row);
   if (error) {
     if (error.message.includes("join the group")) return { message: "Join the group to post here." };
     if (error.message.includes("daily post limit")) return { message: "You've posted 20 times today. Try again tomorrow." };
@@ -60,10 +69,14 @@ export async function deletePost(form: FormData) {
   const id = str(form, "id");
   if (!UUID.test(id)) return;
   // The database decides who may delete: the author, or an admin of the post's group.
+  const { data: extra } = await supabase.from("posts").select("more_images").eq("id", id).maybeSingle();
   const { data } = await supabase.from("posts").delete().eq("id", id).select("author_id, image_path");
   const post = data?.[0];
   // Storage only lets people remove their own files.
-  if (post?.image_path && post.author_id === user.id) await supabase.storage.from(POST_IMAGE_BUCKET).remove([post.image_path]);
+  if (post && post.author_id === user.id) {
+    const files = [post.image_path, ...((extra?.more_images as string[] | null) ?? [])].filter((f): f is string => !!f);
+    if (files.length) await supabase.storage.from(POST_IMAGE_BUCKET).remove(files);
+  }
   refresh();
 }
 
