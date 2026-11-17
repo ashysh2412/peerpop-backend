@@ -32,13 +32,15 @@ export function PhotoCarousel({ urls }: { urls: string[] }) {
 
   return (
     <div className="group relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken" aria-roledescription="carousel">
+      {/* Positioned by its edges, not h-full: Safari sizes h-full children of an aspect-ratio box from the
+          ratio alone and ignores max-height, which pushed photos past the bottom of the frame. */}
       <div
         ref={track}
         onScroll={(e) => {
           const el = e.currentTarget;
           setIndex(Math.round(el.scrollLeft / Math.max(1, el.clientWidth)));
         }}
-        className="flex h-full w-full snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="absolute inset-0 flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         {urls.map((src, i) => (
           <div key={src} className="relative h-full w-full flex-none snap-center" aria-label={`Photo ${i + 1} of ${count}`}>
