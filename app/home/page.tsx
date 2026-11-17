@@ -150,7 +150,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers} />
+      <HomeRail
+        steps={steps}
+        collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)}
+        people={newcomers}
+        top={<ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} platforms={platforms} inRail />}
+      />
     </div>
   );
 }
