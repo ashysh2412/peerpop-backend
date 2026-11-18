@@ -89,7 +89,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   );
 
   return (
-    <div className="mx-auto grid w-full max-w-[1000px] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_320px] xl:max-w-[1240px] xl:grid-cols-[260px_minmax(0,1fr)_320px]">
+    <div className="mx-auto grid w-full max-w-[1240px] items-start gap-6 lg:grid-cols-[220px_minmax(0,1fr)_280px] lg:gap-5 xl:grid-cols-[260px_minmax(0,1fr)_320px] xl:gap-6">
       <ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} platforms={platforms} />
       <div className="flex min-w-0 flex-col gap-5">
         {!cursor && (
@@ -150,12 +150,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail
-        steps={steps}
-        collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)}
-        people={newcomers}
-        top={<ProfileSummary profile={profile} connections={steps.connections} posts={steps.posts} platforms={platforms} inRail />}
-      />
+      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers} />
     </div>
   );
 }

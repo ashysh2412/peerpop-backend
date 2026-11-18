@@ -5,20 +5,17 @@ import type { PlatformAccount, Profile } from "@/lib/profile/types";
 import { Avatar } from "./avatar";
 import { SocialLinks } from "./social-links";
 
-/** The left-hand column on Home for wide screens (and the top of the right column on medium ones): who you are at a glance, and shortcuts. */
+/** The left-hand column on Home for laptop and wider screens: who you are at a glance, and shortcuts. */
 export function ProfileSummary({
   profile,
   connections,
   posts,
   platforms,
-  inRail,
 }: {
   profile: Profile;
   connections: number;
   posts: number;
   platforms: PlatformAccount[];
-  /** The copy shown at the top of the right column on medium screens (laptop windows that aren't full width). Card only, no shortcut list. */
-  inRail?: boolean;
 }) {
   const what = [...profile.skills.map((s) => labelFor(SKILLS, s)), ...profile.niches.map((n) => labelFor(NICHES, n))].slice(0, 3);
   const links = [
@@ -28,7 +25,7 @@ export function ProfileSummary({
     { href: "/collabs?mine=1", icon: Handshake, label: "My collabs" },
   ];
   return (
-    <aside className={inRail ? "hidden flex-col gap-4 lg:flex xl:hidden" : "sticky top-24 hidden flex-col gap-4 xl:flex"}>
+    <aside className="sticky top-24 hidden flex-col gap-4 lg:flex">
       <section className="card overflow-hidden">
         <div className="h-16 bg-brand" />
         <div className="-mt-10 flex flex-col items-center gap-1 px-4 pb-4 text-center">
@@ -65,15 +62,13 @@ export function ProfileSummary({
           </Link>
         </div>
       </section>
-      {!inRail && (
-        <nav className="card flex flex-col p-2">
-          {links.map(({ href, icon: Icon, label }) => (
-            <Link key={href} href={href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:bg-sunken">
-              <Icon size={17} className="text-muted" /> {label}
-            </Link>
-          ))}
-        </nav>
-      )}
+      <nav className="card flex flex-col p-2">
+        {links.map(({ href, icon: Icon, label }) => (
+          <Link key={href} href={href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:bg-sunken">
+            <Icon size={17} className="text-muted" /> {label}
+          </Link>
+        ))}
+      </nav>
     </aside>
   );
 }

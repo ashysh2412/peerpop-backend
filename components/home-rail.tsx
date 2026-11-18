@@ -97,10 +97,9 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
 }
 
 /** The right-hand column on Home for wide screens: setup, the newest collabs, and the newest creators. */
-export function HomeRail({ steps, collabs, people, top }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[]; top?: ReactNode }) {
+export function HomeRail({ steps, collabs, people }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[] }) {
   return (
     <aside className="hidden flex-col gap-4 lg:flex">
-      {top}
       <GetStarted steps={steps} />
 
       <Section title="New collabs" href="/collabs">
