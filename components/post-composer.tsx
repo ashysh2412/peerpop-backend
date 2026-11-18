@@ -1,12 +1,13 @@
 "use client";
 
-import { ImagePlus, Link2, X } from "lucide-react";
+import { ClipboardPaste, ImagePlus, PlayCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
-import { createPost } from "@/app/posts/actions";
+import { createPost, lookupVideoTitle } from "@/app/posts/actions";
 import { shrinkImage } from "@/lib/image/shrink";
 import { createClient } from "@/lib/supabase/client";
 import type { FormState } from "@/lib/profile/types";
+import { parseVideoUrl, type ParsedVideo } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
 import { FormMessage, SubmitButton } from "./ui";
 
@@ -16,6 +17,18 @@ const MAX_BYTES = 5 * 1024 * 1024;
 const MAX_PICK_BYTES = 25 * 1024 * 1024;
 const TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_PHOTOS = 10;
+const PLATFORM_NAMES: Record<ParsedVideo["platform"], string> = {
+  youtube: "YouTube video",
+  instagram: "Instagram reel",
+  drive: "Google Drive video",
+  vimeo: "Vimeo video",
+};
+
+/** The text, if it is just one link and nothing else. */
+const onlyLink = (text: string) => {
+  const t = text.trim();
+  return /^(https?:\/\/)?\S+\.\S+$/i.test(t) && !/\s/.test(t) ? t : null;
+};
 
 /** "Start a post" box: text, an optional link (YouTube links play inline) and up to 10 photos. */
 export function PostComposer({
@@ -36,6 +49,8 @@ export function PostComposer({
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(0);
   const [showLink, setShowLink] = useState(false);
+  const [link, setLink] = useState("");
+  const video = link ? parseVideoUrl(link) : null;
   const [error, setError] = useState<string | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -56,6 +71,7 @@ export function PostComposer({
       form.current?.reset();
       setImages([]);
       setShowLink(false);
+      setLink("");
     }
     return result;
   }, {});
@@ -88,6 +104,27 @@ export function PostComposer({
     }
   }
 
+  /** Puts a link in the post and, for YouTube or Vimeo, fills in the video's title when the text is still empty. */
+  function attachLink(raw: string) {
+    setLink(raw);
+    setShowLink(true);
+    if (!parseVideoUrl(raw)) return;
+    void lookupVideoTitle(raw).then((title) => {
+      if (title && text.current && !text.current.value.trim()) text.current.value = title;
+    });
+  }
+
+  /** One tap: read the copied link (the phone asks to allow paste once), or open the link box if there is none. */
+  async function pasteLink() {
+    try {
+      const copied = onlyLink(await navigator.clipboard.readText());
+      if (copied) return attachLink(copied);
+    } catch {
+      // Reading the clipboard was refused or isn't supported; fall back to the box.
+    }
+    setShowLink(true);
+  }
+
   const url = (path: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
   const busy = uploading > 0;
 
@@ -98,14 +135,60 @@ export function PostComposer({
         <textarea
           ref={text}
           name="body"
-          required
+          required={!link}
           maxLength={3000}
           rows={1}
-          placeholder={showLink ? "Give your video a title, or say a line about it" : (placeholder ?? `What are you making today, ${firstName}?`)}
+          onPaste={(e) => {
+            // Pasting just a link turns it into the post's video instead of text.
+            const pasted = onlyLink(e.clipboardData.getData("text"));
+            if (pasted && !link && parseVideoUrl(pasted)) {
+              e.preventDefault();
+              attachLink(pasted);
+            }
+          }}
+          placeholder={link ? "Say something about it (optional)" : (placeholder ?? `What are you making today, ${firstName}?`)}
           className="min-h-11 w-full resize-y bg-transparent py-2.5 text-[15px] leading-relaxed outline-none placeholder:text-muted/80"
         />
       </div>
-      {showLink && <input name="link_url" type="url" inputMode="url" placeholder="Paste a link. YouTube, Google Drive and Vimeo videos play right in the feed." className="input" />}
+      {showLink && !video && (
+        <input
+          name="link_url"
+          type="url"
+          inputMode="url"
+          autoFocus={!link}
+          value={link}
+          onChange={(e) => (parseVideoUrl(e.target.value) ? attachLink(e.target.value) : setLink(e.target.value))}
+          placeholder="Paste a link. YouTube, Instagram, Google Drive and Vimeo videos play right in the feed."
+          className="input"
+        />
+      )}
+      {video && (
+        <div className="flex items-center gap-3 rounded-2xl border border-line p-2">
+          <input type="hidden" name="link_url" value={link} />
+          <div className="relative flex h-14 w-24 flex-none items-center justify-center overflow-hidden rounded-xl bg-ink">
+            {video.thumbnailUrl && (
+              // eslint-disable-next-line @next/next/no-img-element -- small preview from i.ytimg.com
+              <img src={video.thumbnailUrl} alt="" className="absolute inset-0 h-full w-full object-cover" />
+            )}
+            <PlayCircle size={24} className="relative text-white drop-shadow" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-semibold">{PLATFORM_NAMES[video.platform]} added</p>
+            <p className="truncate text-xs text-muted">{link}</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setLink("");
+              setShowLink(false);
+            }}
+            aria-label="Remove video"
+            className="flex h-8 w-8 flex-none items-center justify-center rounded-full hover:bg-sunken"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
       {images.map((path) => (
         <input key={path} type="hidden" name="image_path" value={path} />
       ))}
@@ -150,8 +233,8 @@ export function PostComposer({
           <ImagePlus size={17} className="text-emerald-500" /> {busy ? "Uploading…" : images.length ? `Photos ${images.length}/${MAX_PHOTOS}` : "Photos"}
         </button>
         {!showLink && (
-          <button type="button" onClick={() => setShowLink(true)} className="btn-ghost btn-sm">
-            <Link2 size={17} className="text-sky-500" /> Video link
+          <button type="button" onClick={() => void pasteLink()} className="btn-ghost btn-sm">
+            <ClipboardPaste size={17} className="text-sky-500" /> Paste video link
           </button>
         )}
         <div className="ml-auto">

@@ -2,6 +2,7 @@ import "server-only";
 import { randomInt } from "node:crypto";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { findChannel, recentVideos, type Channel } from "./api";
+import { shareNewUploads } from "./auto-share";
 import { parseChannelUrl } from "./channel-url";
 import { averageViews, growth30d, uploadsPerWeek } from "./stats";
 
@@ -90,6 +91,8 @@ export async function checkVerification(userId: string): Promise<Result> {
       external_id: channel.id,
       source: "verified",
       ownership_verified_at: new Date().toISOString(),
+      // Auto-share starts now: never post the channel's old uploads.
+      auto_share_since: new Date().toISOString(),
       verification_code: null,
       handle: channel.handle,
       url: channelUrl(channel.id),
@@ -140,6 +143,7 @@ export async function recordStats(admin: Admin, accountId: string, channel: Chan
       computed_at: now.toISOString(),
     });
     if (statsError) throw statsError;
+    await shareNewUploads(admin, accountId, videos).catch((err) => console.error("shareNewUploads", err));
     await admin
       .from("platform_accounts")
       .update({ last_fetch_at: now.toISOString(), last_fetch_error: null })

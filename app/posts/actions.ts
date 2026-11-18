@@ -5,6 +5,8 @@ import { POST_IMAGE_BUCKET, POST_MAX_PHOTOS } from "@/lib/feed/data";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
+import { parseVideoUrl } from "@/lib/videos/parse";
+import { fetchVideoTitle } from "@/lib/videos/title";
 
 const TRY_AGAIN = "Something went wrong. Please try again.";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,6 +24,12 @@ function normaliseLink(raw: string) {
   } catch {
     return undefined;
   }
+}
+
+/** For the post box: the title of a pasted YouTube or Vimeo link, to fill in while the person writes. */
+export async function lookupVideoTitle(link: string): Promise<string | null> {
+  await requireUser("/home");
+  return typeof link === "string" && link.length <= 500 ? fetchVideoTitle(link) : null;
 }
 
 export async function createPost(_prev: FormState, form: FormData): Promise<FormState> {
@@ -45,7 +53,8 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
     body = body.replace(pasted, "").trim();
   }
   const link = normaliseLink(linkRaw);
-  if (!body && link) return { message: "Add a title or a line about your video." };
+  // Just a link is enough: the video's own title becomes the text.
+  if (!body && link) body = (await fetchVideoTitle(link)) ?? (parseVideoUrl(link) ? "Shared a video 🎬" : "Shared a link");
   if (!body) return { message: "Write something first." };
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };

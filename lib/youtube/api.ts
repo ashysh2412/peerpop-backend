@@ -64,7 +64,8 @@ export async function findChannel(ref: ChannelRef): Promise<Channel | null> {
 }
 
 type VideoItem = {
-  snippet: { publishedAt: string; liveBroadcastContent: string };
+  id: string;
+  snippet: { publishedAt: string; liveBroadcastContent: string; title: string };
   contentDetails: { duration: string };
   statistics?: { viewCount?: string };
   status: { privacyStatus: string };
@@ -88,6 +89,8 @@ export async function recentVideos(uploadsPlaylist: string): Promise<VideoFacts[
     id: ids.join(","),
   });
   return (videos.items ?? []).map((v) => ({
+    id: v.id,
+    title: v.snippet.title,
     publishedAt: v.snippet.publishedAt,
     durationSeconds: parseDuration(v.contentDetails.duration),
     views: Number(v.statistics?.viewCount ?? 0),
