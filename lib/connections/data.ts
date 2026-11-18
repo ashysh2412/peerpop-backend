@@ -109,3 +109,9 @@ export async function getStates(supabase: Client, me: string, others: string[]) 
   }
   return states;
 }
+
+/** Whether either person is an official account (the Peerpop account), which can message anyone without connecting. */
+export async function involvesOfficial(supabase: Client, a: string, b: string) {
+  const { data } = await supabase.from("official_accounts").select("user_id").in("user_id", [a, b]).limit(1);
+  return (data?.length ?? 0) > 0;
+}
