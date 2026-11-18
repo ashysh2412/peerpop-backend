@@ -5,8 +5,8 @@ import { CITIES, labelFor } from "@/lib/catalog";
 import { POST_IMAGE_BUCKET, type FeedPost } from "@/lib/feed/data";
 import { parseVideoUrl } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
-import { ExpandableText } from "./expandable-text";
 import { LikeButton } from "./like-button";
+import { EditPostButton, PostText } from "./post-edit";
 import { FittedPhoto, PhotoCarousel } from "./photo-carousel";
 import { VideoEmbed } from "./video-embed";
 import { updatedLabel } from "./youtube-stats";
@@ -51,6 +51,7 @@ export function PostCard({
             </Link>
           </p>
         </div>
+        {me === post.author_id && <EditPostButton postId={post.id} />}
         {(me === post.author_id || canModerate) && (
           <form action={deletePost}>
             <input type="hidden" name="id" value={post.id} />
@@ -61,7 +62,7 @@ export function PostCard({
         )}
       </header>
 
-      {linkToPost ? <ExpandableText text={post.body} /> : <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>}
+      <PostText postId={post.id} text={post.body} expandable={linkToPost} editable={me === post.author_id} />
 
       {post.image_path && (post.more_images?.length ?? 0) > 0 ? (
         <PhotoCarousel urls={[post.image_path, ...(post.more_images ?? [])].map(postImageUrl)} />

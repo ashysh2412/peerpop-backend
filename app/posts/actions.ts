@@ -73,6 +73,20 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   return { ok: true, message: "Posted." };
 }
 
+/** The author changes their post's text. */
+export async function updatePost(_prev: FormState, form: FormData): Promise<FormState> {
+  const { supabase, user } = await requireUser("/home");
+  const id = str(form, "id");
+  const body = str(form, "body");
+  if (!UUID.test(id)) return { message: TRY_AGAIN };
+  if (!body) return { message: "Write something first." };
+  if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
+  const { data, error } = await supabase.from("posts").update({ body }).eq("id", id).eq("author_id", user.id).select("id");
+  if (error || !data?.length) return { message: TRY_AGAIN };
+  refresh();
+  return { ok: true, message: "Saved." };
+}
+
 export async function deletePost(form: FormData) {
   const { supabase, user } = await requireUser("/home");
   const id = str(form, "id");
