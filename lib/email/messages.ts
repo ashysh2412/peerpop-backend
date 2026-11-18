@@ -10,8 +10,14 @@ const QUIET_HOURS = 3;
 const WAIT_MS = 30_000;
 
 /** Emails the recipient about a new message, unless they've already read it or heard about this chat recently. */
-export async function emailNewMessage(messageId: string, senderId: string, recipientId: string, siteUrl: string) {
-  await new Promise((r) => setTimeout(r, WAIT_MS));
+export async function emailNewMessage(
+  messageId: string,
+  senderId: string,
+  recipientId: string,
+  siteUrl: string,
+  { waitMs = WAIT_MS, reason = "You're getting this because a connection messaged you on Peerpop." }: { waitMs?: number; reason?: string } = {},
+) {
+  if (waitMs > 0) await new Promise((r) => setTimeout(r, waitMs));
   const admin = createAdminClient();
   const topic = `message:${senderId}`;
   if (await sentRecently(admin, recipientId, topic, QUIET_HOURS)) return;
@@ -27,7 +33,7 @@ export async function emailNewMessage(messageId: string, senderId: string, recip
     lead: `${sender.display_name} sent you a message on Peerpop.`,
     note: preview,
     button: { text: "Reply", url: `${siteUrl}/messages/${encodeURIComponent(sender.handle)}` },
-    reason: "You're getting this because a connection messaged you on Peerpop. We email at most once every few hours per chat.",
+    reason: `${reason} We email at most once every few hours per chat.`,
     unsubscribe: recipient.unsubscribe,
   });
   await markSent(admin, recipientId, topic);
