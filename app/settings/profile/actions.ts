@@ -3,12 +3,13 @@
 import { refresh } from "next/cache";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
+import { RESERVED_HANDLES } from "@/lib/profile/handle";
 import { saveLinks } from "@/lib/profile/save-links";
 import type { FormState } from "@/lib/profile/types";
-import { validateContacts, validateLinks, validateProfile } from "@/lib/profile/validate";
+import { normalizeHandle, validateContacts, validateLinks, validateProfile } from "@/lib/profile/validate";
 import { parseVideoUrl } from "@/lib/videos/parse";
 
-const HANDLE_TAKEN = { handle: "That handle is taken. Try another one." };
+const HANDLE_TAKEN = { handle: "That name is taken. Try another one." };
 const MAX_VIDEOS = 6;
 
 function isUniqueViolation(error: { code?: string } | null) {
@@ -25,6 +26,20 @@ export async function saveProfile(_prev: FormState, form: FormData): Promise<For
   if (error) return { message: "Couldn't save. Please try again." };
   refresh();
   return { ok: true, message: "Profile saved." };
+}
+
+/** Changes the creator's profile link (their handle), if the new one is valid and free. */
+export async function changeHandle(_prev: FormState, form: FormData): Promise<FormState & { handle?: string }> {
+  const { supabase, user } = await requireUser("/settings/profile");
+  const raw = form.get("handle");
+  const handle = normalizeHandle(typeof raw === "string" ? raw.replace(/^.*peerpop\.in\//i, "") : "");
+  if (!/^[a-z0-9_]{3,30}$/.test(handle)) return { errors: { handle: "Use 3 to 30 lowercase letters, numbers or _ (no spaces or dots)." } };
+  if (RESERVED_HANDLES.has(handle)) return { errors: HANDLE_TAKEN };
+  const { error } = await supabase.from("creator_profiles").update({ handle }).eq("user_id", user.id);
+  if (isUniqueViolation(error)) return { errors: HANDLE_TAKEN };
+  if (error) return { message: "Couldn't save. Please try again." };
+  refresh();
+  return { ok: true, message: "Link changed.", handle };
 }
 
 export async function setPhoto(path: string | null): Promise<FormState> {
