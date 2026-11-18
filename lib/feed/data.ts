@@ -118,6 +118,51 @@ export async function getSuggestions(supabase: Client, me: { user_id: string; ci
   return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }
 
+export type Match = Suggestion & {
+  niches: string[];
+  followers: number | null;
+  /** Why they're suggested: same city, a shared niche, or both. "new" means a newest-member fill-in. */
+  why: { city: boolean; niches: string[] };
+};
+
+/**
+ * "Creators like you" on Home: listed creators who share your city or a niche, so you can
+ * collab and swap audiences. Same city and niche first, then niche, then city; within each,
+ * the closest follower count first, then the newest. Topped up with the newest members so it
+ * is never empty. Leaves out you, blocked people, and anyone you're connected to or waiting on.
+ */
+export async function getMatches(
+  supabase: Client,
+  me: { user_id: string; city_slug: string | null; niches: string[] },
+  myFollowers: number | null,
+  limit = 10,
+): Promise<Match[]> {
+  const [{ data: links }, { data }] = await Promise.all([
+    supabase.from("connections").select("from_user, to_user").or(`from_user.eq.${me.user_id},to_user.eq.${me.user_id}`).in("status", ["pending", "accepted"]),
+    supabase
+      .from("creator_search_rows")
+      .select("user_id, handle, display_name, photo_path, city_slug, niches, max_followers, created_at")
+      .neq("user_id", me.user_id)
+      .order("created_at", { ascending: false })
+      .limit(300),
+  ]);
+  const skip = new Set((links ?? []).flatMap((l) => [l.from_user, l.to_user]));
+  type Row = Suggestion & { niches: string[] | null; max_followers: number | null; created_at: string };
+  const gap = (n: number | null) => (n && myFollowers ? Math.abs(Math.log(n / myFollowers)) : Infinity);
+  return ((data ?? []) as Row[])
+    .filter((r) => !skip.has(r.user_id))
+    .map((r, newest) => {
+      const city = !!me.city_slug && r.city_slug === me.city_slug;
+      const niches = (r.niches ?? []).filter((n) => me.niches.includes(n));
+      const tier = (niches.length ? 2 : 0) + (city ? 1 : 0);
+      const followers = r.max_followers == null ? null : Number(r.max_followers);
+      return { tier, newest, gap: gap(followers), match: { user_id: r.user_id, handle: r.handle, display_name: r.display_name, photo_path: r.photo_path, city_slug: r.city_slug, niches: r.niches ?? [], followers, why: { city, niches } } };
+    })
+    .sort((a, b) => b.tier - a.tier || (a.tier && b.tier ? a.gap - b.gap : 0) || a.newest - b.newest)
+    .slice(0, limit)
+    .map((x) => x.match);
+}
+
 /** The newest listed creators you aren't connected to or waiting on yet. */
 export async function getNewCreators(supabase: Client, me: string, limit = 5) {
   const [{ data: links }, { data }] = await Promise.all([

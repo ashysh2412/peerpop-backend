@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Fragment, Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
+import { CreatorsLikeYou } from "@/components/creators-like-you";
 import { HomeHeader } from "@/components/home-header";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
@@ -11,7 +12,7 @@ import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
-import { FEED_PAGE, getFeed, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
+import { FEED_PAGE, getFeed, getMatches, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
 import { CardsSkeleton } from "@/components/skeleton";
@@ -51,9 +52,14 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
-    cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
+    cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id, 15),
     getOwnPlatforms(supabase, user.id),
   ]);
+  const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
+  const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
+  const matchIds = new Set(matches.map((m) => m.user_id));
+  const seeAll = profile.city_slug ? `/creators?city=${profile.city_slug}` : profile.niches.length ? `/creators?niche=${profile.niches.join(",")}` : "/creators";
+  const likeYou = <CreatorsLikeYou people={matches} seeAll={seeAll} />;
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
   const feed = (
@@ -77,8 +83,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           )}
         </div>
       )}
-      {posts.map((post) => (
-        <PostCard key={post.id} post={post} me={user.id} now={now} />
+      {!cursor && posts.length < 2 && likeYou}
+      {posts.map((post, i) => (
+        <Fragment key={post.id}>
+          <PostCard post={post} me={user.id} now={now} />
+          {!cursor && i === 1 && likeYou}
+        </Fragment>
       ))}
       {posts.length === FEED_PAGE && (
         <Link href={`/home?before=${encodeURIComponent(posts[posts.length - 1].created_at)}`} className="btn-secondary self-center">
@@ -150,7 +160,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers} />
+      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers.filter((p) => !matchIds.has(p.user_id)).slice(0, 5)} />
     </div>
   );
 }
