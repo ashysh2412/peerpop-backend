@@ -5,3 +5,6 @@
 alter table platform_accounts
   add column if not exists auto_share boolean not null default true,
   add column if not exists auto_share_since timestamptz not null default now();
+
+-- Authors can now change a post's photos (the first stays in image_path).
+grant update (more_images) on posts to authenticated;

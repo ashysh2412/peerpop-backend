@@ -4,18 +4,14 @@ import { ClipboardPaste, ImagePlus, PlayCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { createPost, lookupVideoTitle } from "@/app/posts/actions";
-import { shrinkImage } from "@/lib/image/shrink";
-import { createClient } from "@/lib/supabase/client";
+import { POST_PHOTO_BUCKET, POST_PHOTO_TYPES, uploadPostPhoto } from "@/lib/image/post-photo";
 import type { FormState } from "@/lib/profile/types";
 import { parseVideoUrl, type ParsedVideo } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
 import { FormMessage, SubmitButton } from "./ui";
 
-const BUCKET = "post-images";
-const MAX_BYTES = 5 * 1024 * 1024;
-// Phone photos can be big; they get shrunk before upload.
-const MAX_PICK_BYTES = 25 * 1024 * 1024;
-const TYPES = ["image/jpeg", "image/png", "image/webp"];
+const BUCKET = POST_PHOTO_BUCKET;
+const TYPES = POST_PHOTO_TYPES;
 const MAX_PHOTOS = 10;
 const PLATFORM_NAMES: Record<ParsedVideo["platform"], string> = {
   youtube: "YouTube video",
@@ -76,18 +72,6 @@ export function PostComposer({
     return result;
   }, {});
 
-  /** Shrinks and uploads one photo; returns its storage path, or an error to show. */
-  async function upload(picked: File): Promise<{ path: string } | { error: string }> {
-    if (!TYPES.includes(picked.type)) return { error: "Use JPG, PNG or WebP images." };
-    if (picked.size > MAX_PICK_BYTES) return { error: "Use images under 25 MB." };
-    const f = await shrinkImage(picked, 1600);
-    if (f.size > MAX_BYTES) return { error: "One image is too big. Please try another one." };
-    const ext = f.type.split("/")[1].replace("jpeg", "jpg");
-    const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-    const { error: uploadError } = await createClient().storage.from(BUCKET).upload(path, f, { contentType: f.type, cacheControl: "31536000" });
-    return uploadError ? { error: "Upload failed. Please try again." } : { path };
-  }
-
   async function onFiles(picked: File[]) {
     setError(null);
     const room = MAX_PHOTOS - images.length - uploading;
@@ -97,7 +81,7 @@ export function PostComposer({
     setUploading((n) => n + batch.length);
     // One at a time, so the photos keep the order they were picked in.
     for (const f of batch) {
-      const result = await upload(f);
+      const result = await uploadPostPhoto(userId, f);
       setUploading((n) => n - 1);
       if ("path" in result) setImages((list) => [...list, result.path].slice(0, MAX_PHOTOS));
       else setError(result.error);
