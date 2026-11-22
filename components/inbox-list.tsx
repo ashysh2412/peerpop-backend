@@ -59,15 +59,15 @@ function ChatRows({ chats, active, now, reply = false }: { chats: Chat[]; active
           >
             <span className="relative shrink-0">
               <Avatar path={c.photo_path} name={c.display_name} size={48} />
-              {reply && <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-brand" aria-label="Replied" />}
+              {c.unread > 0 && <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-brand" aria-label="New reply" />}
             </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline justify-between gap-2">
-                <span className={`truncate ${c.unread || reply ? "font-bold" : "font-semibold"}`}>{c.display_name}</span>
+                <span className={`truncate ${c.unread ? "font-bold" : "font-semibold"}`}>{c.display_name}</span>
                 <span className="shrink-0 text-xs text-muted">{updatedLabel(c.last_at, now)}</span>
               </span>
               <span className="flex items-center gap-2">
-                <span className={`flex-1 truncate text-sm ${c.unread || reply ? "font-semibold text-ink" : "text-muted"}`}>
+                <span className={`flex-1 truncate text-sm ${c.unread ? "font-semibold text-ink" : reply ? "text-ink" : "text-muted"}`}>
                   {c.last_from_me && "You: "}
                   {c.last_body}
                 </span>
