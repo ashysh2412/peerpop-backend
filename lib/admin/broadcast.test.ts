@@ -18,6 +18,12 @@ describe("pickRecipients", () => {
   });
 });
 
+describe("new members", () => {
+  it("only people with profile gaps who never got a Peerpop message", () => {
+    expect(pickRecipients(people, "new", "o", new Set(), new Set(["a"])).map((p) => p.id)).toEqual(["d"]);
+  });
+});
+
 describe("personalise", () => {
   it("uses the first name, or 'there'", () => {
     expect(personalise("Hi {name}! {Name} again", "Asha Rao")).toBe("Hi Asha! Asha again");

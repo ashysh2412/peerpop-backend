@@ -14,19 +14,28 @@ import { createClient } from "@/lib/supabase/server";
 /** Resend allows a couple of emails a second; space them out. */
 const EMAIL_GAP_MS = 700;
 
-/** The official account (the "Peerpop" profile), and everyone it can't message because of a block. */
+/** The official account (the "Peerpop" profile), everyone it can't message because of a block, and everyone it already messaged. */
 export async function officialSender(db: ReturnType<typeof createAdminClient>) {
   const { data } = await db.from("official_accounts").select("user_id").order("created_at").limit(1).maybeSingle();
   const id = (data?.user_id as string | undefined) ?? null;
-  if (!id) return { id: null, blocked: new Set<string>() };
-  const { data: blocks } = await db.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${id},blocked_id.eq.${id}`);
-  return { id, blocked: new Set((blocks ?? []).map((b) => (b.blocker_id === id ? b.blocked_id : b.blocker_id) as string)) };
+  if (!id) return { id: null, blocked: new Set<string>(), messaged: new Set<string>() };
+  const [{ data: blocks }, { data: sent }] = await Promise.all([
+    db.from("blocks").select("blocker_id, blocked_id").or(`blocker_id.eq.${id},blocked_id.eq.${id}`),
+    db.from("messages").select("recipient_id").eq("sender_id", id).limit(20000),
+  ]);
+  return {
+    id,
+    blocked: new Set((blocks ?? []).map((b) => (b.blocker_id === id ? b.blocked_id : b.blocker_id) as string)),
+    // Everyone the Peerpop account has already written to, so "new members" skips them.
+    messaged: new Set((sent ?? []).map((m) => m.recipient_id as string)),
+  };
 }
 
 /** Sends one message from the official Peerpop account to each chosen member, as a personal chat. */
 export async function sendBroadcast(_prev: FormState, form: FormData): Promise<FormState> {
   if (!(await isConfirmedAdmin(await createClient()))) notFound();
-  const audience: BroadcastAudience = form.get("audience") === "everyone" ? "everyone" : "incomplete";
+  const raw = form.get("audience");
+  const audience: BroadcastAudience = raw === "everyone" ? "everyone" : raw === "new" ? "new" : "incomplete";
   const text = String(form.get("body") ?? "").trim();
   if (!text) return { message: "Write a message first." };
   if (text.length > 2000) return { message: "Keep it under 2,000 characters." };
@@ -35,7 +44,7 @@ export async function sendBroadcast(_prev: FormState, form: FormData): Promise<F
   const official = await officialSender(db);
   if (!official.id) return { message: "No official Peerpop account is set up." };
   const { users } = await getAdminOverview(Date.now());
-  const people = pickRecipients(users, audience, official.id, official.blocked);
+  const people = pickRecipients(users, audience, official.id, official.blocked, official.messaged);
   if (people.length === 0) return { message: "Nobody matches. No messages sent." };
 
   const rows = people.map((p) => ({ sender_id: official.id, recipient_id: p.id, body: personalise(text, p.name) }));

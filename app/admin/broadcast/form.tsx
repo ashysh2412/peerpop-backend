@@ -21,7 +21,7 @@ Finish it here: www.peerpop.in/settings/profile
 Stuck anywhere? Just reply here. I read every message.`;
 
 export function BroadcastForm({ counts, sampleName }: { counts: Record<BroadcastAudience, number>; sampleName: string }) {
-  const [audience, setAudience] = useState<BroadcastAudience>("incomplete");
+  const [audience, setAudience] = useState<BroadcastAudience>(counts.new > 0 ? "new" : "incomplete");
   const [text, setText] = useState(STARTER);
   const [confirming, setConfirming] = useState(false);
   const [state, action] = useActionState<FormState, FormData>(async (prev, data) => {
@@ -46,7 +46,8 @@ export function BroadcastForm({ counts, sampleName }: { counts: Record<Broadcast
         <legend className="mb-2 text-sm font-semibold">Who gets it</legend>
         {(
           [
-            ["incomplete", "Creators missing something in their profile"],
+            ["new", "New members who haven't heard from Peerpop yet"],
+            ["incomplete", "Everyone missing something in their profile"],
             ["everyone", "Every creator"],
           ] as const
         ).map(([value, label]) => (
