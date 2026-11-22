@@ -4,7 +4,13 @@ import type { Chat } from "@/lib/messages/data";
 import { Avatar } from "./avatar";
 import { updatedLabel } from "./youtube-stats";
 
-/** The list of chats, newest first. `active` is the handle of the open chat. */
+/** Chats where the other person spoke last (unread first) come before chats waiting on them; newest first within each. */
+function sortForReplies(chats: Chat[]) {
+  const rank = (c: Chat) => (c.unread > 0 ? 0 : c.last_from_me ? 2 : 1);
+  return [...chats].sort((a, b) => rank(a) - rank(b) || Date.parse(b.last_at) - Date.parse(a.last_at));
+}
+
+/** The list of chats: replies waiting for you on top, then the rest. `active` is the handle of the open chat. */
 export function InboxList({ chats, active, now }: { chats: Chat[]; active?: string; now: number }) {
   if (chats.length === 0) {
     return (
@@ -21,6 +27,28 @@ export function InboxList({ chats, active, now }: { chats: Chat[]; active?: stri
       </div>
     );
   }
+  const sorted = sortForReplies(chats);
+  const replies = sorted.filter((c) => !c.last_from_me);
+  const rest = sorted.filter((c) => c.last_from_me);
+  return (
+    <div className="flex flex-col gap-2">
+      {replies.length > 0 && (
+        <>
+          <p className="px-3 text-xs font-bold tracking-wide text-brand-ink uppercase">Replies for you · {replies.length}</p>
+          <ChatRows chats={replies} active={active} now={now} reply />
+        </>
+      )}
+      {rest.length > 0 && (
+        <>
+          {replies.length > 0 && <p className="mt-2 px-3 text-xs font-bold tracking-wide text-muted uppercase">Waiting for their reply</p>}
+          <ChatRows chats={rest} active={active} now={now} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function ChatRows({ chats, active, now, reply = false }: { chats: Chat[]; active?: string; now: number; reply?: boolean }) {
   return (
     <ul className="flex flex-col">
       {chats.map((c) => (
@@ -29,14 +57,17 @@ export function InboxList({ chats, active, now }: { chats: Chat[]; active?: stri
             href={`/messages/${c.handle}`}
             className={`flex items-center gap-3 rounded-2xl px-3 py-3 transition ${c.handle === active ? "bg-brand-soft" : "hover:bg-sunken"}`}
           >
-            <Avatar path={c.photo_path} name={c.display_name} size={48} />
+            <span className="relative shrink-0">
+              <Avatar path={c.photo_path} name={c.display_name} size={48} />
+              {reply && <span className="absolute -top-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-card bg-brand" aria-label="Replied" />}
+            </span>
             <span className="min-w-0 flex-1">
               <span className="flex items-baseline justify-between gap-2">
-                <span className={`truncate ${c.unread ? "font-bold" : "font-semibold"}`}>{c.display_name}</span>
+                <span className={`truncate ${c.unread || reply ? "font-bold" : "font-semibold"}`}>{c.display_name}</span>
                 <span className="shrink-0 text-xs text-muted">{updatedLabel(c.last_at, now)}</span>
               </span>
               <span className="flex items-center gap-2">
-                <span className={`flex-1 truncate text-sm ${c.unread ? "font-semibold text-ink" : "text-muted"}`}>
+                <span className={`flex-1 truncate text-sm ${c.unread || reply ? "font-semibold text-ink" : "text-muted"}`}>
                   {c.last_from_me && "You: "}
                   {c.last_body}
                 </span>
