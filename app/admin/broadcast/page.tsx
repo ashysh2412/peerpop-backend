@@ -9,7 +9,7 @@ import { pickRecipients } from "@/lib/admin/broadcast";
 import { getAdminOverview } from "@/lib/admin/data";
 import { requireUser } from "@/lib/profile/data";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { officialSender } from "./actions";
+import { officialSender } from "@/lib/admin/official";
 import { BroadcastForm } from "./form";
 
 export const metadata: Metadata = { title: "Message members · Admin · Peerpop", robots: { index: false } };
@@ -45,7 +45,10 @@ async function Broadcast() {
           <ArrowLeft size={16} /> Admin
         </Link>
         <h1 className="page-title">Message members</h1>
-        <p className="mt-1 text-muted">Write once. Each creator gets it as a personal chat from the Peerpop account, and can reply to you there.</p>
+        <p className="mt-1 text-muted">
+          Write once. Each creator gets it as a personal chat from the Peerpop account, and can reply to you there. New members with an incomplete
+          profile also get the welcome below automatically, a day after joining (every evening at 7:30 PM).
+        </p>
       </div>
       {official.id ? (
         <BroadcastForm

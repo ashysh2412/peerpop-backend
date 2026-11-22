@@ -23,3 +23,17 @@ export function personalise(text: string, name: string | null): string {
   const first = name?.trim().split(/\s+/)[0] || "there";
   return text.replace(/\{name\}/gi, first);
 }
+
+/** The Peerpop welcome: the default on Message members, and what new members get automatically a day after joining. */
+export const WELCOME_TEXT = `Hi {name}! 👋 Ashish here, founder of Peerpop.
+
+Ek reel. Do audience. 🤝 Collab with a creator your size and you both grow.
+
+But other creators can only find you if your profile is complete. It takes 2 minutes:
+📸 Add a photo
+🎯 Pick your niche
+🎬 Add one video of your work
+
+Finish it here: www.peerpop.in/settings/profile
+
+Stuck anywhere? Just reply here. I read every message.`;

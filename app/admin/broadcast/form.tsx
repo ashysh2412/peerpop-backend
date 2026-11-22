@@ -3,26 +3,13 @@
 import { Send } from "lucide-react";
 import { useActionState, useState } from "react";
 import { FormMessage, SubmitButton } from "@/components/ui";
-import { personalise, type BroadcastAudience } from "@/lib/admin/broadcast";
+import { personalise, WELCOME_TEXT, type BroadcastAudience } from "@/lib/admin/broadcast";
 import type { FormState } from "@/lib/profile/types";
 import { sendBroadcast } from "./actions";
 
-const STARTER = `Hi {name}! 👋 Ashish here, founder of Peerpop.
-
-Ek reel. Do audience. 🤝 Collab with a creator your size and you both grow.
-
-But other creators can only find you if your profile is complete. It takes 2 minutes:
-📸 Add a photo
-🎯 Pick your niche
-🎬 Add one video of your work
-
-Finish it here: www.peerpop.in/settings/profile
-
-Stuck anywhere? Just reply here. I read every message.`;
-
 export function BroadcastForm({ counts, sampleName }: { counts: Record<BroadcastAudience, number>; sampleName: string }) {
   const [audience, setAudience] = useState<BroadcastAudience>(counts.new > 0 ? "new" : "incomplete");
-  const [text, setText] = useState(STARTER);
+  const [text, setText] = useState(WELCOME_TEXT);
   const [confirming, setConfirming] = useState(false);
   const [state, action] = useActionState<FormState, FormData>(async (prev, data) => {
     const result = await sendBroadcast(prev, data);
