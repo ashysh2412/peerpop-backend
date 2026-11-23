@@ -1,10 +1,11 @@
 "use client";
 
-import { ClipboardPaste, ImagePlus, PlayCircle, X } from "lucide-react";
+import { ClipboardPaste, Clapperboard, ImagePlus, PlayCircle, X } from "lucide-react";
 import Image from "next/image";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { createPost, lookupVideoTitle } from "@/app/posts/actions";
 import { POST_PHOTO_BUCKET, POST_PHOTO_TYPES, uploadPostPhoto } from "@/lib/image/post-photo";
+import { POST_VIDEO_TYPES, postVideoUrl, uploadPostVideo } from "@/lib/image/post-video";
 import type { FormState } from "@/lib/profile/types";
 import { parseVideoUrl, type ParsedVideo } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
@@ -34,6 +35,7 @@ export function PostComposer({
   photo,
   groupId,
   placeholder,
+  canUploadVideo = false,
 }: {
   userId: string;
   firstName: string;
@@ -41,9 +43,14 @@ export function PostComposer({
   photo: string | null;
   groupId?: string;
   placeholder?: string;
+  /** Only the Peerpop account can upload videos straight into a post. */
+  canUploadVideo?: boolean;
 }) {
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(0);
+  const [videoPath, setVideoPath] = useState<string | null>(null);
+  const [videoUploading, setVideoUploading] = useState(false);
+  const videoFile = useRef<HTMLInputElement>(null);
   const [showLink, setShowLink] = useState(false);
   const [link, setLink] = useState("");
   const video = link ? parseVideoUrl(link) : null;
@@ -66,6 +73,7 @@ export function PostComposer({
     if (result.ok) {
       form.current?.reset();
       setImages([]);
+      setVideoPath(null);
       setShowLink(false);
       setLink("");
     }
@@ -86,6 +94,15 @@ export function PostComposer({
       if ("path" in result) setImages((list) => [...list, result.path].slice(0, MAX_PHOTOS));
       else setError(result.error);
     }
+  }
+
+  async function onVideo(picked: File) {
+    setError(null);
+    setVideoUploading(true);
+    const result = await uploadPostVideo(userId, picked);
+    setVideoUploading(false);
+    if ("path" in result) setVideoPath(result.path);
+    else setError(result.error);
   }
 
   /** Puts a link in the post and, for YouTube or Vimeo, fills in the video's title when the text is still empty. */
@@ -110,7 +127,7 @@ export function PostComposer({
   }
 
   const url = (path: string) => `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/${path}`;
-  const busy = uploading > 0;
+  const busy = uploading > 0 || videoUploading;
 
   return (
     <form id="compose" ref={form} action={action} className="card flex scroll-mt-24 flex-col gap-3 rounded-3xl p-4 sm:p-5">
@@ -119,7 +136,7 @@ export function PostComposer({
         <textarea
           ref={text}
           name="body"
-          required={!link}
+          required={!link && !videoPath}
           maxLength={3000}
           rows={1}
           onPaste={(e) => {
@@ -177,6 +194,23 @@ export function PostComposer({
         <input key={path} type="hidden" name="image_path" value={path} />
       ))}
       {groupId && <input type="hidden" name="group_id" value={groupId} />}
+      {videoPath && (
+        <div className="relative overflow-hidden rounded-2xl bg-ink">
+          <input type="hidden" name="video_path" value={videoPath} />
+          <video src={postVideoUrl(videoPath)} controls playsInline preload="metadata" className="max-h-[420px] w-full" />
+          <button
+            type="button"
+            onClick={() => setVideoPath(null)}
+            aria-label="Remove video"
+            className="absolute top-2 right-2 flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+      {videoUploading && (
+        <div className="flex h-24 animate-pulse items-center justify-center rounded-2xl bg-sunken text-sm text-muted">Uploading video… keep this page open</div>
+      )}
       {(images.length > 0 || busy) && (
         <div className="flex gap-2 overflow-x-auto pb-1">
           {images.map((path, i) => (
@@ -212,10 +246,28 @@ export function PostComposer({
           e.target.value = "";
         }}
       />
+      {canUploadVideo && (
+        <input
+          ref={videoFile}
+          type="file"
+          accept={POST_VIDEO_TYPES.join(",")}
+          className="sr-only"
+          onChange={(e) => {
+            const picked = e.target.files?.[0];
+            if (picked) void onVideo(picked);
+            e.target.value = "";
+          }}
+        />
+      )}
       <div className="-mx-2 flex flex-wrap items-center gap-1 border-t border-line pt-3">
         <button type="button" disabled={busy || images.length >= MAX_PHOTOS} onClick={() => file.current?.click()} className="btn-ghost btn-sm">
           <ImagePlus size={17} className="text-emerald-500" /> {busy ? "Uploading…" : images.length ? `Photos ${images.length}/${MAX_PHOTOS}` : "Photos"}
         </button>
+        {canUploadVideo && !videoPath && (
+          <button type="button" disabled={busy} onClick={() => videoFile.current?.click()} className="btn-ghost btn-sm">
+            <Clapperboard size={17} className="text-rose-500" /> {videoUploading ? "Uploading…" : "Video"}
+          </button>
+        )}
         {!showLink && (
           <button type="button" onClick={() => void pasteLink()} className="btn-ghost btn-sm">
             <ClipboardPaste size={17} className="text-sky-500" /> Paste video link

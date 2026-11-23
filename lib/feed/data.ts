@@ -4,6 +4,7 @@ import type { createClient } from "@/lib/supabase/server";
 type Client = Awaited<ReturnType<typeof createClient>>;
 
 export const POST_IMAGE_BUCKET = "post-images";
+export const POST_VIDEO_BUCKET = "post-videos";
 export const POST_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
 export const FEED_PAGE = 20;
 
@@ -15,6 +16,8 @@ export type FeedPost = {
   image_path: string | null;
   /** Photos after the first, in order. Empty for one-photo and text posts. */
   more_images?: string[];
+  /** A video uploaded into the post (Peerpop account only). */
+  video_path?: string | null;
   created_at: string;
   author_handle: string;
   author_name: string;
@@ -37,17 +40,19 @@ export type Comment = {
 export const POST_MAX_PHOTOS = 10;
 
 /**
- * Adds each post's extra photos. The feed functions return only the first
- * photo, so the rest come from one small extra read. If it fails (for example
- * before the database change is run), posts simply show their first photo.
+ * Adds each post's extra photos and uploaded video. The feed functions return
+ * only the first photo, so the rest come from one small extra read. If it
+ * fails (for example before a database change is run), posts show as before.
  */
 export async function withMoreImages(supabase: Client, posts: FeedPost[]): Promise<FeedPost[]> {
-  const ids = posts.filter((p) => p.image_path).map((p) => p.id);
+  const ids = posts.map((p) => p.id);
   if (ids.length === 0) return posts;
-  const { data, error } = await supabase.from("posts").select("id, more_images").in("id", ids);
-  if (error || !data) return posts;
-  const more = new Map((data as { id: string; more_images: string[] | null }[]).map((r) => [r.id, r.more_images ?? []]));
-  return posts.map((p) => ({ ...p, more_images: more.get(p.id) ?? [] }));
+  type Row = { id: string; more_images: string[] | null; video_path?: string | null };
+  let res: { data: unknown[] | null; error: unknown } = await supabase.from("posts").select("id, more_images, video_path").in("id", ids);
+  if (res.error) res = await supabase.from("posts").select("id, more_images").in("id", ids);
+  if (res.error || !res.data) return posts;
+  const extra = new Map((res.data as Row[]).map((r) => [r.id, r]));
+  return posts.map((p) => ({ ...p, more_images: extra.get(p.id)?.more_images ?? [], video_path: extra.get(p.id)?.video_path ?? null }));
 }
 
 export async function getFeed(supabase: Client, before: string | null) {

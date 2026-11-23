@@ -49,19 +49,20 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, official] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
+    cursor ? Promise.resolve({ data: null }) : supabase.from("official_accounts").select("user_id").eq("user_id", user.id).maybeSingle(),
   ]);
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
   const feed = (
     <>
-      {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
+      {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} canUploadVideo={!!official.data} />}
       {!cursor && (
         <div className="lg:hidden">
           <GetStarted steps={steps} compact />
