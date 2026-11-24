@@ -1,6 +1,9 @@
 // Pure maths behind the verified stats (search spec 3.3 to 3.5).
 
 export type VideoFacts = {
+  /** Set for videos fetched from YouTube; used to share new uploads to the feed. */
+  id?: string;
+  title?: string;
   publishedAt: string;
   durationSeconds: number;
   views: number;

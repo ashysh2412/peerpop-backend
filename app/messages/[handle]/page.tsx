@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { ChatThread } from "@/components/chat-thread";
 import { InboxList } from "@/components/inbox-list";
 import { CardsSkeleton } from "@/components/skeleton";
-import { getConnection } from "@/lib/connections/data";
+import { getConnection, involvesOfficial } from "@/lib/connections/data";
 import { getInbox, getThread } from "@/lib/messages/data";
 import { getProfileByHandle, requireUser } from "@/lib/profile/data";
 
@@ -33,8 +33,9 @@ async function Chat({ params }: Pick<PageProps<"/messages/[handle]">, "params">)
 
   // Opening the chat reads everything they sent.
   await supabase.rpc("mark_messages_read", { other: other.user_id });
-  const [connection, thread, chats] = await Promise.all([
+  const [connection, official, thread, chats] = await Promise.all([
     getConnection(supabase, user.id, other.user_id),
+    involvesOfficial(supabase, user.id, other.user_id),
     getThread(supabase, user.id, other.user_id),
     getInbox(supabase),
   ]);
@@ -50,7 +51,7 @@ async function Chat({ params }: Pick<PageProps<"/messages/[handle]">, "params">)
         me={user.id}
         other={{ id: other.user_id, handle: other.handle, name: other.display_name, photo: other.photo_path }}
         initial={thread}
-        canSend={connection?.status === "accepted"}
+        canSend={connection?.status === "accepted" || official}
       />
     </div>
   );

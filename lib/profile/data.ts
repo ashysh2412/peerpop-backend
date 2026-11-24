@@ -49,7 +49,7 @@ async function withStats<T extends PlatformAccount>(supabase: Client, accounts: 
 export async function getOwnPlatforms(supabase: Client, userId: string) {
   const { data } = await supabase
     .from("platform_accounts")
-    .select(`${PLATFORM_COLUMNS}, verification_code`)
+    .select(`${PLATFORM_COLUMNS}, verification_code, auto_share`)
     .eq("user_id", userId);
   return withStats(supabase, (data ?? []) as OwnYouTube[]);
 }

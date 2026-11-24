@@ -5,8 +5,8 @@ import { CITIES, labelFor } from "@/lib/catalog";
 import { POST_IMAGE_BUCKET, type FeedPost } from "@/lib/feed/data";
 import { parseVideoUrl } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
-import { ExpandableText } from "./expandable-text";
 import { LikeButton } from "./like-button";
+import { EditPostButton, PostText } from "./post-edit";
 import { FittedPhoto, PhotoCarousel } from "./photo-carousel";
 import { VideoEmbed } from "./video-embed";
 import { updatedLabel } from "./youtube-stats";
@@ -32,7 +32,7 @@ export function PostCard({
   const video = post.link_url ? parseVideoUrl(post.link_url) : null;
   const city = post.author_city ? labelFor(CITIES, post.author_city) : null;
   return (
-    <article className="card flex flex-col gap-3 rounded-3xl p-4 pb-2 sm:p-5 sm:pb-2">
+    <article className="group card flex flex-col gap-3 rounded-3xl p-4 pb-2 sm:p-5 sm:pb-2">
       <header className="flex items-center gap-3">
         <Link href={`/creators/${post.author_handle}`}>
           <Avatar path={post.author_photo} name={post.author_name} size={44} />
@@ -51,6 +51,7 @@ export function PostCard({
             </Link>
           </p>
         </div>
+        {me === post.author_id && <EditPostButton postId={post.id} />}
         {(me === post.author_id || canModerate) && (
           <form action={deletePost}>
             <input type="hidden" name="id" value={post.id} />
@@ -61,41 +62,56 @@ export function PostCard({
         )}
       </header>
 
-      {linkToPost ? <ExpandableText text={post.body} /> : <p className="text-[15px] leading-relaxed break-words whitespace-pre-wrap">{post.body}</p>}
+      <PostText
+        postId={post.id}
+        authorId={post.author_id}
+        text={post.body}
+        images={post.image_path ? [post.image_path, ...(post.more_images ?? [])] : []}
+        link={post.link_url}
+        expandable={linkToPost}
+        editable={me === post.author_id}
+      />
 
-      {post.image_path && (post.more_images?.length ?? 0) > 0 ? (
-        <PhotoCarousel urls={[post.image_path, ...(post.more_images ?? [])].map(postImageUrl)} />
-      ) : post.image_path && (
-        <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken">
-          <FittedPhoto src={postImageUrl(post.image_path)} />
+      {/* Hidden while the author edits, since the editor shows the photos and link itself. */}
+      {(post.image_path || post.link_url) && (
+        <div className="flex flex-col gap-3 group-data-[editing]:hidden">
+          {post.image_path && (post.more_images?.length ?? 0) > 0 ? (
+            <PhotoCarousel urls={[post.image_path, ...(post.more_images ?? [])].map(postImageUrl)} />
+          ) : (
+            post.image_path && (
+              <div className="relative aspect-[4/5] max-h-[560px] w-full overflow-hidden rounded-2xl bg-sunken">
+                <FittedPhoto src={postImageUrl(post.image_path)} />
+              </div>
+            )
+          )}
+          {video ? (
+            <div>
+              <VideoEmbed
+                compact={linkToPost}
+                video={{
+                  id: post.id,
+                  platform: video.platform,
+                  url: video.url,
+                  external_id: video.externalId,
+                  title: null,
+                  thumbnail_url: video.thumbnailUrl,
+                  position: 0,
+                }}
+              />
+            </div>
+          ) : (
+            post.link_url && (
+              <a
+                href={post.link_url}
+                target="_blank"
+                rel="noreferrer nofollow"
+                className="truncate rounded-2xl bg-sunken px-4 py-3 text-sm font-medium text-brand-ink hover:underline"
+              >
+                {post.link_url.replace(/^https?:\/\//, "")}
+              </a>
+            )
+          )}
         </div>
-      )}
-      {video ? (
-        <div>
-          <VideoEmbed
-            compact={linkToPost}
-            video={{
-              id: post.id,
-              platform: video.platform,
-              url: video.url,
-              external_id: video.externalId,
-              title: null,
-              thumbnail_url: video.thumbnailUrl,
-              position: 0,
-            }}
-          />
-        </div>
-      ) : (
-        post.link_url && (
-          <a
-            href={post.link_url}
-            target="_blank"
-            rel="noreferrer nofollow"
-            className="truncate rounded-2xl bg-sunken px-4 py-3 text-sm font-medium text-brand-ink hover:underline"
-          >
-            {post.link_url.replace(/^https?:\/\//, "")}
-          </a>
-        )
       )}
 
       <footer className="-mx-2 flex items-center gap-1 border-t border-line pt-1.5">

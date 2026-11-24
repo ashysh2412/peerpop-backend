@@ -41,7 +41,7 @@ export type AccountStats = {
 };
 
 /** The owner's view of their YouTube row while verifying. */
-export type OwnYouTube = PlatformAccount & { verification_code: string | null };
+export type OwnYouTube = PlatformAccount & { verification_code: string | null; auto_share?: boolean };
 
 export type ProfileVideo = {
   id: string;

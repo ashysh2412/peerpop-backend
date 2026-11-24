@@ -33,10 +33,13 @@ export default function HomePage({ searchParams }: PageProps<"/home">) {
   );
 }
 
-/** Collabs that fit you first: your city or a skill you have, then everything else. */
+/** Your own open collabs first (so you can see they're live), then the ones that fit you: your city or a skill you have. */
 function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string | null; skills: string[] }) {
-  const fit = (c: Collab) => (c.city_slug && c.city_slug === me.city_slug ? 1 : 0) + (c.roles_needed.some((r) => me.skills.includes(r)) ? 1 : 0);
-  return collabs.filter((c) => c.author_id !== me.user_id).sort((a, b) => fit(b) - fit(a));
+  const fit = (c: Collab) =>
+    (c.author_id === me.user_id ? 10 : 0) +
+    (c.city_slug && c.city_slug === me.city_slug ? 1 : 0) +
+    (c.roles_needed.some((r) => me.skills.includes(r)) ? 1 : 0);
+  return [...collabs].sort((a, b) => fit(b) - fit(a));
 }
 
 async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) {
@@ -150,7 +153,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                     <p className="max-w-sm text-sm">Be the first: post what you&apos;re planning and who you need.</p>
                   </div>
                 ) : (
-                  open.map((c) => <CollabCall key={c.id} collab={c} />)
+                  open.map((c) => <CollabCall key={c.id} collab={c} mine={c.author_id === user.id} />)
                 )}
                 <Link href="/collabs" className="btn-secondary self-center">
                   Search all collabs
@@ -160,7 +163,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail steps={steps} collabs={collabs.filter((c) => c.author_id !== user.id).slice(0, 4)} people={newcomers.filter((p) => !matchIds.has(p.user_id)).slice(0, 5)} />
+      <HomeRail steps={steps} collabs={collabs.slice(0, 4)} people={newcomers.filter((p) => !matchIds.has(p.user_id)).slice(0, 5)} />
     </div>
   );
 }

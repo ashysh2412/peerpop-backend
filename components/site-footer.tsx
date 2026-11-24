@@ -3,7 +3,7 @@ import { Logo } from "./logo";
 
 export function SiteFooter() {
   return (
-    <footer className="mt-12 border-t border-line pb-20 md:pb-0">
+    <footer className="mt-12 border-t border-line pb-[calc(5rem+env(safe-area-inset-bottom))] md:pb-0">
       <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-8 text-sm text-muted">
         <div className="mr-auto flex items-center gap-3">
           <Logo />

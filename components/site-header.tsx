@@ -1,4 +1,16 @@
-import { Bell, Handshake, House, KeyRound, LayoutGrid, LogOut, MessageCircle, Search, ShieldCheck, User, Users } from "lucide-react";
+import {
+  Bell,
+  Handshake,
+  House,
+  KeyRound,
+  LayoutGrid,
+  LogOut,
+  MessageCircle,
+  Search,
+  ShieldCheck,
+  User,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { Suspense } from "react";
 import { isAdminEmail } from "@/lib/admin/access";
@@ -17,6 +29,16 @@ function Badge({ count }: { count: number }) {
   if (!count) return null;
   return (
     <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold text-white ring-2 ring-brand">
+      {count > 9 ? "9+" : count}
+    </span>
+  );
+}
+
+/** Small count dot on a phone tab, tucked to the icon's top right so the icon stays visible. */
+function TabBadge({ count }: { count: number }) {
+  if (!count) return null;
+  return (
+    <span className="absolute -top-0.5 left-[calc(50%+5px)] flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] leading-none font-bold text-white ring-2 ring-card">
       {count > 9 ? "9+" : count}
     </span>
   );
@@ -62,25 +84,46 @@ async function AccountNav() {
     );
   }
 
-  const [requests, messages, { count: unread }, { data: found }] = await Promise.all([
-    countReceived(supabase, user.id),
-    countUnreadMessages(supabase, user.id),
-    supabase.from("notifications").select("id", { count: "exact", head: true }).eq("user_id", user.id).is("read_at", null),
-    supabase.from("creator_profiles").select("handle, display_name, photo_path").eq("user_id", user.id).maybeSingle(),
-  ]);
+  const [requests, messages, { count: unread }, { data: found }] =
+    await Promise.all([
+      countReceived(supabase, user.id),
+      countUnreadMessages(supabase, user.id),
+      supabase
+        .from("notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .is("read_at", null),
+      supabase
+        .from("creator_profiles")
+        .select("handle, display_name, photo_path")
+        .eq("user_id", user.id)
+        .maybeSingle(),
+    ]);
 
   // Password and code logins skip the OAuth callback, so the first page they see makes the profile.
   let profile = found;
   if (!profile) {
     try {
       const { profile: made } = await ensureProfile(supabase, user);
-      profile = { handle: made.handle, display_name: made.display_name, photo_path: made.photo_path };
+      profile = {
+        handle: made.handle,
+        display_name: made.display_name,
+        photo_path: made.photo_path,
+      };
     } catch {
       profile = null;
     }
   }
 
-  return <SignedIn requests={requests} messages={messages} unread={unread ?? 0} profile={profile} isAdmin={isAdminEmail(user.email)} />;
+  return (
+    <SignedIn
+      requests={requests}
+      messages={messages}
+      unread={unread ?? 0}
+      profile={profile}
+      isAdmin={isAdminEmail(user.email)}
+    />
+  );
 }
 
 function SignedIn({
@@ -93,7 +136,11 @@ function SignedIn({
   requests: number;
   messages: number;
   unread: number;
-  profile: { handle: string; display_name: string; photo_path: string | null } | null;
+  profile: {
+    handle: string;
+    display_name: string;
+    photo_path: string | null;
+  } | null;
   isAdmin: boolean;
 }) {
   return (
@@ -135,29 +182,49 @@ function SignedIn({
       <Dropdown
         className="group relative"
         summaryClassName="flex cursor-pointer list-none items-center rounded-full ring-black/20 transition hover:ring-4 [&::-webkit-details-marker]:hidden"
-        summary={<Avatar path={profile?.photo_path ?? null} name={profile?.display_name ?? "You"} size={36} />}
+        summary={
+          <Avatar
+            path={profile?.photo_path ?? null}
+            name={profile?.display_name ?? "You"}
+            size={36}
+          />
+        }
       >
         <div className="card absolute right-0 mt-2 w-56 overflow-hidden p-1.5 shadow-xl">
           {profile && (
             <>
               <div className="px-3 py-2">
-                <p className="truncate text-sm font-semibold">{profile.display_name}</p>
+                <p className="truncate text-sm font-semibold">
+                  {profile.display_name}
+                </p>
               </div>
               <div className="my-1 h-px bg-line" />
-              <Link href="/settings/profile" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+              <Link
+                href="/settings/profile"
+                className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken"
+              >
                 <User size={16} className="text-muted" /> My profile
               </Link>
             </>
           )}
-          <Link href="/groups" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken md:hidden">
+          <Link
+            href="/groups"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken md:hidden"
+          >
             <LayoutGrid size={16} className="text-muted" /> Groups
           </Link>
           {isAdmin && (
-            <Link href="/admin" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+            <Link
+              href="/admin"
+              className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken"
+            >
               <ShieldCheck size={16} className="text-muted" /> Admin
             </Link>
           )}
-          <Link href="/settings/password" className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken">
+          <Link
+            href="/settings/password"
+            className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm hover:bg-sunken"
+          >
             <KeyRound size={16} className="text-muted" /> Change password
           </Link>
           <form action="/auth/signout" method="post">
@@ -169,24 +236,31 @@ function SignedIn({
       </Dropdown>
 
       {/* Phones get a bottom bar of easy-reach keys instead of the header links, with Create in the middle. */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 flex items-start border-t border-line bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden">
-        <NavLink href="/home" variant="tab">
-          <House size={22} /> Home
-        </NavLink>
-        <NavLink href="/creators" variant="tab">
-          <Search size={22} /> Creators
-        </NavLink>
-        <CreateMenu />
-        <NavLink href="/collabs" variant="tab">
-          <Handshake size={22} /> Collabs
-        </NavLink>
-        <NavLink href="/network" variant="tab">
-          <span className="relative">
-            <Users size={22} />
-            <Badge count={requests} />
-          </span>
-          Network
-        </NavLink>
+      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-card pb-[max(env(safe-area-inset-bottom),6px)] shadow-[0_-4px_16px_rgba(0,0,0,0.04)] md:hidden">
+        <div className="mx-auto flex h-16 max-w-md items-center px-1">
+          <NavLink href="/home" variant="tab" icon={<House size={22} />}>
+            Home
+          </NavLink>
+          <NavLink href="/creators" variant="tab" icon={<Search size={22} />}>
+            Creators
+          </NavLink>
+          <CreateMenu />
+          <NavLink href="/collabs" variant="tab" icon={<Handshake size={22} />}>
+            Collabs
+          </NavLink>
+          <NavLink
+            href="/network"
+            variant="tab"
+            icon={
+              <>
+                <Users size={22} />
+                <TabBadge count={requests} />
+              </>
+            }
+          >
+            Network
+          </NavLink>
+        </div>
       </nav>
     </>
   );

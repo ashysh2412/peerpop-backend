@@ -45,7 +45,7 @@ async function Settings() {
           </Link>
         </div>
       </div>
-      <ProfileLink handle={profile.handle} />
+      <ProfileLink handle={profile.handle} editable />
       <PhotoSection userId={user.id} photoPath={profile.photo_path} />
       <ProfileSection profile={profile} />
       <VideosSection videos={videos} />

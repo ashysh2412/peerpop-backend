@@ -15,7 +15,7 @@ import { VideoEmbed } from "@/components/video-embed";
 import { YouTubeStats } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { getOpenCollabsBy } from "@/lib/collabs/data";
-import { getConnection, getContactFor, getMutualCount, stateFor } from "@/lib/connections/data";
+import { getConnection, getContactFor, getMutualCount, involvesOfficial, stateFor } from "@/lib/connections/data";
 import { getPhotosBy } from "@/lib/feed/data";
 import { compactNumber } from "@/lib/format";
 import { getProfileByHandle, getPublicPlatforms, getVideos } from "@/lib/profile/data";
@@ -63,14 +63,15 @@ async function Creator({ params, searchParams }: PageProps<"/creators/[handle]">
     getSessionUser(supabase),
   ]);
   const isMe = user?.id === profile.user_id;
-  const [connection, mutual, contact] =
+  const [connection, mutual, contact, official] =
     user && !isMe
       ? await Promise.all([
           getConnection(supabase, user.id, profile.user_id),
           getMutualCount(supabase, profile.user_id),
           getContactFor(supabase, profile.user_id),
+          involvesOfficial(supabase, user.id, profile.user_id),
         ])
-      : [null, 0, null];
+      : [null, 0, null, false];
 
   // Private profiles hide their work from people who aren't connected, unless they applied to your collab.
   // The database decides (can_see_work), so this matches what it lets through.
@@ -158,7 +159,7 @@ async function Creator({ params, searchParams }: PageProps<"/creators/[handle]">
 
           <div className="flex flex-wrap justify-center gap-2 sm:justify-start">
             {user && !isMe && <ConnectPanel otherId={profile.user_id} name={profile.display_name} state={stateFor(user.id, connection)} />}
-            {user && !isMe && connection?.status === "accepted" && (
+            {user && !isMe && (connection?.status === "accepted" || official) && (
               <Link href={`/messages/${profile.handle}`} className="btn-primary">
                 <MessageCircle size={16} /> Message
               </Link>

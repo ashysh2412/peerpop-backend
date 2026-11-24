@@ -79,3 +79,25 @@ export async function refreshYouTubeNow(): Promise<FormState> {
     return failure(err);
   }
 }
+
+/** Turns on or off posting new uploads to the feed. Turning it on starts from now, so old videos are never shared. */
+export async function setYouTubeAutoShare(_prev: FormState, form: FormData): Promise<FormState> {
+  const { user } = await requireUser("/settings/profile");
+  const on = form.get("auto_share") === "on";
+  try {
+    const update: Record<string, unknown> = { auto_share: on };
+    if (on) update.auto_share_since = new Date().toISOString();
+    const { error } = await createAdminClient()
+      .from("platform_accounts")
+      .update(update)
+      .eq("user_id", user.id)
+      .eq("platform", "youtube")
+      .eq("source", "verified");
+    if (error) throw error;
+    refresh();
+    return { ok: true, message: on ? "New videos will be shared to your feed." : "Auto-share is off." };
+  } catch (err) {
+    console.error("setYouTubeAutoShare", err);
+    return failure(err);
+  }
+}

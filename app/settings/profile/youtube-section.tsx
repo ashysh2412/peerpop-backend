@@ -9,6 +9,7 @@ import {
   checkYouTubeVerification,
   refreshYouTubeNow,
   removeYouTubeChannel,
+  setYouTubeAutoShare,
   startYouTubeVerification,
 } from "./youtube-actions";
 
@@ -103,6 +104,7 @@ function Verified({ account }: { account: OwnYouTube }) {
       ) : (
         <p className="text-sm text-muted">Your numbers will appear after the next refresh.</p>
       )}
+      <AutoShare on={account.auto_share ?? true} />
       <form action={refreshAction} className="flex items-center gap-4">
         <SubmitButton pendingText="Updating…">Refresh now</SubmitButton>
         <FormMessage state={state} />
@@ -118,5 +120,27 @@ function Verified({ account }: { account: OwnYouTube }) {
         </button>
       </form>
     </Card>
+  );
+}
+
+function AutoShare({ on }: { on: boolean }) {
+  const [state, action] = useActionState<FormState, FormData>(setYouTubeAutoShare, {});
+  return (
+    <form action={action} className="flex flex-col gap-2 rounded-xl bg-sunken p-3">
+      <label className="flex cursor-pointer items-start gap-3">
+        <input
+          type="checkbox"
+          name="auto_share"
+          defaultChecked={on}
+          onChange={(e) => e.currentTarget.form?.requestSubmit()}
+          className="mt-0.5 h-5 w-5 accent-[var(--brand)]"
+        />
+        <span>
+          <span className="block text-sm font-semibold">Share my new videos to my Peerpop feed</span>
+          <span className="block text-sm text-muted">When you upload a video or Short, we post it for you within a day. No need to paste the link.</span>
+        </span>
+      </label>
+      <FormMessage state={state} />
+    </form>
   );
 }

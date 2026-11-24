@@ -5,6 +5,8 @@ import { POST_IMAGE_BUCKET, POST_MAX_PHOTOS } from "@/lib/feed/data";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
+import { parseVideoUrl } from "@/lib/videos/parse";
+import { fetchVideoTitle } from "@/lib/videos/title";
 
 const TRY_AGAIN = "Something went wrong. Please try again.";
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -22,6 +24,12 @@ function normaliseLink(raw: string) {
   } catch {
     return undefined;
   }
+}
+
+/** For the post box: the title of a pasted YouTube or Vimeo link, to fill in while the person writes. */
+export async function lookupVideoTitle(link: string): Promise<string | null> {
+  await requireUser("/home");
+  return typeof link === "string" && link.length <= 500 ? fetchVideoTitle(link) : null;
 }
 
 export async function createPost(_prev: FormState, form: FormData): Promise<FormState> {
@@ -45,7 +53,8 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
     body = body.replace(pasted, "").trim();
   }
   const link = normaliseLink(linkRaw);
-  if (!body && link) return { message: "Add a title or a line about your video." };
+  // Just a link is enough: the video's own title becomes the text.
+  if (!body && link) body = (await fetchVideoTitle(link)) ?? (parseVideoUrl(link) ? "Shared a video 🎬" : "Shared a link");
   if (!body) return { message: "Write something first." };
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };
@@ -62,6 +71,41 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   }
   refresh();
   return { ok: true, message: "Posted." };
+}
+
+/** The author changes their post: its text and, from the full editor, its video link and photos. */
+export async function updatePost(_prev: FormState, form: FormData): Promise<FormState> {
+  const { supabase, user } = await requireUser("/home");
+  const id = str(form, "id");
+  const body = str(form, "body");
+  if (!UUID.test(id)) return { message: TRY_AGAIN };
+  if (!body) return { message: "Write something first." };
+  if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
+  const update: Record<string, unknown> = { body };
+  let removed: string[] = [];
+
+  if (form.get("edit_media") === "1") {
+    const link = normaliseLink(str(form, "link_url"));
+    if (link === undefined) return { message: "That link doesn't look right." };
+    const images = form
+      .getAll("image_path")
+      .map((v) => (typeof v === "string" ? v.trim() : ""))
+      .filter(Boolean);
+    if (images.length > POST_MAX_PHOTOS) return { message: `Add up to ${POST_MAX_PHOTOS} photos.` };
+    if (images.some((path) => !isOwnAvatarPath(path, user.id))) return { message: "That upload isn't yours." };
+    const { data: before } = await supabase.from("posts").select("image_path, more_images").eq("id", id).eq("author_id", user.id).maybeSingle();
+    if (!before) return { message: TRY_AGAIN };
+    const old = [before.image_path as string | null, ...((before.more_images as string[] | null) ?? [])].filter((p): p is string => !!p);
+    removed = old.filter((p) => !images.includes(p));
+    Object.assign(update, { link_url: link, image_path: images[0] ?? null, more_images: images.slice(1) });
+  }
+
+  const { data, error } = await supabase.from("posts").update(update).eq("id", id).eq("author_id", user.id).select("id");
+  if (error || !data?.length) return { message: TRY_AGAIN };
+  // Photos taken out of the post are deleted from storage too.
+  if (removed.length) await supabase.storage.from(POST_IMAGE_BUCKET).remove(removed);
+  refresh();
+  return { ok: true, message: "Saved." };
 }
 
 export async function deletePost(form: FormData) {
