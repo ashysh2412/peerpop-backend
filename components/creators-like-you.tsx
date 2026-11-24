@@ -5,6 +5,7 @@ import type { Match } from "@/lib/feed/data";
 import { compactNumber } from "@/lib/format";
 import { Avatar } from "./avatar";
 import { ConnectPanel } from "./connect-panel";
+import { type Hello, SayHiJodi } from "./say-hi-jodi";
 
 /** Why this person is suggested, in a few words: "Pune · Food", "Similar audience", or "New member". */
 function Reason({ m }: { m: Match }) {
@@ -61,7 +62,7 @@ function Nudge({ missing, className = "" }: { missing: string[]; className?: str
 }
 
 /** "Your collab Jodi" as a list for the right-hand column on Home (laptops and wider). */
-export function JodiRail({ people, seeAll, missing }: { people: Match[]; seeAll: string; missing: string[] }) {
+export function JodiRail({ people, seeAll, missing, hellos }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[] }) {
   if (people.length === 0) return null;
   return (
     <section className="card flex flex-col gap-3 p-4">
@@ -93,6 +94,7 @@ export function JodiRail({ people, seeAll, missing }: { people: Match[]; seeAll:
           </li>
         ))}
       </ul>
+      <SayHiJodi hellos={hellos} />
       <Nudge missing={missing} />
     </section>
   );
@@ -103,7 +105,7 @@ export function JodiRail({ people, seeAll, missing }: { people: Match[]; seeAll:
  * similar audience, the people to do your next collab reel with. When your profile is missing
  * what matching uses, a one-line nudge asks for it. Renders nothing when there's nobody to suggest.
  */
-export function CreatorsLikeYou({ people, seeAll, missing }: { people: Match[]; seeAll: string; missing: string[] }) {
+export function CreatorsLikeYou({ people, seeAll, missing, hellos }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[] }) {
   if (people.length === 0) return null;
   return (
     <section className="card overflow-hidden py-4">
@@ -133,6 +135,9 @@ export function CreatorsLikeYou({ people, seeAll, missing }: { people: Match[]; 
             </div>
           </div>
         ))}
+      </div>
+      <div className="mx-5 mt-3">
+        <SayHiJodi hellos={hellos} />
       </div>
       <Nudge missing={missing} className="mx-5 mt-3" />
     </section>

@@ -12,6 +12,7 @@ import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
+import { jodiNote } from "@/lib/feed/jodi-note";
 import { FEED_PAGE, getFeed, getMatches, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
@@ -62,10 +63,11 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
   const seeAll = profile.city_slug ? `/creators?city=${profile.city_slug}` : profile.niches.length ? `/creators?niche=${profile.niches.join(",")}` : "/creators";
   const missing = [!profile.city_slug && "city", !profile.niches.length && "niche", !myFollowers && "follower count"].filter((m): m is string => !!m);
+  const hellos = matches.slice(0, 3).map((m) => ({ user_id: m.user_id, name: m.display_name, note: jodiNote(profile.display_name, m) }));
   // Phones: in the feed. Laptops and wider: at the top of the right-hand column instead.
   const likeYou = (
     <div className="lg:hidden">
-      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} />
+      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} />
     </div>
   );
   // On phones, new creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
@@ -174,7 +176,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         steps={steps}
         collabs={collabs.slice(0, 4)}
         people={matches.length ? [] : newcomers.slice(0, 5)}
-        jodi={<JodiRail people={matches.slice(0, 5)} seeAll={seeAll} missing={missing} />}
+        jodi={<JodiRail people={matches.slice(0, 5)} seeAll={seeAll} missing={missing} hellos={hellos} />}
       />
     </div>
   );
