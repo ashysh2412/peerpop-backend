@@ -63,11 +63,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
   const seeAll = profile.city_slug ? `/creators?city=${profile.city_slug}` : profile.niches.length ? `/creators?niche=${profile.niches.join(",")}` : "/creators";
   const missing = [!profile.city_slug && "city", !profile.niches.length && "niche", !myFollowers && "follower count"].filter((m): m is string => !!m);
-  const hellos = matches.slice(0, 3).map((m) => ({ user_id: m.user_id, name: m.display_name, note: jodiNote(profile.display_name, m) }));
+  const notes = Object.fromEntries(matches.map((m) => [m.user_id, jodiNote(profile.display_name, m)]));
+  const hellos = matches.slice(0, 3).map((m) => ({ user_id: m.user_id, name: m.display_name, note: notes[m.user_id] }));
   // Phones: in the feed. Laptops and wider: at the top of the right-hand column instead.
   const likeYou = (
     <div className="lg:hidden">
-      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} />
+      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />
     </div>
   );
   // On phones, new creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
@@ -176,7 +177,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         steps={steps}
         collabs={collabs.slice(0, 4)}
         people={matches.length ? [] : newcomers.slice(0, 5)}
-        jodi={<JodiRail people={matches.slice(0, 5)} seeAll={seeAll} missing={missing} hellos={hellos} />}
+        jodi={<JodiRail people={matches.slice(0, 3)} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />}
       />
     </div>
   );

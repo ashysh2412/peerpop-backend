@@ -46,23 +46,19 @@ function listOf(items: string[]) {
   return items.length < 2 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 
+/** One quiet line asking for what matching is missing. */
 function Nudge({ missing, className = "" }: { missing: string[]; className?: string }) {
   if (missing.length === 0) return null;
   return (
-    <Link
-      href="/settings/profile"
-      className={`flex items-center gap-2 rounded-xl bg-brand-soft px-3 py-2 text-xs text-brand-ink transition hover:brightness-95 ${className}`}
-    >
-      <span className="min-w-0 flex-1">
-        <span className="font-semibold">Get better Jodi matches:</span> add your {listOf(missing)}.
-      </span>
-      <ArrowRight size={14} className="shrink-0" />
+    <Link href="/settings/profile" className={`flex items-center gap-1 text-xs font-medium text-brand-ink hover:underline ${className}`}>
+      Add your {listOf(missing)} for better matches
+      <ArrowRight size={12} className="shrink-0" />
     </Link>
   );
 }
 
 /** "Your collab Jodi" as a list for the right-hand column on Home (laptops and wider). */
-export function JodiRail({ people, seeAll, missing, hellos }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[] }) {
+export function JodiRail({ people, seeAll, missing, hellos, notes }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[]; notes: Record<string, string> }) {
   if (people.length === 0) return null;
   return (
     <section className="card flex flex-col gap-3 p-4">
@@ -73,7 +69,7 @@ export function JodiRail({ people, seeAll, missing, hellos }: { people: Match[];
             See all
           </Link>
         </div>
-        <p className="mt-0.5 text-xs text-muted">Ek reel. Do audience. Creators who could swap audiences with you.</p>
+        <p className="mt-0.5 text-xs text-muted">Creators who could swap audiences with you.</p>
       </div>
       <ul className="flex flex-col gap-3">
         {people.map((m) => (
@@ -89,12 +85,12 @@ export function JodiRail({ people, seeAll, missing, hellos }: { people: Match[];
               </span>
             </Link>
             <div className="w-24 shrink-0">
-              <ConnectPanel otherId={m.user_id} name={m.display_name} state={{ kind: "none" }} compact />
+              <ConnectPanel otherId={m.user_id} name={m.display_name} state={{ kind: "none" }} compact note={notes[m.user_id]} />
             </div>
           </li>
         ))}
       </ul>
-      <SayHiJodi hellos={hellos} />
+      <SayHiJodi hellos={hellos} all={hellos.length === people.length} />
       <Nudge missing={missing} />
     </section>
   );
@@ -105,14 +101,14 @@ export function JodiRail({ people, seeAll, missing, hellos }: { people: Match[];
  * similar audience, the people to do your next collab reel with. When your profile is missing
  * what matching uses, a one-line nudge asks for it. Renders nothing when there's nobody to suggest.
  */
-export function CreatorsLikeYou({ people, seeAll, missing, hellos }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[] }) {
+export function CreatorsLikeYou({ people, seeAll, missing, hellos, notes }: { people: Match[]; seeAll: string; missing: string[]; hellos: Hello[]; notes: Record<string, string> }) {
   if (people.length === 0) return null;
   return (
     <section className="card overflow-hidden py-4">
       <div className="flex items-start justify-between gap-3 px-5">
         <div className="min-w-0">
           <h2 className="text-sm font-semibold">Your collab Jodi</h2>
-          <p className="mt-0.5 text-xs text-muted">Ek reel. Do audience. Creators in your city or niche who could swap audiences with you.</p>
+          <p className="mt-0.5 text-xs text-muted">Creators who could swap audiences with you.</p>
         </div>
         <Link href={seeAll} className="shrink-0 text-sm font-semibold text-brand-ink hover:underline">
           See all
@@ -131,7 +127,7 @@ export function CreatorsLikeYou({ people, seeAll, missing, hellos }: { people: M
             </Link>
             <Reason m={m} />
             <div className="mt-auto w-full">
-              <ConnectPanel otherId={m.user_id} name={m.display_name} state={{ kind: "none" }} compact />
+              <ConnectPanel otherId={m.user_id} name={m.display_name} state={{ kind: "none" }} compact note={notes[m.user_id]} />
             </div>
           </div>
         ))}

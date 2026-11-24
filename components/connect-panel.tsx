@@ -23,12 +23,15 @@ export function ConnectPanel({
   name,
   state,
   compact = false,
+  note,
 }: {
   otherId: string;
   name: string;
   state: ConnectionState;
   /** Search cards: no note field, and no remove or decline buttons. */
   compact?: boolean;
+  /** A ready-made hello sent with the request (Jodi suggestions). */
+  note?: string;
 }) {
   const [sendState, send] = useActionState<FormState, FormData>(sendConnectionRequest, {});
   const [writing, setWriting] = useState(false);
@@ -125,6 +128,7 @@ export function ConnectPanel({
   return (
     <form action={send} className="flex flex-col gap-2">
       <input type="hidden" name="to_user" value={otherId} />
+      {note && !writing && <input type="hidden" name="message" value={note} />}
       {writing && <textarea name="message" maxLength={300} rows={2} placeholder={`Say hi to ${name} (optional)`} className="textarea" />}
       <div className={`flex items-center gap-2 ${compact ? "flex-col items-stretch" : "flex-wrap"}`}>
         <ConnectButton compact={compact} />
