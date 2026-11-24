@@ -11,7 +11,9 @@ import { PixelSignedUp } from "@/components/meta-pixel";
 import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
+import { WaitingRequests } from "@/components/waiting-requests";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
+import { getWaitingRequests } from "@/lib/connections/data";
 import { jodiNote } from "@/lib/feed/jodi-note";
 import { FEED_PAGE, getFeed, getMatches, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
@@ -51,13 +53,14 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, waiting] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
+    cursor ? Promise.resolve({ total: 0, requests: [] }) : getWaitingRequests(supabase, user.id),
   ]);
   const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
@@ -118,6 +121,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         {!cursor && (
           <>
             <HomeHeader firstName={firstName} people={people} />
+            <WaitingRequests {...waiting} />
             {(note === "blocked" || note === "reported-blocked") && (
               <p className="rounded-2xl bg-sunken px-4 py-3 text-sm">
                 {note === "blocked" ? "Blocked." : "Thanks for telling us. They're blocked."} You won&apos;t see each other on Peerpop. You can unblock

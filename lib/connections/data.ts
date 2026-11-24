@@ -115,3 +115,24 @@ export async function involvesOfficial(supabase: Client, a: string, b: string) {
   const { data } = await supabase.from("official_accounts").select("user_id").in("user_id", [a, b]).limit(1);
   return (data?.length ?? 0) > 0;
 }
+
+/** Requests waiting for my answer, newest first, with who sent them: the card at the top of Home. */
+export async function getWaitingRequests(supabase: Client, me: string, limit = 3) {
+  const { data, count } = await supabase
+    .from("connections")
+    .select(COLUMNS, { count: "exact" })
+    .eq("to_user", me)
+    .eq("status", "pending")
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  const rows = (data ?? []) as ConnectionRow[];
+  if (rows.length === 0) return { total: 0, requests: [] };
+  const { data: profiles } = await supabase
+    .from("creator_profiles")
+    .select("user_id, handle, display_name, photo_path, city_slug, niches")
+    .in("user_id", rows.map((r) => r.from_user));
+  const byId = new Map(((profiles ?? []) as CardProfile[]).map((p) => [p.user_id, p]));
+  // Hidden or blocked senders don't come back, so their requests drop out.
+  const requests = rows.flatMap((r) => (byId.has(r.from_user) ? [{ ...r, profile: byId.get(r.from_user)! }] : []));
+  return { total: Math.max(count ?? 0, requests.length), requests };
+}
