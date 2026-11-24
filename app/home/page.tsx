@@ -53,7 +53,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms, waiting] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, waiting, official] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
@@ -61,6 +61,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
     cursor ? Promise.resolve({ total: 0, requests: [] }) : getWaitingRequests(supabase, user.id),
+    cursor ? Promise.resolve({ data: null }) : supabase.from("official_accounts").select("user_id").eq("user_id", user.id).maybeSingle(),
   ]);
   const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
@@ -80,7 +81,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const open = rankCollabs(collabs, profile);
   const feed = (
     <>
-      {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} />}
+      {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} canUploadVideo={!!official.data} />}
       {!cursor && (
         <div className="lg:hidden">
           <GetStarted steps={steps} compact />

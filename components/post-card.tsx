@@ -2,7 +2,7 @@ import { MessageCircle, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { deletePost } from "@/app/posts/actions";
 import { CITIES, labelFor } from "@/lib/catalog";
-import { POST_IMAGE_BUCKET, type FeedPost } from "@/lib/feed/data";
+import { POST_IMAGE_BUCKET, POST_VIDEO_BUCKET, type FeedPost } from "@/lib/feed/data";
 import { parseVideoUrl } from "@/lib/videos/parse";
 import { Avatar } from "./avatar";
 import { LikeButton } from "./like-button";
@@ -13,6 +13,10 @@ import { updatedLabel } from "./youtube-stats";
 
 export function postImageUrl(path: string) {
   return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${POST_IMAGE_BUCKET}/${path}`;
+}
+
+function postVideoUrl(path: string) {
+  return `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${POST_VIDEO_BUCKET}/${path}`;
 }
 
 /** One post as it appears in the feed and on its own page. */
@@ -73,6 +77,12 @@ export function PostCard({
       />
 
       {/* Hidden while the author edits, since the editor shows the photos and link itself. */}
+      {post.video_path && (
+        <div className="overflow-hidden rounded-2xl bg-ink group-data-[editing]:hidden">
+          <video src={postVideoUrl(post.video_path)} controls playsInline preload="metadata" className="mx-auto max-h-[640px] w-full" />
+        </div>
+      )}
+
       {(post.image_path || post.link_url) && (
         <div className="flex flex-col gap-3 group-data-[editing]:hidden">
           {post.image_path && (post.more_images?.length ?? 0) > 0 ? (

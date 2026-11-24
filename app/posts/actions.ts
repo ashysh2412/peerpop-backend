@@ -1,7 +1,7 @@
 "use server";
 
 import { refresh } from "next/cache";
-import { POST_IMAGE_BUCKET, POST_MAX_PHOTOS } from "@/lib/feed/data";
+import { POST_IMAGE_BUCKET, POST_MAX_PHOTOS, POST_VIDEO_BUCKET } from "@/lib/feed/data";
 import { isOwnAvatarPath } from "@/lib/profile/avatar";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
@@ -42,6 +42,7 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
     .filter(Boolean);
   if (images.length > POST_MAX_PHOTOS) return { message: `Add up to ${POST_MAX_PHOTOS} photos.` };
   const image = images[0] ?? null;
+  const videoPath = str(form, "video_path") || null;
   const moreImages = images.slice(1);
   const group = str(form, "group_id") || null;
   if (group && !UUID.test(group)) return { message: TRY_AGAIN };
@@ -54,18 +55,23 @@ export async function createPost(_prev: FormState, form: FormData): Promise<Form
   }
   const link = normaliseLink(linkRaw);
   // Just a link is enough: the video's own title becomes the text.
+  if (!body && videoPath) body = "Shared a video 🎬";
   if (!body && link) body = (await fetchVideoTitle(link)) ?? (parseVideoUrl(link) ? "Shared a video 🎬" : "Shared a link");
   if (!body) return { message: "Write something first." };
   if (body.length > 3000) return { message: "Keep posts under 3,000 characters." };
   if (link === undefined) return { message: "That link doesn't look right." };
   // Post photos follow the same <user id>/<file> layout as profile photos.
   if (images.some((path) => !isOwnAvatarPath(path, user.id))) return { message: "That upload isn't yours." };
+  if (videoPath && !isOwnAvatarPath(videoPath, user.id)) return { message: "That upload isn't yours." };
 
   const row: Record<string, unknown> = { author_id: user.id, body, link_url: link, image_path: image, group_id: group };
+  // video_path is only sent with a video, so posts work the same before the database change is run.
+  if (videoPath) row.video_path = videoPath;
   // more_images is only sent when there is more than one photo, so one-photo posts work the same as before.
   const { error } = await supabase.from("posts").insert(moreImages.length ? { ...row, more_images: moreImages } : row);
   if (error) {
     if (error.message.includes("join the group")) return { message: "Join the group to post here." };
+    if (error.message.includes("upload videos")) return { message: "Only the Peerpop account can upload videos." };
     if (error.message.includes("daily post limit")) return { message: "You've posted 20 times today. Try again tomorrow." };
     return { message: TRY_AGAIN };
   }
@@ -113,13 +119,15 @@ export async function deletePost(form: FormData) {
   const id = str(form, "id");
   if (!UUID.test(id)) return;
   // The database decides who may delete: the author, or an admin of the post's group.
-  const { data: extra } = await supabase.from("posts").select("more_images").eq("id", id).maybeSingle();
+  const { data: extra } = await supabase.from("posts").select("*").eq("id", id).maybeSingle();
   const { data } = await supabase.from("posts").delete().eq("id", id).select("author_id, image_path");
   const post = data?.[0];
   // Storage only lets people remove their own files.
   if (post && post.author_id === user.id) {
     const files = [post.image_path, ...((extra?.more_images as string[] | null) ?? [])].filter((f): f is string => !!f);
     if (files.length) await supabase.storage.from(POST_IMAGE_BUCKET).remove(files);
+    const video = extra?.video_path as string | null | undefined;
+    if (video) await supabase.storage.from(POST_VIDEO_BUCKET).remove([video]);
   }
   refresh();
 }
