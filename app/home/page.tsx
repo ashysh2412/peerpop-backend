@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Fragment, Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
-import { CreatorsLikeYou } from "@/components/creators-like-you";
+import { CreatorsLikeYou, JodiRail } from "@/components/creators-like-you";
 import { HomeHeader } from "@/components/home-header";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
@@ -55,16 +55,20 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
-    cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id, 15),
+    cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
   ]);
   const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
-  const matchIds = new Set(matches.map((m) => m.user_id));
   const seeAll = profile.city_slug ? `/creators?city=${profile.city_slug}` : profile.niches.length ? `/creators?niche=${profile.niches.join(",")}` : "/creators";
   const missing = [!profile.city_slug && "city", !profile.niches.length && "niche", !myFollowers && "follower count"].filter((m): m is string => !!m);
-  const likeYou = <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} />;
-  // New creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
+  // Phones: in the feed. Laptops and wider: at the top of the right-hand column instead.
+  const likeYou = (
+    <div className="lg:hidden">
+      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} />
+    </div>
+  );
+  // On phones, new creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
   const jodiFirst = steps.connections < 3;
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
@@ -166,7 +170,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           />
         )}
       </div>
-      <HomeRail steps={steps} collabs={collabs.slice(0, 4)} people={newcomers.filter((p) => !matchIds.has(p.user_id)).slice(0, 5)} />
+      <HomeRail
+        steps={steps}
+        collabs={collabs.slice(0, 4)}
+        people={matches.length ? [] : newcomers.slice(0, 5)}
+        jodi={<JodiRail people={matches.slice(0, 5)} seeAll={seeAll} missing={missing} />}
+      />
     </div>
   );
 }
