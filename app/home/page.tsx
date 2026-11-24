@@ -11,10 +11,12 @@ import { PixelSignedUp } from "@/components/meta-pixel";
 import { PostCard } from "@/components/post-card";
 import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
+import { TrendingBox } from "@/components/trending-box";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
 import { FEED_PAGE, getFeed, getMatches, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
 import { getOwnPlatforms, requireUser } from "@/lib/profile/data";
 import { ensureProfile } from "@/lib/profile/ensure";
+import { getTrends } from "@/lib/trends/data";
 import { CardsSkeleton } from "@/components/skeleton";
 
 export const metadata: Metadata = { title: "Home · Peerpop" };
@@ -50,13 +52,14 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, trends] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
     getStarterSteps(supabase, profile),
     cursor ? Promise.resolve([]) : getNewCreators(supabase, user.id),
     getOwnPlatforms(supabase, user.id),
+    getTrends(supabase, now),
   ]);
   const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
@@ -175,6 +178,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
         collabs={collabs.slice(0, 4)}
         people={matches.length ? [] : newcomers.slice(0, 5)}
         jodi={<JodiRail people={matches.slice(0, 5)} seeAll={seeAll} missing={missing} />}
+        trending={<TrendingBox trends={trends} />}
       />
     </div>
   );

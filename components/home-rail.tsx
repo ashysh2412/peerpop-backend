@@ -96,12 +96,25 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
   );
 }
 
-/** The right-hand column on Home for wide screens: your collab Jodi, setup, the newest collabs, and the newest creators. */
-export function HomeRail({ steps, collabs, people, jodi }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[]; jodi?: ReactNode }) {
+/** The right-hand column on Home for wide screens: your collab Jodi, setup, trending on Insta, the newest collabs, and the newest creators. */
+export function HomeRail({
+  steps,
+  collabs,
+  people,
+  jodi,
+  trending,
+}: {
+  steps: StarterSteps;
+  collabs: Collab[];
+  people: Suggestion[];
+  jodi?: ReactNode;
+  trending?: ReactNode;
+}) {
   return (
     <aside className="hidden flex-col gap-4 lg:flex">
       {jodi}
       <GetStarted steps={steps} />
+      {trending}
 
       <Section title="New collabs" href="/collabs">
         {collabs.length === 0 ? (

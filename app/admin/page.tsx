@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Camera, Download, Flag, Mail, MessageCircle, Search } from "lucide-react";
+import { Camera, Download, Flag, Flame, Mail, MessageCircle, Search } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -67,6 +67,9 @@ async function Admin({ searchParams }: Pick<PageProps<"/admin">, "searchParams">
         </Link>
         <Link href="/admin/broadcast" className="btn-secondary">
           <MessageCircle size={16} /> Message members
+        </Link>
+        <Link href="/admin/trends" className="btn-secondary">
+          <Flame size={16} /> Trending box
         </Link>
         <Link href="/admin/invites" className="btn-secondary">
           <Mail size={16} /> Invite waiting list
