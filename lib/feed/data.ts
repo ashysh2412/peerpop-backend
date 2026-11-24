@@ -118,18 +118,22 @@ export async function getSuggestions(supabase: Client, me: { user_id: string; ci
   return ((data ?? []) as Suggestion[]).filter((s) => !skip.has(s.user_id)).slice(0, limit);
 }
 
+/** Follower counts within 3x of each other count as "similar audience". */
+const SIMILAR_SIZE = Math.log(3);
+
 export type Match = Suggestion & {
   niches: string[];
   followers: number | null;
-  /** Why they're suggested: same city, a shared niche, or both. "new" means a newest-member fill-in. */
-  why: { city: boolean; niches: string[] };
+  /** Why they're suggested: same city, shared niches, and/or a follower count close to yours. */
+  why: { city: boolean; niches: string[]; size: boolean };
 };
 
 /**
- * "Creators like you" on Home: listed creators who share your city or a niche, so you can
- * collab and swap audiences. Same city and niche first, then niche, then city; within each,
- * the closest follower count first, then the newest. Topped up with the newest members so it
- * is never empty. Leaves out you, blocked people, and anyone you're connected to or waiting on.
+ * "Your collab Jodi" on Home: listed creators who share your city or a niche, so you can
+ * collab and swap audiences. Same city and niche first, then niche, then city; within each
+ * (and among everyone else), the closest follower count first, then the newest. Works with
+ * whatever the profile has: no city or niche still ranks by size, and with nothing at all it
+ * shows the newest members, so the row is never empty. Leaves out you, blocked people, and anyone you're connected to or waiting on.
  */
 export async function getMatches(
   supabase: Client,
@@ -156,11 +160,11 @@ export async function getMatches(
       const niches = (r.niches ?? []).filter((n) => me.niches.includes(n));
       const tier = (niches.length ? 2 : 0) + (city ? 1 : 0);
       const followers = r.max_followers == null ? null : Number(r.max_followers);
-      return { tier, newest, gap: gap(followers), match: { user_id: r.user_id, handle: r.handle, display_name: r.display_name, photo_path: r.photo_path, city_slug: r.city_slug, niches: r.niches ?? [], followers, why: { city, niches } } };
+      return { tier, newest, gap: gap(followers), match: { user_id: r.user_id, handle: r.handle, display_name: r.display_name, photo_path: r.photo_path, city_slug: r.city_slug, niches: r.niches ?? [], followers, why: { city, niches, size: false } } };
     })
-    .sort((a, b) => b.tier - a.tier || (a.tier && b.tier ? a.gap - b.gap : 0) || a.newest - b.newest)
+    .sort((a, b) => b.tier - a.tier || a.gap - b.gap || a.newest - b.newest)
     .slice(0, limit)
-    .map((x) => x.match);
+    .map((x) => ({ ...x.match, why: { ...x.match.why, size: x.gap <= SIMILAR_SIZE } }));
 }
 
 /** The newest listed creators you aren't connected to or waiting on yet. */

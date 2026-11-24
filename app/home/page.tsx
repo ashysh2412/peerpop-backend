@@ -62,7 +62,10 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
   const matchIds = new Set(matches.map((m) => m.user_id));
   const seeAll = profile.city_slug ? `/creators?city=${profile.city_slug}` : profile.niches.length ? `/creators?niche=${profile.niches.join(",")}` : "/creators";
-  const likeYou = <CreatorsLikeYou people={matches} seeAll={seeAll} />;
+  const missing = [!profile.city_slug && "city", !profile.niches.length && "niche", !myFollowers && "follower count"].filter((m): m is string => !!m);
+  const likeYou = <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} />;
+  // New creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
+  const jodiFirst = steps.connections < 3;
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
   const feed = (
@@ -73,6 +76,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           <GetStarted steps={steps} compact />
         </div>
       )}
+      {!cursor && (jodiFirst || posts.length < 2) && likeYou}
       {posts.length === 0 && (
         <div className="empty">
           {cursor ? (
@@ -86,11 +90,10 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           )}
         </div>
       )}
-      {!cursor && posts.length < 2 && likeYou}
       {posts.map((post, i) => (
         <Fragment key={post.id}>
           <PostCard post={post} me={user.id} now={now} />
-          {!cursor && i === 1 && likeYou}
+          {!cursor && !jodiFirst && i === 1 && likeYou}
         </Fragment>
       ))}
       {posts.length === FEED_PAGE && (
