@@ -41,3 +41,19 @@ jobs:
         env:
           DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
         run: ./scripts/test-db.sh
+
+  video-agent:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: video-agent
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: video-agent/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test

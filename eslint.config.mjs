@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone CLI package with its own toolchain (see video-agent/README.md).
+    "video-agent/**",
   ]),
 ]);
 

@@ -43,3 +43,7 @@ next-env.d.ts
 
 # supabase cli
 supabase/.temp
+
+# video-agent (standalone package)
+video-agent/node_modules
+video-agent/out

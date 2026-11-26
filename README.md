@@ -45,3 +45,7 @@ npm run test:db   # needs Postgres, see above
 ```
 
 CI runs all of these on every pull request.
+
+## Video agent
+
+`video-agent/` is a standalone CLI agent (Claude Agent SDK + text-to-video models + ffmpeg) that turns a one-line brief into a finished short video. It has its own `package.json` and is not part of the Next.js build; see [video-agent/README.md](video-agent/README.md).
