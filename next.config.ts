@@ -10,6 +10,21 @@ const nextConfig: NextConfig = {
     ],
   },
   // Sign-up no longer has its own screen: people land on the feed and edit their profile when they like.
+  // Basic browser safety settings for every page. No Content-Security-Policy on purpose:
+  // the Google sign-in button and Meta Pixel load outside scripts.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "geolocation=(), microphone=(), camera=(), payment=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [{ source: "/onboarding", destination: "/settings/profile", permanent: false }];
   },
