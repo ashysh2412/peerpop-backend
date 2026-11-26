@@ -17,3 +17,20 @@ create index if not exists jodi_suggestions_created on jodi_suggestions (created
 
 -- Row-level security on with no policies: members can't see or change it.
 alter table jodi_suggestions enable row level security;
+
+-- The pairs already matched by hand in Jodi Week (24 Nov) and the backup pair
+-- Pakiza + Sheta, so Auto Jodi never repeats them and gives these members a
+-- week before their next Jodi. Skips anyone whose profile no longer exists.
+insert into jodi_suggestions (user_a, user_b, created_at)
+select a.user_id, b.user_id, x.at::timestamptz
+from (values
+  ('shetahalder', 'kerlinshylla', '2026-11-24 06:30+00'),
+  ('rishikav', 'poonamrajpurohit', '2026-11-24 06:30+00'),
+  ('shivaay', 'kanakjayas', '2026-11-24 06:30+00'),
+  ('vkrit', 'sachintade', '2026-11-24 06:30+00'),
+  ('pakizacollab', 'shellyromashka', '2026-11-24 06:30+00'),
+  ('pakizacollab', 'shetahalder', '2026-11-26 06:00+00')
+) as x(a, b, at)
+join creator_profiles a on a.handle = x.a
+join creator_profiles b on b.handle = x.b
+on conflict do nothing;

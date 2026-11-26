@@ -4,10 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { personalise, pickRecipients, WELCOME_TEXT } from "./broadcast";
 import { getAdminOverview } from "./data";
 
-const DAY = 24 * 60 * 60 * 1000;
+/** Gives new members a few hours to finish their profile first, so tonight's sign-ups still get it tonight. */
+const SETTLE = 3 * 60 * 60 * 1000;
 
 /**
- * Daily: the Peerpop account sends the welcome message to members who joined over a day ago,
+ * Daily: the Peerpop account sends the welcome message to members who joined at least 3 hours before the evening run,
  * still have gaps in their profile and never heard from Peerpop. No email: the
  * one-time "finish your profile" email already covers that.
  */
@@ -16,7 +17,7 @@ export async function sendAutoWelcomes(now: number): Promise<number> {
   const official = await officialSender(db);
   if (!official.id) return 0;
   const { users } = await getAdminOverview(now);
-  const joinedBefore = new Map(users.map((u) => [u.id, now - Date.parse(u.joined) > DAY]));
+  const joinedBefore = new Map(users.map((u) => [u.id, now - Date.parse(u.joined) > SETTLE]));
   const people = pickRecipients(users, "new", official.id, official.blocked, official.messaged).filter((p) => joinedBefore.get(p.id));
   if (people.length === 0) return 0;
   const { error } = await db

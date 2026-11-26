@@ -7,6 +7,7 @@ import { markRead, sendMessage } from "@/app/messages/actions";
 import type { Message } from "@/lib/messages/data";
 import { createClient } from "@/lib/supabase/client";
 import { Avatar } from "./avatar";
+import { LinkedText } from "./linked-text";
 
 // Always Indian time, so the server and the browser print the same thing.
 const timeFormat = new Intl.DateTimeFormat("en-IN", {
@@ -138,7 +139,7 @@ export function ChatThread({
                     : "self-start rounded-bl-md bg-sunken text-ink"
                 }`}
               >
-                {m.body}
+                <LinkedText text={m.body} />
                 <span
                   className={`ml-2 inline-block text-[11px] ${mine ? "text-ink/60" : "text-muted"}`}
                 >

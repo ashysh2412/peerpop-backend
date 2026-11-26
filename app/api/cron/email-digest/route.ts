@@ -5,7 +5,7 @@ import { sendProfileNudges } from "@/lib/email/profile-nudge";
 
 // Vercel Cron calls this once a day (see vercel.json) to send each member a summary of what they missed,
 // a one-time "finish your profile" email to members who joined over a day ago and left it unfinished,
-// and the same members get the Peerpop welcome as a chat message. Up to 10 pairs of creators also get
+// and members with an unfinished profile get the Peerpop welcome as a chat message the evening they join. Up to 10 pairs of creators also get
 // an automatic collab Jodi suggestion from the Peerpop account.
 export const maxDuration = 60;
 

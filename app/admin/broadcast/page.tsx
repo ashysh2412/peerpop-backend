@@ -47,7 +47,7 @@ async function Broadcast() {
         <h1 className="page-title">Message members</h1>
         <p className="mt-1 text-muted">
           Write once. Each creator gets it as a personal chat from the Peerpop account, and can reply to you there. New members with an incomplete
-          profile also get the welcome below automatically, a day after joining (every evening at 7:30 PM).
+          profile also get the welcome below automatically, on the evening they join (every evening at 7:30 PM, for anyone who joined by about 4:30 PM; later sign-ups get it the next evening).
         </p>
       </div>
       {official.id ? (

@@ -83,7 +83,7 @@ export function pickJodiPairs(people: JodiCandidate[], rules: JodiRules): JodiPa
   return pairs;
 }
 
-const label = (n: string) => NICHES.find(([k]) => k === n)?.[1].toLowerCase() ?? n;
+const label = (n: string) => (NICHES.find(([k]) => k === n)?.[1].toLowerCase() ?? n).replace(" tv", " TV");
 const first = (name: string | null) => name?.trim().split(/\s+/)[0] || "there";
 const join = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
 

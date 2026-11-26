@@ -24,7 +24,7 @@ export function personalise(text: string, name: string | null): string {
   return text.replace(/\{name\}/gi, first);
 }
 
-/** The Peerpop welcome: the default on Message members, and what new members get automatically a day after joining. */
+/** The Peerpop welcome: the default on Message members, and what new members get automatically on the evening they join. */
 export const WELCOME_TEXT = `Hi {name}! 👋 Ashish here, founder of Peerpop.
 
 Ek reel. Do audience. 🤝 Collab with a creator your size and you both grow.
