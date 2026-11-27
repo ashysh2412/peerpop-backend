@@ -35,6 +35,7 @@ async function Broadcast() {
   if (!(await isConfirmedAdmin(supabase))) notFound();
   const [official, { users }] = await Promise.all([officialSender(createAdminClient()), getAdminOverview(currentTime())]);
   const fresh = official.id ? pickRecipients(users, "new", official.id, official.blocked, official.messaged) : [];
+  const basics = official.id ? pickRecipients(users, "basics", official.id, official.blocked) : [];
   const incomplete = official.id ? pickRecipients(users, "incomplete", official.id, official.blocked) : [];
   const everyone = official.id ? pickRecipients(users, "everyone", official.id, official.blocked) : [];
 
@@ -52,7 +53,7 @@ async function Broadcast() {
       </div>
       {official.id ? (
         <BroadcastForm
-          counts={{ new: fresh.length, incomplete: incomplete.length, everyone: everyone.length }}
+          counts={{ new: fresh.length, basics: basics.length, incomplete: incomplete.length, everyone: everyone.length }}
           sampleName={(fresh[0] ?? incomplete[0] ?? everyone[0])?.name ?? "Asha"}
         />
       ) : (

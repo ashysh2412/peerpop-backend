@@ -19,7 +19,7 @@ const EMAIL_GAP_MS = 700;
 export async function sendBroadcast(_prev: FormState, form: FormData): Promise<FormState> {
   if (!(await isConfirmedAdmin(await createClient()))) notFound();
   const raw = form.get("audience");
-  const audience: BroadcastAudience = raw === "everyone" ? "everyone" : raw === "new" ? "new" : "incomplete";
+  const audience: BroadcastAudience = raw === "everyone" ? "everyone" : raw === "new" ? "new" : raw === "basics" ? "basics" : "incomplete";
   const text = String(form.get("body") ?? "").trim();
   if (!text) return { message: "Write a message first." };
   if (text.length > 2000) return { message: "Keep it under 2,000 characters." };

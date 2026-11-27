@@ -1,5 +1,5 @@
 /** Who gets a message from the official Peerpop account. Pure, so it can be tested. */
-export type BroadcastAudience = "new" | "incomplete" | "everyone";
+export type BroadcastAudience = "new" | "basics" | "incomplete" | "everyone";
 
 export type BroadcastPerson = { id: string; name: string | null; handle: string | null; gaps: string[] };
 
@@ -14,6 +14,7 @@ export function pickRecipients(
     if (p.id === officialId || !p.handle || blocked.has(p.id)) return false;
     if (audience === "everyone") return true;
     if (audience === "new") return p.gaps.length > 0 && !messaged.has(p.id);
+    if (audience === "basics") return p.gaps.includes("City") || p.gaps.includes("Niches");
     return p.gaps.length > 0;
   });
 }
@@ -37,3 +38,25 @@ But other creators can only find you if your profile is complete. It takes 2 min
 Finish it here: www.peerpop.in/settings/profile
 
 Stuck anywhere? Just reply here. I read every message.`;
+
+/** The default message for members who haven't added their city or niche yet. */
+export const BASICS_TEXT = `Hi {name}! 👋 Ashish here, founder of Peerpop.
+
+Ek chhota sa kaam, bas 30 second ka 🙏
+Apni profile mein yeh do cheezein add kar do:
+📍 Aapki city
+🎯 Aapka niche (food, comedy, fashion, tech...)
+
+Kyun? Do reasons:
+1. Hum brands ko city aur niche ke hisaab se creators suggest karenge. Yeh blank hai toh aap list mein aaoge hi nahi.
+2. Aapke shehar ke aur aapke type ke creators aapko collab ke liye dhoondh paayenge. Ek reel. Do audience. 🤝
+
+Yahan add karo: www.peerpop.in/settings/profile
+
+Google Maps bhi location maangta hai, hum toh sirf city maang rahe hain 😄
+Koi dikkat ho toh yahin reply karo.`;
+
+/** The message each audience starts with on Message members. */
+export function defaultText(audience: BroadcastAudience): string {
+  return audience === "basics" ? BASICS_TEXT : WELCOME_TEXT;
+}

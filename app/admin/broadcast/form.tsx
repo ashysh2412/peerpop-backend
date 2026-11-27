@@ -3,13 +3,13 @@
 import { Send } from "lucide-react";
 import { useActionState, useState } from "react";
 import { FormMessage, SubmitButton } from "@/components/ui";
-import { personalise, WELCOME_TEXT, type BroadcastAudience } from "@/lib/admin/broadcast";
+import { defaultText, personalise, type BroadcastAudience } from "@/lib/admin/broadcast";
 import type { FormState } from "@/lib/profile/types";
 import { sendBroadcast } from "./actions";
 
 export function BroadcastForm({ counts, sampleName }: { counts: Record<BroadcastAudience, number>; sampleName: string }) {
   const [audience, setAudience] = useState<BroadcastAudience>(counts.new > 0 ? "new" : "incomplete");
-  const [text, setText] = useState(WELCOME_TEXT);
+  const [text, setText] = useState(() => defaultText(counts.new > 0 ? "new" : "incomplete"));
   const [confirming, setConfirming] = useState(false);
   const [state, action] = useActionState<FormState, FormData>(async (prev, data) => {
     const result = await sendBroadcast(prev, data);
@@ -34,6 +34,7 @@ export function BroadcastForm({ counts, sampleName }: { counts: Record<Broadcast
         {(
           [
             ["new", "New members who haven't heard from Peerpop yet"],
+            ["basics", "Everyone missing their city or niche"],
             ["incomplete", "Everyone missing something in their profile"],
             ["everyone", "Every creator"],
           ] as const
@@ -48,6 +49,8 @@ export function BroadcastForm({ counts, sampleName }: { counts: Record<Broadcast
               value={value}
               checked={audience === value}
               onChange={() => {
+                // Swap in that audience's starting message, unless the admin already edited it.
+                if (text === defaultText(audience)) setText(defaultText(value));
                 setAudience(value);
                 setConfirming(false);
               }}

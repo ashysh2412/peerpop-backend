@@ -18,6 +18,19 @@ describe("pickRecipients", () => {
   });
 });
 
+describe("missing city or niche", () => {
+  it("only people whose city or niche is blank", () => {
+    const list = [
+      { id: "o", name: "Peerpop", handle: "peerpop", gaps: ["City"] },
+      { id: "a", name: "A", handle: "a", gaps: ["City", "Photo"] },
+      { id: "b", name: "B", handle: "b", gaps: ["Niches"] },
+      { id: "c", name: "C", handle: "c", gaps: ["Bio"] },
+      { id: "d", name: "D", handle: "d", gaps: [] },
+    ];
+    expect(pickRecipients(list, "basics", "o", new Set()).map((p) => p.id)).toEqual(["a", "b"]);
+  });
+});
+
 describe("new members", () => {
   it("only people with profile gaps who never got a Peerpop message", () => {
     expect(pickRecipients(people, "new", "o", new Set(), new Set(["a"])).map((p) => p.id)).toEqual(["d"]);
