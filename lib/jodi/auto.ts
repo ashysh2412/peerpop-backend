@@ -38,6 +38,8 @@ export type JodiPlan = {
   sample: string | null;
   eligible: number;
   past: { a: string; b: string; at: string; connected: boolean }[];
+  /** Every Jodi suggested so far: how many pairs connected, and how many have a request waiting. */
+  stats: { suggested: number; connected: number; requested: number };
 };
 
 /** Works out the next run's Jodi lists without sending anything. `newIds` are tonight's welcome recipients. */
@@ -56,6 +58,13 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
   const stats = new Map((rows.data ?? []).map((r) => [r.user_id as string, r]));
   const cityName = new Map((cities.data ?? []).map((c) => [c.slug as string, c.name as string]));
   const accepted = new Set((links.data ?? []).filter((l) => l.status === "accepted").map((l) => pairKey(l.from_user, l.to_user)));
+  const requested = new Set((links.data ?? []).filter((l) => l.status === "pending").map((l) => pairKey(l.from_user, l.to_user)));
+  const suggestedPairs = new Set((past.data ?? []).map((s) => pairKey(s.user_a, s.user_b)));
+  const jodiStats = {
+    suggested: suggestedPairs.size,
+    connected: [...suggestedPairs].filter((k) => accepted.has(k)).length,
+    requested: [...suggestedPairs].filter((k) => requested.has(k)).length,
+  };
 
   const avoid = new Set<string>([
     ...(links.data ?? []).map((l) => pairKey(l.from_user, l.to_user)),
@@ -129,6 +138,7 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
   return {
     ready,
     offers,
+    stats: jodiStats,
     starters,
     sample: sampleOffer ? starterJodiMessage(sampleOffer) : null,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,

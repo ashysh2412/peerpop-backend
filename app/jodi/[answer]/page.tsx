@@ -17,6 +17,20 @@ const COPY: Record<CheckinAnswer, { emoji: string; title: string; ask: string; b
     button: "Save",
     thanks: "Saved. Thank you, and keep collabing!",
   },
+  talking: {
+    emoji: "💬",
+    title: "Baat chal rahi hai",
+    ask: "Nice! Fix a date and an idea for your reel in chat.",
+    button: "OK",
+    thanks: "Great. All the best for the reel!",
+  },
+  stuck: {
+    emoji: "😕",
+    title: "Aage nahi badha",
+    ask: "No worries, it happens. We'll send you fresh Jodis next week.",
+    button: "OK",
+    thanks: "Done. Fresh Jodis coming next week.",
+  },
   waiting: {
     emoji: "⏳",
     title: "Request bheji, reply nahi aaya",

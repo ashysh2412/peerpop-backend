@@ -10,6 +10,14 @@ import { INSTANT_WELCOME_ON, JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJod
 import { CHECKIN_ON, planCheckins } from "@/lib/jodi/checkin";
 import { requireUser } from "@/lib/profile/data";
 
+const ANSWER_LABEL = {
+  done: "✅ Reel done",
+  talking: "💬 Talking",
+  stuck: "😕 Not moving",
+  waiting: "⏳ Waiting for reply",
+  later: "🙈 Not yet",
+} as const;
+
 export const metadata: Metadata = { title: "Auto Jodi · Admin · Peerpop", robots: { index: false } };
 
 function currentTime() {
@@ -46,6 +54,19 @@ async function Jodi() {
           {JODI_WAIT_DAYS} days. Members need a niche and a follower count on their profile to be matched.
         </p>
       </div>
+
+      <dl className="grid grid-cols-3 gap-3">
+        {[
+          ["Jodis suggested", plan.stats.suggested],
+          ["Connected", plan.stats.connected],
+          ["Request waiting", plan.stats.requested],
+        ].map(([label, value]) => (
+          <div key={label} className="card p-4">
+            <dt className="text-xs font-medium text-muted">{label}</dt>
+            <dd className="text-2xl font-bold">{value}</dd>
+          </div>
+        ))}
+      </dl>
 
       {!plan.ready && (
         <p className="card border-amber-300 bg-amber-50 p-4 text-sm">
@@ -123,31 +144,39 @@ async function Jodi() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">
-          3-day check-ins <span className="font-normal text-muted">({checkins.due.length} due at 11:30 AM)</span>
+          Check-ins <span className="font-normal text-muted">(next at 11:30 AM)</span>
         </h2>
         <p className="text-sm text-muted">
           {!checkins.ready
             ? "Waiting for database update 24. Nothing is sent before that."
             : CHECKIN_ON
-              ? "3 days after a Jodi list, members get \"Jodi se baat hui?\" with 3 tap answers."
+              ? "48 hours after two Jodis connect, both are asked how the collab is going. 3 days after a list, anyone who hasn't connected gets a nudge."
               : "Preview only: not switched on yet, so nothing below is sent."}
         </p>
-        {checkins.due.slice(0, 1).map((c) => (
-          <p key={c.id} className="whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">
-            {c.message}
-          </p>
+        {[
+          { title: "Connected Jodis (48 hours after connecting)", list: checkins.connected },
+          { title: "Not connected yet (3 days after their list)", list: checkins.nudges },
+        ].map(({ title, list }) => (
+          <div key={title} className="card flex flex-col gap-2 p-4">
+            <p className="font-semibold">
+              {title} <span className="font-normal text-muted">({list.length})</span>
+            </p>
+            {list.length > 0 && <p className="text-sm">Going to: {list.map((c) => c.name ?? c.handle).join(", ")}</p>}
+            {list[0] && (
+              <details>
+                <summary className="cursor-pointer text-sm font-medium">See the message</summary>
+                <p className="mt-2 whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">{list[0].message}</p>
+              </details>
+            )}
+          </div>
         ))}
-        {checkins.due.length > 0 && (
-          <p className="text-sm">
-            Going to: {checkins.due.map((c) => c.name ?? c.handle).join(", ")}
-          </p>
-        )}
         {checkins.answers.length > 0 && (
           <ul className="card divide-y text-sm">
             {checkins.answers.map((a) => (
               <li key={a.handle + a.at} className="flex flex-wrap items-center justify-between gap-3 p-3">
                 <span>
-                  @{a.handle}: {a.answer === "done" ? "✅ Collab done" : a.answer === "waiting" ? "⏳ Waiting for reply" : "🙈 Not yet"}
+                  @{a.handle}
+                  {a.partner ? ` + @${a.partner}` : ""}: {ANSWER_LABEL[a.answer]}
                 </span>
                 {a.reel && (
                   <a href={a.reel} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold underline">
