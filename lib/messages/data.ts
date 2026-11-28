@@ -14,7 +14,7 @@ export type Chat = {
   unread: number;
 };
 
-export type Message = { id: string; sender_id: string; recipient_id: string; body: string; created_at: string };
+export type Message = { id: string; sender_id: string; recipient_id: string; body: string; created_at: string; deleted_at?: string | null };
 
 export const MESSAGE_COLUMNS = "id, sender_id, recipient_id, body, created_at";
 const THREAD_LIMIT = 200;
@@ -26,13 +26,17 @@ export async function getInbox(supabase: Client) {
 
 /** The latest messages between me and `other`, oldest first. */
 export async function getThread(supabase: Client, me: string, other: string) {
-  const { data } = await supabase
-    .from("messages")
-    .select(MESSAGE_COLUMNS)
-    .or(`and(sender_id.eq.${me},recipient_id.eq.${other}),and(sender_id.eq.${other},recipient_id.eq.${me})`)
-    .order("created_at", { ascending: false })
-    .limit(THREAD_LIMIT);
-  return ((data ?? []) as Message[]).reverse();
+  const load = (columns: string) =>
+    supabase
+      .from("messages")
+      .select(columns)
+      .or(`and(sender_id.eq.${me},recipient_id.eq.${other}),and(sender_id.eq.${other},recipient_id.eq.${me})`)
+      .order("created_at", { ascending: false })
+      .limit(THREAD_LIMIT);
+  const first = await load(`${MESSAGE_COLUMNS}, deleted_at`);
+  // Until the "delete messages" SQL is run there is no deleted_at column; chats still load.
+  const { data } = first.error ? await load(MESSAGE_COLUMNS) : first;
+  return ((data ?? []) as unknown as Message[]).reverse();
 }
 
 export async function countUnreadMessages(supabase: Client, me: string) {
