@@ -2,11 +2,17 @@ import "server-only";
 import { getAdminOverview } from "@/lib/admin/data";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { jodiMessage, pairKey, pickJodiPairs, type JodiCandidate, type JodiPair } from "./match";
+import { jodiOfferMessage, pairKey, pickJodiOffers, type JodiCandidate, type JodiOffer } from "./match";
 
 const DAY = 24 * 60 * 60 * 1000;
-/** Pairs sent each evening, so replies stay easy to follow. */
-export const JODI_PER_DAY = 10;
+/** Members who get a Jodi list each evening, so replies stay easy to follow. */
+export const JODI_PER_DAY = 20;
+/** Partner options in one message; more are always on Home. */
+export const JODI_OPTIONS = 5;
+/** Times one creator can be shown as an option in a night, so nobody is flooded. */
+const MAX_SHOWN = 4;
+/** Rows saved before this were two-way pairs (both people messaged); after it, user_a is the person messaged. */
+const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 /** Days before someone can get their next Jodi. */
 export const JODI_WAIT_DAYS = 7;
 /** Members who haven't signed in for this long are skipped. */
@@ -17,7 +23,7 @@ export const JODI_ONLY_JOINED_AFTER: string | null = null;
 export type JodiPlan = {
   /** False until the jodi_suggestions table exists (SQL 23). Nothing is sent before that. */
   ready: boolean;
-  pairs: (JodiPair & { messages: [string, string] })[];
+  offers: (JodiOffer & { message: string })[];
   eligible: number;
   past: { a: string; b: string; at: string; connected: boolean }[];
 };
@@ -44,8 +50,11 @@ export async function planJodis(now: number): Promise<JodiPlan> {
     ...(blocks.data ?? []).map((b) => pairKey(b.blocker_id, b.blocked_id)),
     ...(past.data ?? []).map((s) => pairKey(s.user_a, s.user_b)),
   ]);
+  // Whoever was messaged in the last week waits for their next list.
   const busy = new Set(
-    (past.data ?? []).filter((s) => now - Date.parse(s.created_at) < JODI_WAIT_DAYS * DAY).flatMap((s) => [s.user_a as string, s.user_b as string]),
+    (past.data ?? [])
+      .filter((s) => now - Date.parse(s.created_at) < JODI_WAIT_DAYS * DAY)
+      .flatMap((s) => (Date.parse(s.created_at) < LISTS_FROM ? [s.user_a as string, s.user_b as string] : [s.user_a as string])),
   );
 
   const people: JodiCandidate[] = users
@@ -75,14 +84,14 @@ export async function planJodis(now: number): Promise<JodiPlan> {
       };
     });
 
-  const pairs = pickJodiPairs(people, { busy, avoid, maxPairs: JODI_PER_DAY }).map((pair) => ({
-    ...pair,
-    messages: [jodiMessage(pair, pair.a.id), jodiMessage(pair, pair.b.id)] as [string, string],
+  const offers = pickJodiOffers(people, { busy, avoid, maxPairs: JODI_PER_DAY, perPerson: JODI_OPTIONS, maxShown: MAX_SHOWN }).map((offer) => ({
+    ...offer,
+    message: jodiOfferMessage(offer),
   }));
   const handle = new Map(users.map((u) => [u.id, u.handle ?? u.name ?? "?"]));
   return {
     ready,
-    pairs,
+    offers,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,
     past: (past.data ?? []).slice(0, 50).map((s) => ({
       a: handle.get(s.user_a) ?? "?",
@@ -93,25 +102,25 @@ export async function planJodis(now: number): Promise<JodiPlan> {
   };
 }
 
-/** Daily: saves tonight's pairs and sends both people a chat from the Peerpop account. */
+/** Daily: saves tonight's Jodi lists and sends each member theirs as a chat from the Peerpop account. */
 export async function sendAutoJodis(now: number): Promise<number> {
   const plan = await planJodis(now);
-  if (!plan.ready || plan.pairs.length === 0) return 0;
+  if (!plan.ready || plan.offers.length === 0) return 0;
   const db = createAdminClient();
   const official = await officialSender(db);
   if (!official.id) return 0;
   let sent = 0;
-  for (const pair of plan.pairs) {
-    // Saving the pair first means a retry can never message the same pair twice.
-    const { error } = await db.from("jodi_suggestions").insert({ user_a: pair.a.id, user_b: pair.b.id });
-    if (error) {
+  for (const offer of plan.offers) {
+    // Saving first means a retry can never suggest the same two people twice.
+    const { data: saved, error } = await db
+      .from("jodi_suggestions")
+      .insert(offer.options.map((o) => ({ user_a: offer.to.id, user_b: o.b.id })))
+      .select("id");
+    if (error || !saved?.length) {
       console.error("jodi save", error);
       continue;
     }
-    const { error: msgError } = await db.from("messages").insert([
-      { sender_id: official.id, recipient_id: pair.a.id, body: pair.messages[0] },
-      { sender_id: official.id, recipient_id: pair.b.id, body: pair.messages[1] },
-    ]);
+    const { error: msgError } = await db.from("messages").insert({ sender_id: official.id, recipient_id: offer.to.id, body: offer.message });
     if (msgError) console.error("jodi message", msgError);
     else sent++;
   }
