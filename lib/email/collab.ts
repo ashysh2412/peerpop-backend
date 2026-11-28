@@ -84,8 +84,8 @@ export async function emailNewCollab(postId: string, siteUrl: string) {
 }
 
 const HOUR = 60 * 60 * 1000;
-/** The 48-hour "creators are waiting" reminder to collab posters. Paused 28 Nov until the user decides. */
-export const COLLAB_REMINDERS_ON = false;
+/** The 48-hour "creators are waiting" reminder to collab posters. */
+export const COLLAB_REMINDERS_ON = true;
 
 /** Groups pending requests by the collab's author. Pure, so it can be tested. */
 export function waitingByAuthor(rows: { post_id: string; author_id: string; title: string }[]) {
