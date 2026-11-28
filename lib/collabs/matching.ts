@@ -1,5 +1,6 @@
 import "server-only";
 import { getAdminOverview } from "@/lib/admin/data";
+import { canSendChat, recentChats } from "@/lib/admin/chat-cap";
 import { officialSender } from "@/lib/admin/official";
 import { pairKey, type JodiCandidate } from "@/lib/jodi/match";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -98,9 +99,12 @@ export async function matchCollabIdea(postId: string, now: number) {
   const count = new Map<string, number>();
   for (const r of recent ?? []) count.set(r.user_id as string, (count.get(r.user_id as string) ?? 0) + 1);
 
+  // The shared weekly limit on all Peerpop chats (idea chats stop early so Jodi lists still fit).
+  const chats = await recentChats(db, official.id, now);
   let sent = 0;
   for (const m of matches) {
     if ((count.get(m.b.id) ?? 0) >= IDEA_CHATS_PER_WEEK || official.blocked.has(m.b.id)) continue;
+    if (!canSendChat(chats.get(m.b.id) ?? 0, "idea")) continue;
     // Mark first, so a retry can never send the same chat twice.
     const { data: marked } = await db
       .from("collab_matches")
