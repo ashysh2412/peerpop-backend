@@ -1,11 +1,11 @@
-import { Handshake, LayoutGrid, MapPin, MessageCircle, Pencil, Users } from "lucide-react";
+import { MapPin, Pencil } from "lucide-react";
 import Link from "next/link";
 import { CITIES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import type { PlatformAccount, Profile } from "@/lib/profile/types";
 import { Avatar } from "./avatar";
 import { SocialLinks } from "./social-links";
 
-/** The left-hand column on Home for laptop and wider screens: who you are at a glance, and shortcuts. */
+/** The left-hand column on Home for laptop and wider screens: who you are at a glance. */
 export function ProfileSummary({
   profile,
   connections,
@@ -18,12 +18,6 @@ export function ProfileSummary({
   platforms: PlatformAccount[];
 }) {
   const what = [...profile.skills.map((s) => labelFor(SKILLS, s)), ...profile.niches.map((n) => labelFor(NICHES, n))].slice(0, 3);
-  const links = [
-    { href: "/messages", icon: MessageCircle, label: "Messages" },
-    { href: "/network", icon: Users, label: "My network" },
-    { href: "/groups", icon: LayoutGrid, label: "Groups" },
-    { href: "/collabs?mine=1", icon: Handshake, label: "My collabs" },
-  ];
   return (
     <aside className="sticky top-24 hidden flex-col gap-4 lg:flex">
       <section className="card overflow-hidden">
@@ -62,13 +56,6 @@ export function ProfileSummary({
           </Link>
         </div>
       </section>
-      <nav className="card flex flex-col p-2">
-        {links.map(({ href, icon: Icon, label }) => (
-          <Link key={href} href={href} className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:bg-sunken">
-            <Icon size={17} className="text-muted" /> {label}
-          </Link>
-        ))}
-      </nav>
     </aside>
   );
 }

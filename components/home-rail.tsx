@@ -1,8 +1,7 @@
-import { ArrowRight, Check, Handshake, MapPin, Plus } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { CITIES, SKILLS, labelFor } from "@/lib/catalog";
-import type { Collab } from "@/lib/collabs/data";
+import { CITIES, labelFor } from "@/lib/catalog";
 import type { StarterSteps, Suggestion } from "@/lib/feed/data";
 import { Avatar } from "./avatar";
 import { ConnectPanel } from "./connect-panel";
@@ -96,40 +95,13 @@ export function GetStarted({ steps, compact }: { steps: StarterSteps; compact?: 
   );
 }
 
-/** The right-hand column on Home for wide screens: your collab Jodi, setup, the newest collabs, and the newest creators. */
-export function HomeRail({ steps, collabs, people, jodi }: { steps: StarterSteps; collabs: Collab[]; people: Suggestion[]; jodi?: ReactNode }) {
+/** The right-hand column on Home for wide screens: your collab Jodi, setup, and the newest creators. */
+export function HomeRail({ steps, people, jodi }: { steps: StarterSteps; people: Suggestion[]; jodi?: ReactNode }) {
   return (
     <aside className="hidden flex-col gap-4 lg:flex">
       {jodi}
       <GetStarted steps={steps} />
 
-      <Section title="New collabs" href="/collabs">
-        {collabs.length === 0 ? (
-          <p className="text-sm text-muted">No open collabs right now. Start one and creators nearby will hear about it.</p>
-        ) : (
-          <ul className="flex flex-col gap-1">
-            {collabs.map((c) => (
-              <li key={c.id}>
-                <Link href={`/collabs/${c.id}`} className="-mx-2 flex items-start gap-3 rounded-xl p-2 transition hover:bg-sunken">
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-ink">
-                    <Handshake size={16} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="line-clamp-2 text-sm leading-snug font-semibold">{c.title}</span>
-                    <span className="flex items-center gap-1 truncate text-xs text-muted">
-                      <MapPin size={11} className="shrink-0" />
-                      {c.city_slug ? labelFor(CITIES, c.city_slug) : "Online"} · Needs {c.roles_needed.map((r) => labelFor(SKILLS, r).toLowerCase()).join(", ")}
-                    </span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-        <Link href="/collabs/new" className="btn-secondary btn-sm">
-          <Plus size={15} /> Post a collab
-        </Link>
-      </Section>
 
       {people.length > 0 && (
         <Section title="New on Peerpop" href="/creators">
