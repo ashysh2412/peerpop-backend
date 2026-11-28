@@ -1,5 +1,7 @@
 import "server-only";
 import { io } from "next/cache";
+import { after } from "next/server";
+import { welcomeNewMember } from "@/lib/jodi/auto";
 import type { createClient } from "@/lib/supabase/server";
 import type { SessionUser } from "@/lib/supabase/session";
 import { getProfileById } from "./data";
@@ -39,5 +41,7 @@ export async function ensureProfile(supabase: Client, user: SessionUser) {
   // Read it back: this also covers another tab having made it at the same moment.
   const profile = await getProfileById(supabase, user.id);
   if (!profile) throw new Error("Couldn't create a profile");
+  // The Peerpop welcome chat and first Jodis, sent after the page is on its way.
+  after(() => welcomeNewMember(user.id, Date.now()).catch((err) => console.error("instant welcome", err)));
   return { profile, created: true };
 }

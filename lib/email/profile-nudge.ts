@@ -20,7 +20,7 @@ export function profileNudgeEmail({ name, gaps, unsubscribe }: { name: string | 
     "It takes 1 minute to add:",
   ];
   const after = "Creators search by city and skill, so a filled-in profile is how you get collab requests.";
-  const sign = "See you on Peerpop,\nAshish, founder of Peerpop";
+  const sign = "See you on Peerpop,\n– Team Peerpop\nEk reel. Do audience.";
   const text = [hi, "", ...lines, ...missing.map((m) => `- ${m}`), "", after, "", `Finish my profile: ${url}`, "", sign, "", `Turn off these emails: ${unsubscribe}`].join("\n");
   const html = `<div style="font-family:system-ui,sans-serif;font-size:15px;line-height:1.5;color:#18181b;max-width:480px">
 <p>${escapeHtml(hi)}</p>
@@ -28,7 +28,7 @@ ${lines.map((l) => `<p>${escapeHtml(l)}</p>`).join("\n")}
 <p style="border-left:3px solid #f0b100;padding-left:12px">${missing.map(escapeHtml).join("<br>")}</p>
 <p>${escapeHtml(after)}</p>
 <p><a href="${url}" style="display:inline-block;background:#111111;color:#fff;padding:12px 22px;border-radius:999px;text-decoration:none;font-weight:600">Finish my profile</a></p>
-<p>See you on Peerpop,<br>Ashish, founder of Peerpop</p>
+<p>See you on Peerpop,<br>– Team Peerpop<br>Ek reel. Do audience.</p>
 <p style="font-size:12px;color:#71717a">You're getting this once because your Peerpop profile isn't finished. <a href="${unsubscribe}" style="color:#71717a">Turn off these emails</a></p>
 </div>`;
   return { subject: "Your Peerpop profile is almost there", text, html };

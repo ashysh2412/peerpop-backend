@@ -60,52 +60,150 @@ function fit(a: JodiCandidate, b: JodiCandidate) {
   return { score, pair: { a, b, shared, related, sameCity, differentCity } };
 }
 
-/** Picks tonight's pairs: people with the fewest connections go first, each person at most once. */
-export function pickJodiPairs(people: JodiCandidate[], rules: JodiRules): JodiPair[] {
-  const pool = people
-    .filter((p) => p.niches.length > 0 && p.followers > 0 && !rules.busy.has(p.id))
+export type JodiOffer = { to: JodiCandidate; options: JodiPair[] };
+
+/**
+ * Picks tonight's Jodi lists: each member gets up to `perPerson` partner options to choose from.
+ * People with the fewest connections go first. Anyone with a niche and a follower count can be
+ * an option, even if they got their own list recently, but nobody is shown more than
+ * `maxShown` times a night, and the same two people are never suggested to each other twice.
+ */
+export function pickJodiOffers(people: JodiCandidate[], rules: JodiRules & { perPerson: number; maxShown: number }): JodiOffer[] {
+  const pool = people.filter((p) => p.niches.length > 0 && p.followers > 0);
+  const queue = pool
+    .filter((p) => !rules.busy.has(p.id))
     .sort((x, y) => x.connections - y.connections || Date.parse(y.joined) - Date.parse(x.joined));
-  const taken = new Set<string>();
-  const pairs: JodiPair[] = [];
-  for (const a of pool) {
-    if (pairs.length >= rules.maxPairs) break;
-    if (taken.has(a.id)) continue;
-    let best: { score: number; pair: JodiPair } | null = null;
-    for (const b of pool) {
-      if (b.id === a.id || taken.has(b.id) || rules.avoid.has(pairKey(a.id, b.id))) continue;
-      const f = fit(a, b);
-      if (f && (!best || f.score > best.score)) best = f;
+  const shown = new Map<string, number>();
+  const told = new Set<string>();
+  const offers: JodiOffer[] = [];
+  for (const me of queue) {
+    if (offers.length >= rules.maxPairs) break;
+    const options = pool
+      .filter((b) => b.id !== me.id && !rules.avoid.has(pairKey(me.id, b.id)) && !told.has(pairKey(me.id, b.id)) && (shown.get(b.id) ?? 0) < rules.maxShown)
+      .map((b) => fit(me, b))
+      .filter((f) => f !== null)
+      .sort((x, y) => y.score - x.score)
+      .slice(0, rules.perPerson)
+      .map((f) => f.pair);
+    if (!options.length) continue;
+    for (const o of options) {
+      shown.set(o.b.id, (shown.get(o.b.id) ?? 0) + 1);
+      told.add(pairKey(me.id, o.b.id));
     }
-    if (!best) continue;
-    taken.add(a.id).add(best.pair.b.id);
-    pairs.push(best.pair);
+    offers.push({ to: me, options });
   }
-  return pairs;
+  return offers;
+}
+
+/**
+ * A new member's first Jodis. With a niche and a follower count they get proper matches.
+ * Otherwise use what they have: their niche, else their city, else anyone, smallest creators first
+ * (new members are mostly small), different cities first when matching by niche.
+ */
+export function pickStarterJodis(me: JodiCandidate, pool: JodiCandidate[], avoid: Set<string>, count: number): JodiOffer | null {
+  const others = pool.filter((b) => b.id !== me.id && b.niches.length > 0 && b.followers > 0 && !avoid.has(pairKey(me.id, b.id)));
+  if (me.niches.length && me.followers > 0) {
+    const options = others
+      .map((b) => fit(me, b))
+      .filter((f) => f !== null)
+      .sort((x, y) => y.score - x.score)
+      .slice(0, count)
+      .map((f) => f.pair);
+    if (options.length) return { to: me, options };
+  }
+  const loose = (b: JodiCandidate): JodiPair => {
+    const shared = me.niches.filter((n) => n !== "other" && b.niches.includes(n));
+    const related = !shared.length && me.niches.some((x) => b.niches.some((y) => relatedNiche(x, y)));
+    const sameCity = !!me.city && me.city === b.city;
+    return { a: me, b, shared, related, sameCity, differentCity: !!me.city && !!b.city && !sameCity };
+  };
+  const rank = (x: JodiPair) => (x.shared.length ? 4 : x.related ? 2 : 0) + (me.niches.length && x.differentCity ? 1 : 0);
+  const all = others.map(loose);
+  const isClose = (x: JodiPair) => x.shared.length > 0 || x.related || (!me.niches.length && x.sameCity);
+  // Closest matches first (niche, else city), then the smallest active creators to fill the list.
+  const options = all
+    .sort((x, y) => Number(isClose(y)) - Number(isClose(x)) || rank(y) - rank(x) || x.b.followers - y.b.followers)
+    .slice(0, count);
+  return options.length ? { to: me, options } : null;
 }
 
 const label = (n: string) => (NICHES.find(([k]) => k === n)?.[1].toLowerCase() ?? n).replace(" tv", " TV");
 const first = (name: string | null) => name?.trim().split(/\s+/)[0] || "there";
-const join = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
 
-/** The chat message `me` gets about `partner`. */
-export function jodiMessage(pair: JodiPair, meId: string): string {
-  const me = pair.a.id === meId ? pair.a : pair.b;
-  const partner = me === pair.a ? pair.b : pair.a;
-  const them = first(partner.name);
-  const where = partner.cityName ? ` from ${partner.cityName}` : "";
+function compactCount(n: number) {
+  if (n >= 100_000) return `${Math.round(n / 1000)}K`;
+  if (n >= 1000) return `${(n / 1000).toFixed(1).replace(/\.0$/, "")}K`;
+  return String(n);
+}
+
+/** One line per option: name, city, niche or size, then the tappable profile link. */
+function optionList(options: JodiPair[], size: boolean) {
+  const many = options.length > 1;
+  return options
+    .map((o, i) => {
+      const where = o.b.cityName ? `, ${o.b.cityName}` : "";
+      const extra = size ? compactCount(o.b.followers) : label((o.shared[0] ?? o.b.niches[0]) as string);
+      return `${many ? `${i + 1}. ` : ""}${first(o.b.name)}${where} · ${extra}\nwww.peerpop.in/${o.b.handle}`;
+    })
+    .join("\n\n");
+}
+
+/** Why this option fits, in a few words. */
+function why(pair: JodiPair) {
+  const them = pair.b;
   const niche = pair.shared.length
-    ? `You're both into ${join(pair.shared.slice(0, 2).map(label))}`
-    : `You do ${label(me.niches[0])} and ${them} does ${label(partner.niches.find((n) => me.niches.some((m) => relatedNiche(m, n))) ?? partner.niches[0])}, a great mix`;
-  const city = pair.differentCity
-    ? ", and your follower counts are close, but your audiences are in different cities."
-    : pair.sameCity
-      ? `, your follower counts are close, and you're both in ${partner.cityName ?? "the same city"}, so you can even shoot together.`
-      : ", and your follower counts are close.";
-  return `Hi ${first(me.name)}, Peerpop here 👋
+    ? pair.shared.slice(0, 2).map(label).join(" and ")
+    : label(them.niches.find((n) => pair.a.niches.some((m) => relatedNiche(m, n))) ?? them.niches[0]);
+  return `${niche}, ${compactCount(them.followers)} followers`;
+}
 
-Aapki collab Jodi mil gayi! Meet ${them}${where}. ${niche}${city}
+/** The chat message a member gets with their Jodi options. */
+export function jodiOfferMessage(offer: JodiOffer): string {
+  const many = offer.options.length > 1;
+  const list = offer.options
+    .map((o, i) => {
+      const where = o.b.cityName ? `, ${o.b.cityName}` : "";
+      return `${many ? `${i + 1}. ` : ""}${first(o.b.name)}${where} (${why(o)})\nwww.peerpop.in/${o.b.handle}`;
+    })
+    .join("\n\n");
+  return `Hi ${first(offer.to.name)}, Peerpop here 👋
 
-Idea: one Instagram Collab reel together. Same reel shows on both profiles. Ek reel, do audience.
+${many ? `Aapke liye ${offer.options.length} collab Jodis!` : "Aapke liye ek collab Jodi!"} Similar follower count, matching niche:
 
-See ${them}'s profile and tap Connect: www.peerpop.in/${partner.handle}`;
+${list}
+
+${many ? "Jitne pasand aaye, sabke profile kholo aur Connect tap karo." : "Profile kholo aur Connect tap karo."} One Instagram Collab reel with each, and both audiences see it. Collabs on Peerpop are free.
+
+More Jodis anytime on your Home page: www.peerpop.in/home
+
+– Team Peerpop
+Ek reel. Do audience.`;
+}
+
+/** The first Jodi message a new member gets right after the welcome. */
+export function starterJodiMessage(offer: JodiOffer): string {
+  const ready = offer.to.niches.length > 0 && offer.to.followers > 0;
+  return `${first(offer.to.name)}, ${offer.options.length > 1 ? "aapki pehli Jodis" : "aapki pehli Jodi"} 👇
+
+${optionList(offer.options, ready)}
+
+Profile kholo, Connect karo.${ready ? "" : " Better Jodis ke liye niche aur followers add karo."}
+
+– Team Peerpop
+Ek reel. Do audience.`;
+}
+
+/** Auto Jodi can only match someone who has a niche and a follower count. */
+export function isMatchable(p: Pick<JodiCandidate, "niches" | "followers">) {
+  return p.niches.length > 0 && p.followers > 0;
+}
+
+/** For members without a niche or follower count: their Jodis stay locked until they add them. */
+export function lockedJodiMessage(name: string | null, waiting: number): string {
+  return `${first(name)}, ${waiting} creators your size are waiting 🔒
+
+Add your niche + followers to unlock your Jodis: www.peerpop.in/jodi/unlock
+
+– Team Peerpop
+Ek reel. Do audience.`;
 }

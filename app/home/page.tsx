@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { Fragment, Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
-import { CreatorsLikeYou, JodiRail } from "@/components/creators-like-you";
+import { CreatorsLikeYou, JodiRail, LockedJodi } from "@/components/creators-like-you";
 import { HomeHeader } from "@/components/home-header";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
@@ -70,9 +70,11 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const notes = Object.fromEntries(matches.map((m) => [m.user_id, jodiNote(profile.display_name, m)]));
   const hellos = matches.slice(0, 3).map((m) => ({ user_id: m.user_id, name: m.display_name, note: notes[m.user_id] }));
   // Phones: in the feed, right after the first post (so a real post shows on the first screen). Laptops and wider: at the top of the right-hand column instead.
+  // Auto Jodi can't match without a niche and a follower count, so the Jodis stay locked until they're added.
+  const locked = !profile.niches.length || !myFollowers;
   const likeYou = (
     <div className="lg:hidden">
-      <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />
+      {locked ? <LockedJodi people={matches} /> : <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />}
     </div>
   );
   const firstName = profile.display_name.split(" ")[0];
@@ -179,7 +181,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       <HomeRail
         steps={steps}
         people={matches.length ? [] : newcomers.slice(0, 5)}
-        jodi={<JodiRail people={matches.slice(0, 3)} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />}
+        jodi={locked ? <LockedJodi people={matches} /> : <JodiRail people={matches.slice(0, 3)} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />}
       />
     </div>
   );

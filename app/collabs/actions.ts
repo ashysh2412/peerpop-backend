@@ -4,6 +4,7 @@ import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import { connectAndOpenChat } from "@/lib/collabs/accept";
 import { validateCollab } from "@/lib/collabs/validate";
 import { emailCollabAccepted, emailCollabInterest, emailNewCollab } from "@/lib/email/collab";
 import { requireUser } from "@/lib/profile/data";
@@ -102,6 +103,8 @@ async function answer(form: FormData, status: "accepted" | "declined") {
   if (row && status === "accepted") {
     const url = await siteUrl();
     after(() => emailCollabAccepted(row.post_id, user.id, row.user_id, url).catch(() => console.error("Collab email failed")));
+    // Connect them and open their chat right away, so the page shows it on refresh.
+    await connectAndOpenChat(row.post_id, user.id, row.user_id).catch((err) => console.error("Collab chat failed", err));
   }
   refresh();
 }

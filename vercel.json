@@ -4,6 +4,7 @@
   "crons": [
     { "path": "/api/cron/refresh-youtube", "schedule": "30 20 * * *" },
     { "path": "/api/cron/instagram", "schedule": "30 13 * * *" },
-    { "path": "/api/cron/email-digest", "schedule": "0 14 * * *" }
+    { "path": "/api/cron/email-digest", "schedule": "0 14 * * *" },
+    { "path": "/api/cron/jodi", "schedule": "0 6 * * *" }
   ]
 }

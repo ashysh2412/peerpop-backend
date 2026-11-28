@@ -139,3 +139,29 @@ export function CreatorsLikeYou({ people, seeAll, missing, hellos, notes }: { pe
     </section>
   );
 }
+
+/**
+ * "Your collab Jodi" while it's locked: members without a niche or follower count see blurred
+ * faces of who's waiting, and one button to the quick form that unlocks them.
+ */
+export function LockedJodi({ people, className = "" }: { people: Match[]; className?: string }) {
+  const faces = people.slice(0, 3);
+  const count = Math.max(3, faces.length);
+  return (
+    <section className={`card flex flex-col items-center gap-3 p-5 text-center ${className}`}>
+      <h2 className="self-start text-sm font-semibold">Your collab Jodi</h2>
+      <div className="flex -space-x-3" aria-hidden>
+        {(faces.length ? faces : [null, null, null]).map((m, i) => (
+          <div key={m?.user_id ?? i} className="rounded-full ring-2 ring-card blur-[3px]">
+            {m ? <Avatar path={m.photo_path} name={m.display_name} size={48} /> : <div className="size-12 rounded-full bg-sunken" />}
+          </div>
+        ))}
+      </div>
+      <p className="font-semibold">{count} creators your size are waiting 🔒</p>
+      <p className="-mt-2 text-xs text-muted">Add your niche + followers to unlock them.</p>
+      <Link href="/jodi/unlock" className="btn-dark btn-sm">
+        Unlock my Jodis
+      </Link>
+    </section>
+  );
+}
