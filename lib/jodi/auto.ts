@@ -5,7 +5,7 @@ import { personalise, WELCOME_TEXT } from "@/lib/admin/broadcast";
 import { canSendChat, recentChats } from "@/lib/admin/chat-cap";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate, type JodiOffer } from "./match";
+import { isMatchable, jodiOfferMessage, lockedJodiMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate, type JodiOffer } from "./match";
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Members who get a Jodi list each run (twice a day), so replies stay easy to follow. */
@@ -133,13 +133,19 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
     };
   };
   const welcomeIds = newIds ?? welcomeRecipients(users, official, now).map((p) => p.id);
+  // Without a niche and a follower count we can't match well, so their Jodis stay locked until they add them.
+  const waiting = Math.min(STARTER_OPTIONS, people.filter((p) => p.niches.length && p.followers > 0).length);
+  const firstJodis = (me: JodiCandidate): (JodiOffer & { message: string }) | null => {
+    if (!isMatchable(me)) return waiting ? { to: me, options: [], message: lockedJodiMessage(me.name, waiting) } : null;
+    const offer = pickStarterJodis(me, people, avoid, STARTER_OPTIONS);
+    return offer ? { ...offer, message: starterJodiMessage(offer) } : null;
+  };
   const starters = welcomeIds
     .map(asCandidate)
-    .map((me) => (me ? pickStarterJodis(me, people, avoid, STARTER_OPTIONS) : null))
-    .filter((o) => o !== null)
-    .map((o) => ({ ...o, message: starterJodiMessage(o) }));
+    .map((me) => (me ? firstJodis(me) : null))
+    .filter((o) => o !== null);
   const fresh: JodiCandidate = { id: "sample", name: "Riya", handle: "riya", city: null, cityName: null, niches: [], followers: 0, connections: 0, joined: new Date(now).toISOString() };
-  const sampleOffer = pickStarterJodis(fresh, people, new Set(), STARTER_OPTIONS);
+  const sampleOffer = firstJodis(fresh);
   const handle = new Map(users.map((u) => [u.id, u.handle ?? u.name ?? "?"]));
   return {
     ready,
@@ -147,7 +153,7 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
     stats: jodiStats,
     capped: capped.length,
     starters,
-    sample: sampleOffer ? starterJodiMessage(sampleOffer) : null,
+    sample: sampleOffer?.message ?? null,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,
     past: (past.data ?? []).slice(0, 50).map((s) => ({
       a: handle.get(s.user_a) ?? "?",
@@ -196,7 +202,10 @@ export async function sendStarterJodis(starters: JodiPlan["starters"]): Promise<
   if (!official.id) return 0;
   let sent = 0;
   for (const offer of starters) {
-    const { error } = await db.from("jodi_suggestions").insert(offer.options.map((o) => ({ user_a: offer.to.id, user_b: o.b.id })));
+    // A locked teaser has no options to remember.
+    const { error } = offer.options.length
+      ? await db.from("jodi_suggestions").insert(offer.options.map((o) => ({ user_a: offer.to.id, user_b: o.b.id })))
+      : { error: null };
     if (error) {
       console.error("starter jodi save", error);
       continue;
