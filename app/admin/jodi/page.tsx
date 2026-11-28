@@ -38,7 +38,7 @@ async function Jodi() {
         </Link>
         <h1 className="page-title">Auto Jodi</h1>
         <p className="mt-1 text-muted">
-          Every evening at 7:30 PM, up to {JODI_PER_DAY} members each get a chat from the Peerpop account with up to {JODI_OPTIONS} collab Jodis to
+          Twice a day, at 11:30 AM and 7:30 PM, up to {JODI_PER_DAY} members each get a chat from the Peerpop account with up to {JODI_OPTIONS} collab Jodis to
           choose from: creators with a similar follower count (up to 3x) and a matching or related niche, different cities first. They can connect
           with as many as they like, and see more on Home. Nobody is suggested the same person twice, and each member gets a fresh list every{" "}
           {JODI_WAIT_DAYS} days. Members need a niche and a follower count on their profile to be matched.
@@ -53,9 +53,9 @@ async function Jodi() {
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-bold">
-          Tonight&apos;s Jodi lists <span className="font-normal text-muted">({plan.offers.length} members, of {plan.eligible} who can be matched)</span>
+          Next run&apos;s Jodi lists <span className="font-normal text-muted">({plan.offers.length} members, of {plan.eligible} who can be matched)</span>
         </h2>
-        {plan.offers.length === 0 && <p className="card p-5 text-muted">No new Jodi lists tonight.</p>}
+        {plan.offers.length === 0 && <p className="card p-5 text-muted">No new Jodi lists for the next run.</p>}
         {plan.offers.map((offer) => (
           <article key={offer.to.id} className="card flex flex-col gap-3 p-4">
             <p className="font-semibold">

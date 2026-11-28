@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { jodiOfferMessage, pairKey, pickJodiOffers, type JodiCandidate, type JodiOffer } from "./match";
 
 const DAY = 24 * 60 * 60 * 1000;
-/** Members who get a Jodi list each evening, so replies stay easy to follow. */
+/** Members who get a Jodi list each run (twice a day), so replies stay easy to follow. */
 export const JODI_PER_DAY = 20;
 /** Partner options in one message; more are always on Home. */
 export const JODI_OPTIONS = 5;
@@ -102,7 +102,7 @@ export async function planJodis(now: number): Promise<JodiPlan> {
   };
 }
 
-/** Daily: saves tonight's Jodi lists and sends each member theirs as a chat from the Peerpop account. */
+/** Twice a day: saves this run's Jodi lists and sends each member theirs as a chat from the Peerpop account. */
 export async function sendAutoJodis(now: number): Promise<number> {
   const plan = await planJodis(now);
   if (!plan.ready || plan.offers.length === 0) return 0;
