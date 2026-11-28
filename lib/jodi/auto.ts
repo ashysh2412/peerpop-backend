@@ -14,7 +14,7 @@ export const JODI_OPTIONS = 5;
 /** Times one creator can be shown as an option in a night, so nobody is flooded. */
 const MAX_SHOWN = 4;
 /** Rows saved before this were two-way pairs (both people messaged); after it, user_a is the person messaged. */
-const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
+export const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 /** Days before someone can get their next Jodi. */
 export const JODI_WAIT_DAYS = 7;
 /** New members get their first Jodis right after the welcome chat. Off until checked on Admin. */

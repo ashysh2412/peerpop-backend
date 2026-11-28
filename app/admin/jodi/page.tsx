@@ -7,6 +7,7 @@ import { CardsSkeleton } from "@/components/skeleton";
 import { isConfirmedAdmin } from "@/lib/admin/access";
 import { compactNumber } from "@/lib/format";
 import { INSTANT_WELCOME_ON, JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJodis, STARTER_JODI_ON } from "@/lib/jodi/auto";
+import { CHECKIN_ON, planCheckins } from "@/lib/jodi/checkin";
 import { requireUser } from "@/lib/profile/data";
 
 export const metadata: Metadata = { title: "Auto Jodi · Admin · Peerpop", robots: { index: false } };
@@ -28,7 +29,8 @@ export default function JodiPage() {
 async function Jodi() {
   const { supabase } = await requireUser("/admin/jodi");
   if (!(await isConfirmedAdmin(supabase))) notFound();
-  const plan = await planJodis(currentTime());
+  const now = currentTime();
+  const [plan, checkins] = await Promise.all([planJodis(now), planCheckins(now)]);
 
   return (
     <>
@@ -117,6 +119,45 @@ async function Jodi() {
             </details>
           </article>
         ))}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-bold">
+          3-day check-ins <span className="font-normal text-muted">({checkins.due.length} due at 11:30 AM)</span>
+        </h2>
+        <p className="text-sm text-muted">
+          {!checkins.ready
+            ? "Waiting for database update 24. Nothing is sent before that."
+            : CHECKIN_ON
+              ? "3 days after a Jodi list, members get \"Jodi se baat hui?\" with 3 tap answers."
+              : "Preview only: not switched on yet, so nothing below is sent."}
+        </p>
+        {checkins.due.slice(0, 1).map((c) => (
+          <p key={c.id} className="whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">
+            {c.message}
+          </p>
+        ))}
+        {checkins.due.length > 0 && (
+          <p className="text-sm">
+            Going to: {checkins.due.map((c) => c.name ?? c.handle).join(", ")}
+          </p>
+        )}
+        {checkins.answers.length > 0 && (
+          <ul className="card divide-y text-sm">
+            {checkins.answers.map((a) => (
+              <li key={a.handle + a.at} className="flex flex-wrap items-center justify-between gap-3 p-3">
+                <span>
+                  @{a.handle}: {a.answer === "done" ? "✅ Collab done" : a.answer === "waiting" ? "⏳ Waiting for reply" : "🙈 Not yet"}
+                </span>
+                {a.reel && (
+                  <a href={a.reel} target="_blank" rel="noopener noreferrer nofollow" className="font-semibold underline">
+                    See reel
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       {plan.past.length > 0 && (
