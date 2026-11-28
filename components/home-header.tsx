@@ -10,12 +10,12 @@ import { Avatar } from "./avatar";
 export function HomeHeader({ firstName, people }: { firstName: string; people: Suggestion[] }) {
   return (
     <section className="card overflow-hidden">
-      <div className="p-5 pb-3 lg:pb-5">
+      <div className="p-5 pb-3">
         <h1 className="truncate text-xl font-semibold tracking-tight sm:text-2xl">Hey {firstName} 👋</h1>
       </div>
 
       {people.length > 0 && (
-        <div className="pb-4 lg:hidden">
+        <div className="pb-4">
           <div className="flex items-center justify-between px-5">
             <h2 className="text-sm font-semibold">Just joined</h2>
             <Link href="/creators" className="text-sm font-semibold text-brand-ink hover:underline">
