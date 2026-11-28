@@ -69,14 +69,12 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const missing = [!profile.city_slug && "city", !profile.niches.length && "niche", !myFollowers && "follower count"].filter((m): m is string => !!m);
   const notes = Object.fromEntries(matches.map((m) => [m.user_id, jodiNote(profile.display_name, m)]));
   const hellos = matches.slice(0, 3).map((m) => ({ user_id: m.user_id, name: m.display_name, note: notes[m.user_id] }));
-  // Phones: in the feed. Laptops and wider: at the top of the right-hand column instead.
+  // Phones: in the feed, right after the first post (so a real post shows on the first screen). Laptops and wider: at the top of the right-hand column instead.
   const likeYou = (
     <div className="lg:hidden">
       <CreatorsLikeYou people={matches} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />
     </div>
   );
-  // On phones, new creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
-  const jodiFirst = steps.connections < 3;
   const firstName = profile.display_name.split(" ")[0];
   const open = rankCollabs(collabs, profile);
   const feed = (
@@ -87,7 +85,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
           <GetStarted steps={steps} compact />
         </div>
       )}
-      {!cursor && (jodiFirst || posts.length < 2) && likeYou}
+      {!cursor && posts.length === 0 && likeYou}
       {posts.length === 0 && (
         <div className="empty">
           {cursor ? (
@@ -104,7 +102,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       {posts.map((post, i) => (
         <Fragment key={post.id}>
           <PostCard post={post} me={user.id} now={now} />
-          {!cursor && !jodiFirst && i === 1 && likeYou}
+          {!cursor && i === 0 && likeYou}
         </Fragment>
       ))}
       {posts.length === FEED_PAGE && (
@@ -180,7 +178,6 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       </div>
       <HomeRail
         steps={steps}
-        collabs={collabs.slice(0, 4)}
         people={matches.length ? [] : newcomers.slice(0, 5)}
         jodi={<JodiRail people={matches.slice(0, 3)} seeAll={seeAll} missing={missing} hellos={hellos} notes={notes} />}
       />
