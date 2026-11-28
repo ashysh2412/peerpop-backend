@@ -18,9 +18,9 @@ const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 /** Days before someone can get their next Jodi. */
 export const JODI_WAIT_DAYS = 7;
 /** New members get their first Jodis right after the welcome chat. Off until checked on Admin. */
-export const STARTER_JODI_ON = false;
+export const STARTER_JODI_ON = true;
 /** The welcome and first Jodis go out the moment someone signs up, instead of at 7:30 PM. Off until checked on Admin. */
-export const INSTANT_WELCOME_ON = false;
+export const INSTANT_WELCOME_ON = true;
 /** Jodis in a new member's first message. */
 const STARTER_OPTIONS = 3;
 /** Members who haven't signed in for this long are skipped. */
