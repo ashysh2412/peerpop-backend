@@ -95,6 +95,58 @@ export function pickJodiOffers(people: JodiCandidate[], rules: JodiRules & { per
   return offers;
 }
 
+/**
+ * A new member's first Jodis. With a niche and a follower count they get proper matches.
+ * Otherwise use what they have: their niche, else their city, else anyone, smallest creators first
+ * (new members are mostly small), different cities first when matching by niche.
+ */
+export function pickStarterJodis(me: JodiCandidate, pool: JodiCandidate[], avoid: Set<string>, count: number): JodiOffer | null {
+  const others = pool.filter((b) => b.id !== me.id && b.niches.length > 0 && b.followers > 0 && !avoid.has(pairKey(me.id, b.id)));
+  if (me.niches.length && me.followers > 0) {
+    const options = others
+      .map((b) => fit(me, b))
+      .filter((f) => f !== null)
+      .sort((x, y) => y.score - x.score)
+      .slice(0, count)
+      .map((f) => f.pair);
+    if (options.length) return { to: me, options };
+  }
+  const loose = (b: JodiCandidate): JodiPair => {
+    const shared = me.niches.filter((n) => n !== "other" && b.niches.includes(n));
+    const related = !shared.length && me.niches.some((x) => b.niches.some((y) => relatedNiche(x, y)));
+    const sameCity = !!me.city && me.city === b.city;
+    return { a: me, b, shared, related, sameCity, differentCity: !!me.city && !!b.city && !sameCity };
+  };
+  const rank = (x: JodiPair) => (x.shared.length ? 4 : x.related ? 2 : 0) + (me.niches.length && x.differentCity ? 1 : 0);
+  const all = others.map(loose);
+  const isClose = (x: JodiPair) => x.shared.length > 0 || x.related || (!me.niches.length && x.sameCity);
+  // Closest matches first (niche, else city), then the smallest active creators to fill the list.
+  const options = all
+    .sort((x, y) => Number(isClose(y)) - Number(isClose(x)) || rank(y) - rank(x) || x.b.followers - y.b.followers)
+    .slice(0, count);
+  return options.length ? { to: me, options } : null;
+}
+
+/** The first Jodi message a new member gets right after the welcome. */
+export function starterJodiMessage(offer: JodiOffer): string {
+  const n = offer.options.length;
+  const list = offer.options
+    .map((o, i) => {
+      const where = o.b.cityName ? `, ${o.b.cityName}` : "";
+      const niches = (o.shared.length ? o.shared : o.b.niches).slice(0, 2).map(label).join(", ");
+      return `${n > 1 ? `${i + 1}. ` : ""}${first(o.b.name)}${where} (${niches})\nwww.peerpop.in/${o.b.handle}`;
+    })
+    .join("\n\n");
+  const ready = offer.to.niches.length > 0 && offer.to.followers > 0;
+  return `${first(offer.to.name)}, ${n > 1 ? `aapki pehli ${n} Jodis` : "aapki pehli Jodi"} 👇
+
+${list}
+
+Profile kholo aur Connect tap karo. One Instagram Collab reel together, and both audiences see it. Ek reel, do audience.${
+    ready ? "" : "\n\nApne size ki perfect Jodis chahiye? Apna niche aur Instagram followers add karo: www.peerpop.in/settings/profile"
+  }`;
+}
+
 const label = (n: string) => (NICHES.find(([k]) => k === n)?.[1].toLowerCase() ?? n).replace(" tv", " TV");
 const first = (name: string | null) => name?.trim().split(/\s+/)[0] || "there";
 const join = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);

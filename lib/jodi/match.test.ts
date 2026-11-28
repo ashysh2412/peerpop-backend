@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jodiOfferMessage, pairKey, pickJodiOffers, type JodiCandidate } from "./match";
+import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate } from "./match";
 
 const p = (id: string, o: Partial<JodiCandidate> = {}): JodiCandidate => ({
   id,
@@ -75,5 +75,30 @@ describe("jodiOfferMessage", () => {
     const [offer] = pickJodiOffers([p("a"), p("b")], none);
     expect(jodiOfferMessage(offer)).toContain("Aapke liye ek collab Jodi!");
     expect(jodiOfferMessage(offer)).not.toContain("1. ");
+  });
+});
+
+describe("pickStarterJodis", () => {
+  const pool = [
+    p("big", { niches: ["beauty"], followers: 50000, city: "delhi", cityName: "Delhi" }),
+    p("small", { niches: ["beauty"], followers: 800, city: "kolkata", cityName: "Kolkata" }),
+    p("food", { niches: ["food"], followers: 300 }),
+    p("local", { niches: ["tech"], followers: 2000, city: "jaipur", cityName: "Jaipur" }),
+  ];
+  it("matches by niche, smallest first, when the follower count is missing", () => {
+    const offer = pickStarterJodis(p("new", { niches: ["fashion"], followers: 0 }), pool, new Set(), 2)!;
+    expect(offer.options.map((o) => o.b.id)).toEqual(["small", "big"]);
+    expect(starterJodiMessage(offer)).toContain("www.peerpop.in/settings/profile");
+  });
+  it("matches by city when there's no niche, then fills with small creators", () => {
+    const offer = pickStarterJodis(p("new", { niches: [], followers: 0, city: "jaipur", cityName: "Jaipur" }), pool, new Set(), 2)!;
+    expect(offer.options.map((o) => o.b.id)).toEqual(["local", "food"]);
+  });
+  it("gives proper matches when the profile has niche and followers, without the nudge", () => {
+    const offer = pickStarterJodis(p("new", { niches: ["beauty"], followers: 1000 }), pool, new Set(), 3)!;
+    expect(offer.options.map((o) => o.b.id)).toEqual(["small"]);
+    const text = starterJodiMessage(offer);
+    expect(text).toContain("NEW, aapki pehli Jodi 👇");
+    expect(text).not.toContain("settings/profile");
   });
 });

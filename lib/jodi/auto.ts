@@ -1,8 +1,9 @@
 import "server-only";
 import { getAdminOverview } from "@/lib/admin/data";
+import { welcomeRecipients } from "@/lib/admin/auto-welcome";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { jodiOfferMessage, pairKey, pickJodiOffers, type JodiCandidate, type JodiOffer } from "./match";
+import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate, type JodiOffer } from "./match";
 
 const DAY = 24 * 60 * 60 * 1000;
 /** Members who get a Jodi list each run (twice a day), so replies stay easy to follow. */
@@ -15,6 +16,10 @@ const MAX_SHOWN = 4;
 const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 /** Days before someone can get their next Jodi. */
 export const JODI_WAIT_DAYS = 7;
+/** New members get their first Jodis right after the welcome chat. Off until checked on Admin. */
+export const STARTER_JODI_ON = false;
+/** Jodis in a new member's first message. */
+const STARTER_OPTIONS = 3;
 /** Members who haven't signed in for this long are skipped. */
 const ACTIVE_DAYS = 30;
 /** Only members who joined on or after this date get a Jodi; null means everyone. */
@@ -24,12 +29,14 @@ export type JodiPlan = {
   /** False until the jodi_suggestions table exists (SQL 23). Nothing is sent before that. */
   ready: boolean;
   offers: (JodiOffer & { message: string })[];
+  /** New members getting the welcome tonight, with their first Jodis. */
+  starters: (JodiOffer & { message: string })[];
   eligible: number;
   past: { a: string; b: string; at: string; connected: boolean }[];
 };
 
-/** Works out tonight's pairs without sending anything. */
-export async function planJodis(now: number): Promise<JodiPlan> {
+/** Works out the next run's Jodi lists without sending anything. `newIds` are tonight's welcome recipients. */
+export async function planJodis(now: number, newIds?: string[]): Promise<JodiPlan> {
   const db = createAdminClient();
   const [official, { users }, rows, cities, links, blocks, past] = await Promise.all([
     officialSender(db),
@@ -88,10 +95,34 @@ export async function planJodis(now: number): Promise<JodiPlan> {
     ...offer,
     message: jodiOfferMessage(offer),
   }));
+  // A new member's own details, even before they appear in search.
+  const asCandidate = (id: string): JodiCandidate | null => {
+    const u = users.find((x) => x.id === id);
+    if (!u?.handle) return null;
+    const s = stats.get(id);
+    return {
+      id,
+      name: u.name,
+      handle: u.handle,
+      city: u.city,
+      cityName: u.city ? (cityName.get(u.city) ?? null) : null,
+      niches: (s?.niches as string[] | null) ?? [],
+      followers: Number(s?.max_followers ?? 0),
+      connections: u.connections,
+      joined: u.joined,
+    };
+  };
+  const welcomeIds = newIds ?? welcomeRecipients(users, official, now).map((p) => p.id);
+  const starters = welcomeIds
+    .map(asCandidate)
+    .map((me) => (me ? pickStarterJodis(me, people, avoid, STARTER_OPTIONS) : null))
+    .filter((o) => o !== null)
+    .map((o) => ({ ...o, message: starterJodiMessage(o) }));
   const handle = new Map(users.map((u) => [u.id, u.handle ?? u.name ?? "?"]));
   return {
     ready,
     offers,
+    starters,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,
     past: (past.data ?? []).slice(0, 50).map((s) => ({
       a: handle.get(s.user_a) ?? "?",
@@ -122,6 +153,31 @@ export async function sendAutoJodis(now: number): Promise<number> {
     }
     const { error: msgError } = await db.from("messages").insert({ sender_id: official.id, recipient_id: offer.to.id, body: offer.message });
     if (msgError) console.error("jodi message", msgError);
+    else sent++;
+  }
+  return sent;
+}
+
+/** A new member's first Jodis, worked out before their welcome goes out. */
+export async function planStarterJodis(now: number, ids: string[]) {
+  const plan = await planJodis(now, ids);
+  return plan.ready ? plan.starters : [];
+}
+
+/** Sends each new member their first Jodis, right after the welcome chat. */
+export async function sendStarterJodis(starters: JodiPlan["starters"]): Promise<number> {
+  const db = createAdminClient();
+  const official = await officialSender(db);
+  if (!official.id) return 0;
+  let sent = 0;
+  for (const offer of starters) {
+    const { error } = await db.from("jodi_suggestions").insert(offer.options.map((o) => ({ user_a: offer.to.id, user_b: o.b.id })));
+    if (error) {
+      console.error("starter jodi save", error);
+      continue;
+    }
+    const { error: msgError } = await db.from("messages").insert({ sender_id: official.id, recipient_id: offer.to.id, body: offer.message });
+    if (msgError) console.error("starter jodi message", msgError);
     else sent++;
   }
   return sent;

@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { CardsSkeleton } from "@/components/skeleton";
 import { isConfirmedAdmin } from "@/lib/admin/access";
 import { compactNumber } from "@/lib/format";
-import { JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJodis } from "@/lib/jodi/auto";
+import { JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJodis, STARTER_JODI_ON } from "@/lib/jodi/auto";
 import { requireUser } from "@/lib/profile/data";
 
 export const metadata: Metadata = { title: "Auto Jodi · Admin · Peerpop", robots: { index: false } };
@@ -73,6 +73,33 @@ async function Jodi() {
                 </li>
               ))}
             </ul>
+            <details>
+              <summary className="cursor-pointer text-sm font-medium">See the message</summary>
+              <p className="mt-2 whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">{offer.message}</p>
+            </details>
+          </article>
+        ))}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-bold">
+          New members&apos; first Jodis tonight <span className="font-normal text-muted">({plan.starters.length})</span>
+        </h2>
+        <p className="text-sm text-muted">
+          {STARTER_JODI_ON
+            ? "Sent at 7:30 PM, right after the welcome chat."
+            : "Preview only: not switched on yet, so nothing below is sent."}{" "}
+          Members with an incomplete profile get starter Jodis by niche or city, and a nudge to add their niche and followers.
+        </p>
+        {plan.starters.length === 0 && <p className="card p-5 text-muted">No new members waiting for a welcome right now.</p>}
+        {plan.starters.map((offer) => (
+          <article key={offer.to.id} className="card flex flex-col gap-3 p-4">
+            <p className="font-semibold">
+              <Link href={`/${offer.to.handle}`} className="hover:underline">
+                {offer.to.name}
+              </Link>{" "}
+              <span className="text-muted">({offer.to.cityName ?? "no city"})</span>
+            </p>
             <details>
               <summary className="cursor-pointer text-sm font-medium">See the message</summary>
               <p className="mt-2 whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">{offer.message}</p>
