@@ -27,6 +27,9 @@ export function personalise(text: string, name: string | null): string {
 /** The Peerpop welcome: the default on Message members, and what new members get automatically on the evening they join. */
 export const WELCOME_TEXT = `Hi {name}! 👋 Welcome to Peerpop.
 
-Ek reel, do audience: collab with creators your size and grow together.
+Collab with creators your size and grow together.
 
-Add your photo, niche and followers so creators can find you: www.peerpop.in/settings/profile`;
+Add your photo, niche and followers so creators can find you: www.peerpop.in/settings/profile
+
+– Team Peerpop
+Ek reel. Do audience.`;

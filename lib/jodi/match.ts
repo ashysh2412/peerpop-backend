@@ -172,9 +172,12 @@ ${many ? `Aapke liye ${offer.options.length} collab Jodis!` : "Aapke liye ek col
 
 ${list}
 
-${many ? "Jitne pasand aaye, sabke profile kholo aur Connect tap karo." : "Profile kholo aur Connect tap karo."} One Instagram Collab reel with each, and both audiences see it. Ek reel, do audience. Collabs on Peerpop are free.
+${many ? "Jitne pasand aaye, sabke profile kholo aur Connect tap karo." : "Profile kholo aur Connect tap karo."} One Instagram Collab reel with each, and both audiences see it. Collabs on Peerpop are free.
 
-More Jodis anytime on your Home page: www.peerpop.in/home`;
+More Jodis anytime on your Home page: www.peerpop.in/home
+
+– Team Peerpop
+Ek reel. Do audience.`;
 }
 
 /** The first Jodi message a new member gets right after the welcome. */
@@ -184,5 +187,8 @@ export function starterJodiMessage(offer: JodiOffer): string {
 
 ${optionList(offer.options, ready)}
 
-Profile kholo, Connect karo.${ready ? "" : " Better Jodis ke liye niche aur followers add karo."}`;
+Profile kholo, Connect karo.${ready ? "" : " Better Jodis ke liye niche aur followers add karo."}
+
+– Team Peerpop
+Ek reel. Do audience.`;
 }
