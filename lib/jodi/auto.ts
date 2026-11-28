@@ -1,6 +1,7 @@
 import "server-only";
 import { getAdminOverview } from "@/lib/admin/data";
 import { welcomeRecipients } from "@/lib/admin/auto-welcome";
+import { personalise, WELCOME_TEXT } from "@/lib/admin/broadcast";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate, type JodiOffer } from "./match";
@@ -18,6 +19,8 @@ const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 export const JODI_WAIT_DAYS = 7;
 /** New members get their first Jodis right after the welcome chat. Off until checked on Admin. */
 export const STARTER_JODI_ON = false;
+/** The welcome and first Jodis go out the moment someone signs up, instead of at 7:30 PM. Off until checked on Admin. */
+export const INSTANT_WELCOME_ON = false;
 /** Jodis in a new member's first message. */
 const STARTER_OPTIONS = 3;
 /** Members who haven't signed in for this long are skipped. */
@@ -31,6 +34,8 @@ export type JodiPlan = {
   offers: (JodiOffer & { message: string })[];
   /** New members getting the welcome tonight, with their first Jodis. */
   starters: (JodiOffer & { message: string })[];
+  /** What someone signing up right now (nothing filled in yet) would get. */
+  sample: string | null;
   eligible: number;
   past: { a: string; b: string; at: string; connected: boolean }[];
 };
@@ -118,11 +123,14 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
     .map((me) => (me ? pickStarterJodis(me, people, avoid, STARTER_OPTIONS) : null))
     .filter((o) => o !== null)
     .map((o) => ({ ...o, message: starterJodiMessage(o) }));
+  const fresh: JodiCandidate = { id: "sample", name: "Riya", handle: "riya", city: null, cityName: null, niches: [], followers: 0, connections: 0, joined: new Date(now).toISOString() };
+  const sampleOffer = pickStarterJodis(fresh, people, new Set(), STARTER_OPTIONS);
   const handle = new Map(users.map((u) => [u.id, u.handle ?? u.name ?? "?"]));
   return {
     ready,
     offers,
     starters,
+    sample: sampleOffer ? starterJodiMessage(sampleOffer) : null,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,
     past: (past.data ?? []).slice(0, 50).map((s) => ({
       a: handle.get(s.user_a) ?? "?",
@@ -181,4 +189,22 @@ export async function sendStarterJodis(starters: JodiPlan["starters"]): Promise<
     else sent++;
   }
   return sent;
+}
+
+/**
+ * Right after someone signs up: the Peerpop welcome chat, then their first Jodis.
+ * Skips anyone Peerpop already wrote to, so the evening run never repeats it.
+ */
+export async function welcomeNewMember(userId: string, now: number) {
+  if (!INSTANT_WELCOME_ON) return;
+  const db = createAdminClient();
+  const official = await officialSender(db);
+  if (!official.id || official.id === userId || official.blocked.has(userId) || official.messaged.has(userId)) return;
+  const { data: me } = await db.from("creator_profiles").select("display_name").eq("user_id", userId).maybeSingle();
+  const starters = await planStarterJodis(now, [userId]);
+  const { error } = await db
+    .from("messages")
+    .insert({ sender_id: official.id, recipient_id: userId, body: personalise(WELCOME_TEXT, (me?.display_name as string | undefined) ?? null) });
+  if (error) throw error;
+  if (starters.length) await sendStarterJodis(starters);
 }

@@ -6,7 +6,7 @@ import { Suspense } from "react";
 import { CardsSkeleton } from "@/components/skeleton";
 import { isConfirmedAdmin } from "@/lib/admin/access";
 import { compactNumber } from "@/lib/format";
-import { JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJodis, STARTER_JODI_ON } from "@/lib/jodi/auto";
+import { INSTANT_WELCOME_ON, JODI_OPTIONS, JODI_PER_DAY, JODI_WAIT_DAYS, planJodis, STARTER_JODI_ON } from "@/lib/jodi/auto";
 import { requireUser } from "@/lib/profile/data";
 
 export const metadata: Metadata = { title: "Auto Jodi · Admin · Peerpop", robots: { index: false } };
@@ -91,6 +91,17 @@ async function Jodi() {
             : "Preview only: not switched on yet, so nothing below is sent."}{" "}
           Members with an incomplete profile get starter Jodis by niche or city, and a nudge to add their niche and followers.
         </p>
+        {plan.sample && (
+          <div className="card flex flex-col gap-2 p-4">
+            <p className="font-semibold">
+              Someone signing up right now, with nothing filled in yet{" "}
+              <span className="font-normal text-muted">
+                ({INSTANT_WELCOME_ON ? "sent the moment they join" : "preview only, instant sending is off"})
+              </span>
+            </p>
+            <p className="whitespace-pre-line rounded-xl bg-gray-100 p-3 text-sm">{plan.sample}</p>
+          </div>
+        )}
         {plan.starters.length === 0 && <p className="card p-5 text-muted">No new members waiting for a welcome right now.</p>}
         {plan.starters.map((offer) => (
           <article key={offer.to.id} className="card flex flex-col gap-3 p-4">
