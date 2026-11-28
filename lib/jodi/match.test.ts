@@ -65,17 +65,19 @@ describe("jodiOfferMessage", () => {
       none,
     );
     const text = jodiOfferMessage(offer);
-    expect(text).toContain("Hi Official 👋 Aapki collab Jodis:");
-    expect(text).toContain("1. Shelly, Bhagalpur · 102K\nwww.peerpop.in/shelly");
-    expect(text).toContain("2. Pakiza, Lucknow · 40K\nwww.peerpop.in/pak");
-    expect(text.split("\n").length).toBeLessThan(10);
+    expect(text).toContain("Hi Official, Peerpop here");
+    expect(text).toContain("Aapke liye 2 collab Jodis!");
+    expect(text).toContain("1. Shelly, Bhagalpur (music, 102K followers)\nwww.peerpop.in/shelly");
+    expect(text).toContain("2. Pakiza, Lucknow (dance, 40K followers)\nwww.peerpop.in/pak");
+    expect(text).toContain("www.peerpop.in/home");
   });
   it("reads naturally with one option", () => {
     const [offer] = pickJodiOffers([p("a"), p("b")], none);
-    expect(jodiOfferMessage(offer)).toContain("Aapki collab Jodi:");
+    expect(jodiOfferMessage(offer)).toContain("Aapke liye ek collab Jodi!");
     expect(jodiOfferMessage(offer)).not.toContain("1. ");
   });
 });
+
 
 describe("pickStarterJodis", () => {
   const pool = [

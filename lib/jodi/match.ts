@@ -148,13 +148,33 @@ function optionList(options: JodiPair[], size: boolean) {
     .join("\n\n");
 }
 
+/** Why this option fits, in a few words. */
+function why(pair: JodiPair) {
+  const them = pair.b;
+  const niche = pair.shared.length
+    ? pair.shared.slice(0, 2).map(label).join(" and ")
+    : label(them.niches.find((n) => pair.a.niches.some((m) => relatedNiche(m, n))) ?? them.niches[0]);
+  return `${niche}, ${compactCount(them.followers)} followers`;
+}
+
 /** The chat message a member gets with their Jodi options. */
 export function jodiOfferMessage(offer: JodiOffer): string {
-  return `Hi ${first(offer.to.name)} 👋 ${offer.options.length > 1 ? "Aapki collab Jodis:" : "Aapki collab Jodi:"}
+  const many = offer.options.length > 1;
+  const list = offer.options
+    .map((o, i) => {
+      const where = o.b.cityName ? `, ${o.b.cityName}` : "";
+      return `${many ? `${i + 1}. ` : ""}${first(o.b.name)}${where} (${why(o)})\nwww.peerpop.in/${o.b.handle}`;
+    })
+    .join("\n\n");
+  return `Hi ${first(offer.to.name)}, Peerpop here 👋
 
-${optionList(offer.options, true)}
+${many ? `Aapke liye ${offer.options.length} collab Jodis!` : "Aapke liye ek collab Jodi!"} Similar follower count, matching niche:
 
-Profile kholo, Connect karo. Ek reel, do audience!`;
+${list}
+
+${many ? "Jitne pasand aaye, sabke profile kholo aur Connect tap karo." : "Profile kholo aur Connect tap karo."} One Instagram Collab reel with each, and both audiences see it. Ek reel, do audience. Collabs on Peerpop are free.
+
+More Jodis anytime on your Home page: www.peerpop.in/home`;
 }
 
 /** The first Jodi message a new member gets right after the welcome. */
