@@ -78,6 +78,7 @@ async function Jodi() {
         <h2 className="text-lg font-bold">
           Next run&apos;s Jodi lists <span className="font-normal text-muted">({plan.offers.length} members, of {plan.eligible} who can be matched)</span>
         </h2>
+        {plan.capped > 0 && <p className="text-sm text-muted">{plan.capped} held back: they already had 3 Peerpop chats this week.</p>}
         {plan.offers.length === 0 && <p className="card p-5 text-muted">No new Jodi lists for the next run.</p>}
         {plan.offers.map((offer) => (
           <article key={offer.to.id} className="card flex flex-col gap-3 p-4">
@@ -153,6 +154,7 @@ async function Jodi() {
               ? "48 hours after two Jodis connect, both are asked how the collab is going. 3 days after a list, anyone who hasn't connected gets a nudge."
               : "Preview only: not switched on yet, so nothing below is sent."}
         </p>
+        {checkins.capped > 0 && <p className="text-sm text-muted">{checkins.capped} held back by the weekly limit of 3 Peerpop chats.</p>}
         {[
           { title: "Connected Jodis (48 hours after connecting)", list: checkins.connected },
           { title: "Not connected yet (3 days after their list)", list: checkins.nudges },

@@ -1,4 +1,5 @@
 import "server-only";
+import { canSendChat, recentChats } from "@/lib/admin/chat-cap";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { LISTS_FROM } from "./auto";
@@ -22,6 +23,8 @@ export type CheckinPlan = {
   ready: boolean;
   connected: Due[];
   nudges: Due[];
+  /** Check-ins held back this run by the weekly chat limit. */
+  capped: number;
   answers: { name: string; handle: string; partner: string | null; answer: CheckinAnswer; reel: string | null; at: string }[];
 };
 
@@ -69,6 +72,13 @@ export async function planCheckins(now: number): Promise<CheckinPlan> {
     .filter(([id, l]) => !skip(id) && nudgeDue(now, l.at, lastNudge.get(id) ?? null, l.partners.some((b) => accepted.has(pairKey(id, b)))))
     .map(([id]) => id);
 
+  // The weekly limit on Peerpop chats: check-ins come before nudges.
+  const chats = official.id ? await recentChats(db, official.id, now) : new Map<string, number>();
+  const used = (id: string) => chats.get(id) ?? 0;
+  const connectedOk = connected.filter((c) => canSendChat(used(c.id), "checkin"));
+  const nudgeOk = nudgeIds.filter((id) => canSendChat(used(id) + (connectedOk.some((c) => c.id === id) ? 1 : 0), "nudge"));
+  const capped = connected.length - connectedOk.length + nudgeIds.length - nudgeOk.length;
+
   const answered = rows.filter((c) => c.answer);
   const ids = [...new Set([...connected.flatMap((c) => [c.id, c.partnerId]), ...nudgeIds, ...answered.flatMap((c) => [c.user_id, c.partner_id].filter(Boolean))])];
   const { data: profiles } = ids.length ? await db.from("creator_profiles").select("user_id, display_name, handle").in("user_id", ids) : { data: [] };
@@ -78,14 +88,15 @@ export async function planCheckins(now: number): Promise<CheckinPlan> {
 
   return {
     ready,
-    connected: connected.map((c) => ({
+    capped,
+    connected: connectedOk.map((c) => ({
       id: c.id,
       partnerId: c.partnerId,
       name: nameOf(c.id),
       handle: handleOf(c.id),
       message: connectedCheckinMessage(nameOf(c.id), nameOf(c.partnerId)),
     })),
-    nudges: nudgeIds.map((id) => ({ id, partnerId: null, name: nameOf(id), handle: handleOf(id), message: nudgeMessage(nameOf(id)) })),
+    nudges: nudgeOk.map((id) => ({ id, partnerId: null, name: nameOf(id), handle: handleOf(id), message: nudgeMessage(nameOf(id)) })),
     answers: answered.slice(0, 50).map((c) => ({
       name: nameOf(c.user_id) ?? "?",
       handle: handleOf(c.user_id) ?? "",
@@ -151,7 +162,10 @@ async function nudgeWaiting(userId: string) {
     db.from("creator_profiles").select("display_name").eq("user_id", userId).maybeSingle(),
   ]);
   const mine = new Set((jodis ?? []).map((j) => j.user_b as string));
-  const targets = (pending ?? []).map((p) => p.to_user as string).filter((id) => mine.has(id) && !official.blocked.has(id));
+  const chats = await recentChats(db, official.id, Date.now());
+  const targets = (pending ?? [])
+    .map((p) => p.to_user as string)
+    .filter((id) => mine.has(id) && !official.blocked.has(id) && canSendChat(chats.get(id) ?? 0, "nudge"));
   if (!targets.length) return 0;
   const { data: names } = await db.from("creator_profiles").select("user_id, display_name").in("user_id", targets);
   const { error } = await db.from("messages").insert(
