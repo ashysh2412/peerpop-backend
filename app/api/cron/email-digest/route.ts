@@ -1,5 +1,6 @@
 import { sendAutoWelcomes } from "@/lib/admin/auto-welcome";
 import { sendAutoJodis } from "@/lib/jodi/auto";
+import { emailWaitingCollabReminders } from "@/lib/email/collab";
 import { sendDailyDigest } from "@/lib/email/digest";
 import { sendProfileNudges } from "@/lib/email/profile-nudge";
 
@@ -24,7 +25,11 @@ export async function GET(request: Request) {
       console.error("auto jodi", err);
       return 0;
     });
-    return Response.json({ digests: await sendDailyDigest(now), nudges: await sendProfileNudges(now), welcomes, jodis });
+    const waiting = await emailWaitingCollabReminders(now).catch((err) => {
+      console.error("collab waiting reminders", err);
+      return 0;
+    });
+    return Response.json({ digests: await sendDailyDigest(now), nudges: await sendProfileNudges(now), welcomes, jodis, waiting });
   } catch (err) {
     console.error("email digest cron", err);
     return new Response("Digest run failed", { status: 500 });

@@ -1,6 +1,6 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { recipientFor } from "./prefs";
+import { markSent, recipientFor, sentRecently, SITE_URL } from "./prefs";
 import { sendEmail } from "./send";
 import { simpleEmail } from "./templates";
 
@@ -81,4 +81,59 @@ export async function emailNewCollab(postId: string, siteUrl: string) {
     });
     await sendEmail({ to: recipient.to, subject, ...body });
   }
+}
+
+const HOUR = 60 * 60 * 1000;
+
+/** Groups pending requests by the collab's author. Pure, so it can be tested. */
+export function waitingByAuthor(rows: { post_id: string; author_id: string; title: string }[]) {
+  const by = new Map<string, { count: number; posts: Map<string, string> }>();
+  for (const r of rows) {
+    const a = by.get(r.author_id) ?? { count: 0, posts: new Map<string, string>() };
+    a.count++;
+    a.posts.set(r.post_id, r.title);
+    by.set(r.author_id, a);
+  }
+  return by;
+}
+
+/**
+ * Evening run: reminds a collab's author about "I'm in" requests still waiting 2 days later.
+ * Each request is in the 48-72 hour window on exactly one evening, so it's reminded once.
+ * One email per author, however many requests.
+ */
+export async function emailWaitingCollabReminders(now: number) {
+  const admin = createAdminClient();
+  const { data } = await admin
+    .from("collab_interests")
+    .select("post_id, created_at, post:collab_posts!inner(author_id, title, status, closes_at)")
+    .eq("status", "pending")
+    .lte("created_at", new Date(now - 48 * HOUR).toISOString())
+    .gt("created_at", new Date(now - 72 * HOUR).toISOString())
+    .limit(2000);
+  type Row = { post_id: string; post: { author_id: string; title: string; status: string; closes_at: string } };
+  const rows = ((data ?? []) as unknown as Row[])
+    .filter((r) => r.post.status === "open" && Date.parse(r.post.closes_at) > now)
+    .map((r) => ({ post_id: r.post_id, author_id: r.post.author_id, title: r.post.title }));
+  let sent = 0;
+  for (const [authorId, { count, posts }] of waitingByAuthor(rows)) {
+    if (await sentRecently(admin, authorId, "collab_waiting", 20)) continue;
+    const recipient = await recipientFor(admin, authorId, "collabs");
+    if (!recipient) continue;
+    const [[postId, title]] = [...posts];
+    const many = posts.size > 1;
+    const who = count === 1 ? "1 creator is" : `${count} creators are`;
+    const body = simpleEmail({
+      lead: many
+        ? `${who} waiting for your answer on your collabs. Accept to start chatting with them.`
+        : `${who} waiting for your answer on "${title}". Accept to start chatting with them.`,
+      button: { text: "See who's waiting", url: many ? `${SITE_URL}/collabs?mine=1` : `${SITE_URL}/collabs/${postId}` },
+      reason: "You're getting this because you posted a collab on Peerpop.",
+      unsubscribe: recipient.unsubscribe,
+    });
+    await sendEmail({ to: recipient.to, subject: `${who} waiting on your collab`, ...body });
+    await markSent(admin, authorId, "collab_waiting");
+    sent++;
+  }
+  return sent;
 }

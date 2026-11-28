@@ -96,13 +96,27 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
           Sign in to show interest
         </Link>
       ) : (
-        <VisitorPanel postId={collab.id} me={user.id} authorId={author.user_id} authorName={author.display_name} open={open} />
+        <VisitorPanel postId={collab.id} me={user.id} authorId={author.user_id} authorName={author.display_name} authorHandle={author.handle} open={open} />
       )}
     </>
   );
 }
 
-async function VisitorPanel({ postId, me, authorId, authorName, open }: { postId: string; me: string; authorId: string; authorName: string; open: boolean }) {
+async function VisitorPanel({
+  postId,
+  me,
+  authorId,
+  authorName,
+  authorHandle,
+  open,
+}: {
+  postId: string;
+  me: string;
+  authorId: string;
+  authorName: string;
+  authorHandle: string;
+  open: boolean;
+}) {
   const supabase = await createClient();
   const mine = await getMyInterest(supabase, postId, me);
   const contact = mine?.status === "accepted" ? await getContactFor(supabase, authorId) : null;
@@ -122,6 +136,9 @@ async function VisitorPanel({ postId, me, authorId, authorName, open }: { postId
         {mine.status === "accepted" && (
           <>
             <p className="font-bold">🎉 {authorName} accepted you for this collab.</p>
+            <Link href={`/messages/${authorHandle}`} className="btn-primary btn-sm self-start">
+              Open chat with {authorName.split(" ")[0]}
+            </Link>
             {contact ? (
               <ContactBox name={authorName} contact={contact} />
             ) : (
@@ -194,8 +211,12 @@ async function AuthorPanel({ postId, open, now }: { postId: string; open: boolea
                       <button className={secondaryButton}>Decline</button>
                     </form>
                   </div>
+                ) : i.status === "accepted" ? (
+                  <Link href={`/messages/${p.handle}`} className="btn-primary btn-sm">
+                    Chat
+                  </Link>
                 ) : (
-                  <span className={i.status === "accepted" ? "chip-green" : "chip"}>{i.status === "accepted" ? "Accepted" : "Declined"}</span>
+                  <span className="chip">Declined</span>
                 )}
               </div>
               {i.message && <p className="rounded-xl bg-sunken px-3.5 py-2.5 text-sm">{i.message}</p>}
