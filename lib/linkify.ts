@@ -12,7 +12,9 @@ export function linkParts(text: string): TextPart[] {
     const url = m[0].replace(/[.,!?;:)\]'"]+$/, "");
     const start = m.index!;
     if (start > last) parts.push({ text: text.slice(last, start) });
-    if (PEERPOP.test(url)) parts.push({ text: url, href: url.replace(PEERPOP, "") || "/", internal: true });
+    const path = url.replace(PEERPOP, "") || "/";
+    // "peerpop.in//other.site" would become "//other.site", which browsers treat as another site.
+    if (PEERPOP.test(url) && !/^\/[\/\\]/.test(path)) parts.push({ text: url, href: path, internal: true });
     else parts.push({ text: url, href: /^https?:\/\//i.test(url) ? url : `https://${url}` });
     last = start + url.length;
   }
