@@ -4,7 +4,8 @@ import { refresh } from "next/cache";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { after } from "next/server";
-import { validateCollab } from "@/lib/collabs/validate";
+import { matchCollabIdea } from "@/lib/collabs/matching";
+import { validateCollab, validateIdea } from "@/lib/collabs/validate";
 import { emailCollabAccepted, emailCollabInterest, emailNewCollab } from "@/lib/email/collab";
 import { requireUser } from "@/lib/profile/data";
 import type { FormState } from "@/lib/profile/types";
@@ -41,7 +42,27 @@ export async function createCollab(_prev: FormState, form: FormData): Promise<Fo
   }
   const site = await siteUrl();
   after(() => emailNewCollab(data.id, site));
-  redirect(`/collabs/${data.id}`);
+  after(() => matchCollabIdea(data.id, Date.now()).catch(() => console.error("Idea matching failed")));
+  redirect(`/collabs/${data.id}?new=1`);
+}
+
+/** The quick "Collab idea" box on Home: post the idea, then Peerpop finds creators for it. */
+export async function createIdea(_prev: FormState, form: FormData): Promise<FormState> {
+  const { supabase, user } = await requireUser("/home?tab=collabs");
+  const { data: me } = await supabase.from("creator_profiles").select("niches").eq("user_id", user.id).maybeSingle();
+  const result = validateIdea(form, (me?.niches as string[] | null) ?? []);
+  if (!result.ok) return { errors: result.errors, message: result.errors.idea };
+  const { data, error } = await supabase
+    .from("collab_posts")
+    .insert({ ...result.data, author_id: user.id })
+    .select("id")
+    .single();
+  if (error || !data) {
+    if (error?.code === "42501") return { message: "Turn on \"Show my profile in search\" in Edit profile to post an idea." };
+    return { message: TRY_AGAIN };
+  }
+  after(() => matchCollabIdea(data.id, Date.now()).catch(() => console.error("Idea matching failed")));
+  redirect(`/collabs/${data.id}?new=1`);
 }
 
 export async function closeCollab(form: FormData) {

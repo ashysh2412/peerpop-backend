@@ -55,3 +55,19 @@ export function validateCollab(form: FormData, today: string): Result {
     },
   };
 }
+
+/**
+ * The quick "Collab idea" box on Home: just the idea and its niches. It's saved as a
+ * normal collab (open to any creator, anywhere) so "I'm in" and everything else just work.
+ */
+export function validateIdea(form: FormData, fallbackNiches: readonly string[]): Result {
+  const idea = str(form, "idea").replace(/\s+/g, " ");
+  if (idea.length < 5) return { ok: false, errors: { idea: "Write your idea in a few words (at least 5 characters)." } };
+  if (idea.length > 120) return { ok: false, errors: { idea: "Keep it under 120 characters." } };
+  const picked = pick(form, "niches", NICHES);
+  const niches = picked.length ? picked : NICHES.filter(([n]) => fallbackNiches.includes(n)).map(([n]) => n);
+  return {
+    ok: true,
+    data: { title: idea, description: idea, city_slug: null, niches, roles_needed: ["content_creator"], languages: [], shoot_date: null },
+  };
+}

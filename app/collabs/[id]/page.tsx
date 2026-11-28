@@ -4,14 +4,17 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Avatar } from "@/components/avatar";
+import { isIdea } from "@/components/collab-call";
 import { shootLabel } from "@/components/collab-card";
 import { ContactBox } from "@/components/contact-box";
+import { IdeaMatches } from "@/components/idea-matches";
 import { InterestForm } from "@/components/interest-form";
 import { secondaryButton } from "@/components/ui";
 import { updatedLabel } from "@/components/youtube-stats";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { getCollab, getInterests, getMyInterest, isOpen } from "@/lib/collabs/data";
 import { getContactFor } from "@/lib/connections/data";
+import { getIdeaMatches } from "@/lib/collabs/matching";
 import { createClient } from "@/lib/supabase/server";
 import { acceptInterest, closeCollab, declineInterest, deleteCollab, withdrawInterest } from "../actions";
 import { getSessionUser } from "@/lib/supabase/session";
@@ -23,21 +26,22 @@ function currentTime() {
   return Date.now();
 }
 
-export default function CollabPage({ params }: PageProps<"/collabs/[id]">) {
+export default function CollabPage({ params, searchParams }: PageProps<"/collabs/[id]">) {
   return (
     <main className="page-narrow flex flex-col gap-5">
       <Link href="/collabs" className="flex items-center gap-1 self-start text-sm font-medium text-muted hover:text-ink">
         <ArrowLeft size={16} /> All collabs
       </Link>
       <Suspense fallback={<CardsSkeleton />}>
-        <CollabDetail params={params} />
+        <CollabDetail params={params} searchParams={searchParams} />
       </Suspense>
     </main>
   );
 }
 
-async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params">) {
+async function CollabDetail({ params, searchParams }: Pick<PageProps<"/collabs/[id]">, "params" | "searchParams">) {
   const { id } = await params;
+  const fresh = (await searchParams).new === "1";
   if (!/^[0-9a-f-]{36}$/i.test(id)) notFound();
   const supabase = await createClient();
   const {
@@ -53,7 +57,7 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
 
   const tags = (list: readonly (readonly [string, string])[], values: string[]) => values.map((v) => labelFor(list, v)).join(", ");
   const details: [string, string][] = [
-    ["Needs", tags(SKILLS, collab.roles_needed)],
+    ["Needs", isIdea(collab) ? "" : tags(SKILLS, collab.roles_needed)],
     ["City", collab.city_slug ? labelFor(CITIES, collab.city_slug) : "Anywhere / online"],
     ["Niches", tags(NICHES, collab.niches)],
     ["Languages", tags(LANGUAGES, collab.languages)],
@@ -76,7 +80,7 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
           <span className={open ? "chip-green" : "chip"}>{open ? "Open" : "Closed"}</span>
         </div>
         <h1 className="text-2xl leading-tight font-semibold tracking-tight sm:text-3xl">{collab.title}</h1>
-        <p className="leading-relaxed whitespace-pre-wrap">{collab.description}</p>
+        {collab.description !== collab.title && <p className="leading-relaxed whitespace-pre-wrap">{collab.description}</p>}
         <dl className="grid grid-cols-[110px_1fr] gap-x-4 gap-y-3 rounded-xl bg-sunken p-4 text-sm">
           {details
             .filter(([, v]) => v)
@@ -89,6 +93,14 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
         </dl>
       </article>
 
+      {isAuthor && fresh && (
+        <p className="rounded-2xl bg-brand-soft px-4 py-3 text-sm font-semibold text-brand-ink">🎉 Your idea is live! Creators can now tap I&apos;m in.</p>
+      )}
+      {isAuthor && open && (
+        <Suspense fallback={<CardsSkeleton />}>
+          <MatchesFor postId={collab.id} now={now} fresh={fresh} />
+        </Suspense>
+      )}
       {isAuthor ? (
         <AuthorPanel postId={collab.id} open={open} now={now} />
       ) : !user ? (
@@ -100,6 +112,10 @@ async function CollabDetail({ params }: Pick<PageProps<"/collabs/[id]">, "params
       )}
     </>
   );
+}
+
+async function MatchesFor({ postId, now, fresh }: { postId: string; now: number; fresh: boolean }) {
+  return <IdeaMatches matches={await getIdeaMatches(postId, now)} fresh={fresh} />;
 }
 
 async function VisitorPanel({ postId, me, authorId, authorName, open }: { postId: string; me: string; authorId: string; authorName: string; open: boolean }) {

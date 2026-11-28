@@ -5,6 +5,7 @@ import { Fragment, Suspense } from "react";
 import { CollabCall } from "@/components/collab-call";
 import { CreatorsLikeYou, JodiRail } from "@/components/creators-like-you";
 import { HomeHeader } from "@/components/home-header";
+import { IdeaBox } from "@/components/idea-box";
 import { GetStarted, HomeRail } from "@/components/home-rail";
 import { HomeTabs } from "@/components/home-tabs";
 import { PixelSignedUp } from "@/components/meta-pixel";
@@ -13,6 +14,7 @@ import { PostComposer } from "@/components/post-composer";
 import { ProfileSummary } from "@/components/profile-summary";
 import { WaitingRequests } from "@/components/waiting-requests";
 import { type Collab, listCollabs } from "@/lib/collabs/data";
+import { getMyIdeaMatches } from "@/lib/collabs/matching";
 import { getWaitingRequests } from "@/lib/connections/data";
 import { jodiNote } from "@/lib/feed/jodi-note";
 import { FEED_PAGE, getFeed, getMatches, getNewCreators, getRecentJoins, getStarterSteps } from "@/lib/feed/data";
@@ -36,10 +38,11 @@ export default function HomePage({ searchParams }: PageProps<"/home">) {
   );
 }
 
-/** Your own open collabs first (so you can see they're live), then the ones that fit you: your city or a skill you have. */
-function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string | null; skills: string[] }) {
+/** Your own open collabs first (so you can see they're live), then ideas Peerpop matched you to, then the ones that fit you: your city or a skill you have. */
+function rankCollabs(collabs: Collab[], me: { user_id: string; city_slug: string | null; skills: string[] }, matched: Set<string>) {
   const fit = (c: Collab) =>
     (c.author_id === me.user_id ? 10 : 0) +
+    (matched.has(c.id) ? 5 : 0) +
     (c.city_slug && c.city_slug === me.city_slug ? 1 : 0) +
     (c.roles_needed.some((r) => me.skills.includes(r)) ? 1 : 0);
   return [...collabs].sort((a, b) => fit(b) - fit(a));
@@ -53,7 +56,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   const cursor = typeof before === "string" && !Number.isNaN(Date.parse(before)) ? before : null;
 
   const now = currentTime();
-  const [posts, people, { collabs }, steps, newcomers, platforms, waiting, official] = await Promise.all([
+  const [posts, people, { collabs }, steps, newcomers, platforms, waiting, official, matchedIdeas] = await Promise.all([
     getFeed(supabase, cursor),
     cursor ? Promise.resolve([]) : getRecentJoins(supabase, user.id),
     listCollabs(supabase, { city: null, niche: null, role: null }, 0, new Date(now).toISOString()),
@@ -62,6 +65,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
     getOwnPlatforms(supabase, user.id),
     cursor ? Promise.resolve({ total: 0, requests: [] }) : getWaitingRequests(supabase, user.id),
     cursor ? Promise.resolve({ data: null }) : supabase.from("official_accounts").select("user_id").eq("user_id", user.id).maybeSingle(),
+    getMyIdeaMatches(user.id),
   ]);
   const myFollowers = Math.max(0, ...platforms.map((a) => (a.source === "verified" ? a.stats?.followers : a.self_followers) ?? 0)) || null;
   const matches = cursor ? [] : await getMatches(supabase, profile, myFollowers);
@@ -78,7 +82,9 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
   // On phones, new creators (fewer than 3 connections) see their Jodi right at the top; everyone else after the 2nd post.
   const jodiFirst = steps.connections < 3;
   const firstName = profile.display_name.split(" ")[0];
-  const open = rankCollabs(collabs, profile);
+  const open = rankCollabs(collabs, profile, matchedIdeas);
+  // One idea Peerpop matched you to, shown in the feed after the first post.
+  const matchedIdea = cursor ? null : (open.find((c) => matchedIdeas.has(c.id) && c.author_id !== user.id) ?? null);
   const feed = (
     <>
       {!cursor && <PostComposer userId={user.id} firstName={firstName} name={profile.display_name} photo={profile.photo_path} canUploadVideo={!!official.data} />}
@@ -104,6 +110,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
       {posts.map((post, i) => (
         <Fragment key={post.id}>
           <PostCard post={post} me={user.id} now={now} />
+          {i === 0 && matchedIdea && <CollabCall collab={matchedIdea} matched />}
           {!cursor && !jodiFirst && i === 1 && likeYou}
         </Fragment>
       ))}
@@ -155,10 +162,11 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
             feed={feed}
             collabs={
               <>
+                <IdeaBox myNiches={profile.niches} />
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm text-muted">Open collabs, the ones that fit you first.</p>
-                  <Link href="/collabs/new" className="btn-primary btn-sm">
-                    <Plus size={15} /> Post a collab
+                  <Link href="/collabs/new" className="btn-secondary btn-sm">
+                    <Plus size={15} /> Full collab form
                   </Link>
                 </div>
                 {open.length === 0 ? (
@@ -168,7 +176,7 @@ async function Home({ searchParams }: Pick<PageProps<"/home">, "searchParams">) 
                     <p className="max-w-sm text-sm">Be the first: post what you&apos;re planning and who you need.</p>
                   </div>
                 ) : (
-                  open.map((c) => <CollabCall key={c.id} collab={c} mine={c.author_id === user.id} />)
+                  open.map((c) => <CollabCall key={c.id} collab={c} mine={c.author_id === user.id} matched={matchedIdeas.has(c.id)} />)
                 )}
                 <Link href="/collabs" className="btn-secondary self-center">
                   Search all collabs
