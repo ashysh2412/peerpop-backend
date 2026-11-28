@@ -192,3 +192,18 @@ Profile kholo, Connect karo.${ready ? "" : " Better Jodis ke liye niche aur foll
 – Team Peerpop
 Ek reel. Do audience.`;
 }
+
+/** Auto Jodi can only match someone who has a niche and a follower count. */
+export function isMatchable(p: Pick<JodiCandidate, "niches" | "followers">) {
+  return p.niches.length > 0 && p.followers > 0;
+}
+
+/** For members without a niche or follower count: their Jodis stay locked until they add them. */
+export function lockedJodiMessage(name: string | null, waiting: number): string {
+  return `${first(name)}, ${waiting} creators your size are waiting 🔒
+
+Add your niche + followers to unlock your Jodis: www.peerpop.in/jodi/unlock
+
+– Team Peerpop
+Ek reel. Do audience.`;
+}

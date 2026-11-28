@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate } from "./match";
+import { isMatchable, jodiOfferMessage, lockedJodiMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate } from "./match";
 
 const p = (id: string, o: Partial<JodiCandidate> = {}): JodiCandidate => ({
   id,
@@ -102,5 +102,19 @@ describe("pickStarterJodis", () => {
     const text = starterJodiMessage(offer);
     expect(text).toContain("NEW, aapki pehli Jodi 👇");
     expect(text).not.toContain("add karo");
+  });
+});
+
+describe("locked Jodis", () => {
+  it("only members with a niche and followers can be matched", () => {
+    expect(isMatchable({ niches: ["food"], followers: 100 })).toBe(true);
+    expect(isMatchable({ niches: [], followers: 100 })).toBe(false);
+    expect(isMatchable({ niches: ["food"], followers: 0 })).toBe(false);
+  });
+  it("teases how many are waiting and links to the quick form", () => {
+    const text = lockedJodiMessage("Riya Sharma", 3);
+    expect(text).toContain("Riya, 3 creators your size are waiting 🔒");
+    expect(text).toContain("www.peerpop.in/jodi/unlock");
+    expect(text).toContain("– Team Peerpop");
   });
 });

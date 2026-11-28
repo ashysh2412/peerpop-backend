@@ -10,6 +10,7 @@ import { PROFILE_STEPS, profileGaps } from "@/lib/admin/completeness";
 import { CITIES, LANGUAGES, NICHES, SKILLS, labelFor } from "@/lib/catalog";
 import { requireUser } from "@/lib/profile/data";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { BasicsForm } from "./basics-form";
 
 export const metadata: Metadata = { title: "Member · Admin · Peerpop", robots: { index: false } };
 
@@ -124,6 +125,18 @@ async function Member({ params }: Pick<PageProps<"/admin/users/[id]">, "params">
         <Fact label="Languages">{p?.languages.length ? p.languages.map((s) => labelFor(LANGUAGES, s)).join(", ") : "–"}</Fact>
         <Fact label="Bio">{p?.bio?.trim() || "–"}</Fact>
       </section>
+
+      {p && (
+        <section className="card flex flex-col gap-3 p-5">
+          <div>
+            <h2 className="text-lg font-bold">Set niche and followers for Auto Jodi</h2>
+            <p className="text-sm text-muted">
+              For genuine creators who haven&apos;t filled these in. Shows on their profile as self-reported, and unlocks their Jodis.
+            </p>
+          </div>
+          <BasicsForm userId={id} niches={p.niches} />
+        </section>
+      )}
 
       <section className="card p-5">
         <h2 className="text-lg font-bold">Channels</h2>
