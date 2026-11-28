@@ -25,15 +25,8 @@ export function personalise(text: string, name: string | null): string {
 }
 
 /** The Peerpop welcome: the default on Message members, and what new members get automatically on the evening they join. */
-export const WELCOME_TEXT = `Hi {name}! 👋 Ashish here, founder of Peerpop.
+export const WELCOME_TEXT = `Hi {name}! 👋 Welcome to Peerpop.
 
-Ek reel. Do audience. 🤝 Collab with a creator your size and you both grow.
+Ek reel, do audience: collab with creators your size and grow together.
 
-But other creators can only find you if your profile is complete. It takes 2 minutes:
-📸 Add a photo
-🎯 Pick your niche
-🎬 Add one video of your work
-
-Finish it here: www.peerpop.in/settings/profile
-
-Stuck anywhere? Just reply here. I read every message.`;
+Add your photo, niche and followers so creators can find you: www.peerpop.in/settings/profile`;

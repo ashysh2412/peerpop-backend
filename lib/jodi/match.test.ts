@@ -65,15 +65,14 @@ describe("jodiOfferMessage", () => {
       none,
     );
     const text = jodiOfferMessage(offer);
-    expect(text).toContain("Hi Official, Peerpop here");
-    expect(text).toContain("Aapke liye 2 collab Jodis!");
-    expect(text).toContain("1. Shelly, Bhagalpur (music, 102K followers)\nwww.peerpop.in/shelly");
-    expect(text).toContain("2. Pakiza, Lucknow (dance, 40K followers)\nwww.peerpop.in/pak");
-    expect(text).toContain("www.peerpop.in/home");
+    expect(text).toContain("Hi Official 👋 Aapki collab Jodis:");
+    expect(text).toContain("1. Shelly, Bhagalpur · 102K\nwww.peerpop.in/shelly");
+    expect(text).toContain("2. Pakiza, Lucknow · 40K\nwww.peerpop.in/pak");
+    expect(text.split("\n").length).toBeLessThan(10);
   });
   it("reads naturally with one option", () => {
     const [offer] = pickJodiOffers([p("a"), p("b")], none);
-    expect(jodiOfferMessage(offer)).toContain("Aapke liye ek collab Jodi!");
+    expect(jodiOfferMessage(offer)).toContain("Aapki collab Jodi:");
     expect(jodiOfferMessage(offer)).not.toContain("1. ");
   });
 });
@@ -88,7 +87,8 @@ describe("pickStarterJodis", () => {
   it("matches by niche, smallest first, when the follower count is missing", () => {
     const offer = pickStarterJodis(p("new", { niches: ["fashion"], followers: 0 }), pool, new Set(), 2)!;
     expect(offer.options.map((o) => o.b.id)).toEqual(["small", "big"]);
-    expect(starterJodiMessage(offer)).toContain("www.peerpop.in/settings/profile");
+    expect(starterJodiMessage(offer)).toContain("1. SMALL, Kolkata · beauty\nwww.peerpop.in/small");
+    expect(starterJodiMessage(offer)).toContain("niche aur followers add karo");
   });
   it("matches by city when there's no niche, then fills with small creators", () => {
     const offer = pickStarterJodis(p("new", { niches: [], followers: 0, city: "jaipur", cityName: "Jaipur" }), pool, new Set(), 2)!;
@@ -99,6 +99,6 @@ describe("pickStarterJodis", () => {
     expect(offer.options.map((o) => o.b.id)).toEqual(["small"]);
     const text = starterJodiMessage(offer);
     expect(text).toContain("NEW, aapki pehli Jodi 👇");
-    expect(text).not.toContain("settings/profile");
+    expect(text).not.toContain("add karo");
   });
 });

@@ -127,38 +127,8 @@ export function pickStarterJodis(me: JodiCandidate, pool: JodiCandidate[], avoid
   return options.length ? { to: me, options } : null;
 }
 
-/** The first Jodi message a new member gets right after the welcome. */
-export function starterJodiMessage(offer: JodiOffer): string {
-  const n = offer.options.length;
-  const list = offer.options
-    .map((o, i) => {
-      const where = o.b.cityName ? `, ${o.b.cityName}` : "";
-      const niches = (o.shared.length ? o.shared : o.b.niches).slice(0, 2).map(label).join(", ");
-      return `${n > 1 ? `${i + 1}. ` : ""}${first(o.b.name)}${where} (${niches})\nwww.peerpop.in/${o.b.handle}`;
-    })
-    .join("\n\n");
-  const ready = offer.to.niches.length > 0 && offer.to.followers > 0;
-  return `${first(offer.to.name)}, ${n > 1 ? `aapki pehli ${n} Jodis` : "aapki pehli Jodi"} 👇
-
-${list}
-
-Profile kholo aur Connect tap karo. One Instagram Collab reel together, and both audiences see it. Ek reel, do audience.${
-    ready ? "" : "\n\nApne size ki perfect Jodis chahiye? Apna niche aur Instagram followers add karo: www.peerpop.in/settings/profile"
-  }`;
-}
-
 const label = (n: string) => (NICHES.find(([k]) => k === n)?.[1].toLowerCase() ?? n).replace(" tv", " TV");
 const first = (name: string | null) => name?.trim().split(/\s+/)[0] || "there";
-const join = (xs: string[]) => (xs.length <= 1 ? xs.join("") : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`);
-
-/** Why this option fits, in a few words. */
-function why(pair: JodiPair) {
-  const them = pair.b;
-  const niche = pair.shared.length
-    ? join(pair.shared.slice(0, 2).map(label))
-    : label(them.niches.find((n) => pair.a.niches.some((m) => relatedNiche(m, n))) ?? them.niches[0]);
-  return `${niche}, ${compactCount(them.followers)} followers`;
-}
 
 function compactCount(n: number) {
   if (n >= 100_000) return `${Math.round(n / 1000)}K`;
@@ -166,22 +136,33 @@ function compactCount(n: number) {
   return String(n);
 }
 
-/** The chat message a member gets with their Jodi options. */
-export function jodiOfferMessage(offer: JodiOffer): string {
-  const many = offer.options.length > 1;
-  const list = offer.options
+/** One line per option: name, city, niche or size, then the tappable profile link. */
+function optionList(options: JodiPair[], size: boolean) {
+  const many = options.length > 1;
+  return options
     .map((o, i) => {
       const where = o.b.cityName ? `, ${o.b.cityName}` : "";
-      return `${many ? `${i + 1}. ` : ""}${first(o.b.name)}${where} (${why(o)})\nwww.peerpop.in/${o.b.handle}`;
+      const extra = size ? compactCount(o.b.followers) : label((o.shared[0] ?? o.b.niches[0]) as string);
+      return `${many ? `${i + 1}. ` : ""}${first(o.b.name)}${where} · ${extra}\nwww.peerpop.in/${o.b.handle}`;
     })
     .join("\n\n");
-  return `Hi ${first(offer.to.name)}, Peerpop here 👋
+}
 
-${many ? `Aapke liye ${offer.options.length} collab Jodis!` : "Aapke liye ek collab Jodi!"} Similar follower count, matching niche:
+/** The chat message a member gets with their Jodi options. */
+export function jodiOfferMessage(offer: JodiOffer): string {
+  return `Hi ${first(offer.to.name)} 👋 ${offer.options.length > 1 ? "Aapki collab Jodis:" : "Aapki collab Jodi:"}
 
-${list}
+${optionList(offer.options, true)}
 
-${many ? "Jitne pasand aaye, sabke profile kholo aur Connect tap karo." : "Profile kholo aur Connect tap karo."} One Instagram Collab reel with each, and both audiences see it. Ek reel, do audience. Collabs on Peerpop are free.
+Profile kholo, Connect karo. Ek reel, do audience!`;
+}
 
-More Jodis anytime on your Home page: www.peerpop.in/home`;
+/** The first Jodi message a new member gets right after the welcome. */
+export function starterJodiMessage(offer: JodiOffer): string {
+  const ready = offer.to.niches.length > 0 && offer.to.followers > 0;
+  return `${first(offer.to.name)}, ${offer.options.length > 1 ? "aapki pehli Jodis" : "aapki pehli Jodi"} 👇
+
+${optionList(offer.options, ready)}
+
+Profile kholo, Connect karo.${ready ? "" : " Better Jodis ke liye niche aur followers add karo."}`;
 }
