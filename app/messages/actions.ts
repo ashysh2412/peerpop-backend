@@ -30,3 +30,13 @@ export async function markRead(other: string) {
   const { supabase } = await requireUser("/messages");
   if (UUID.test(other)) await supabase.rpc("mark_messages_read", { other });
 }
+
+/** "Delete for everyone": only the sender, within 1 hour. The database checks both. */
+export async function deleteMessage(id: string): Promise<{ ok?: true; error?: string }> {
+  const { supabase } = await requireUser("/messages");
+  if (!UUID.test(id)) return { error: "Couldn't delete. Please try again." };
+  const { data, error } = await supabase.rpc("delete_message", { mid: id });
+  if (error) return { error: "Couldn't delete. Please try again." };
+  if (!data) return { error: "Messages can only be deleted within 1 hour of sending." };
+  return { ok: true };
+}
