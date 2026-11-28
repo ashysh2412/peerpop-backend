@@ -86,6 +86,8 @@ export async function emailNewCollab(postId: string, siteUrl: string) {
 const HOUR = 60 * 60 * 1000;
 /** The 48-hour "creators are waiting" reminder to collab posters. */
 export const COLLAB_REMINDERS_ON = true;
+/** The first evening (28 Nov) also reminds about every older request still waiting, once. */
+const CATCH_UP_UNTIL = Date.parse("2026-11-28T16:00:00Z");
 
 /** Groups pending requests by the collab's author. Pure, so it can be tested. */
 export function waitingByAuthor(rows: { post_id: string; author_id: string; title: string }[]) {
@@ -112,7 +114,7 @@ export async function emailWaitingCollabReminders(now: number) {
     .select("post_id, created_at, post:collab_posts!inner(author_id, title, status, closes_at)")
     .eq("status", "pending")
     .lte("created_at", new Date(now - 48 * HOUR).toISOString())
-    .gt("created_at", new Date(now - 72 * HOUR).toISOString())
+    .gt("created_at", new Date(now < CATCH_UP_UNTIL ? 0 : now - 72 * HOUR).toISOString())
     .limit(2000);
   type Row = { post_id: string; post: { author_id: string; title: string; status: string; closes_at: string } };
   const rows = ((data ?? []) as unknown as Row[])
