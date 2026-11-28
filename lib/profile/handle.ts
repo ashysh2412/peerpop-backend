@@ -20,6 +20,7 @@ export const RESERVED_HANDLES = new Set([
   "admin",
   "about",
   "help",
+  "jodi",
 ]);
 
 /** A handle made from someone's name, like "Riya Sharma" → "riyasharma". Always 3 to 24 valid characters. */

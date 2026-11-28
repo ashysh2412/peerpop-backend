@@ -2,6 +2,7 @@ import "server-only";
 import { getAdminOverview } from "@/lib/admin/data";
 import { welcomeRecipients } from "@/lib/admin/auto-welcome";
 import { personalise, WELCOME_TEXT } from "@/lib/admin/broadcast";
+import { canSendChat, recentChats } from "@/lib/admin/chat-cap";
 import { officialSender } from "@/lib/admin/official";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { jodiOfferMessage, pairKey, pickJodiOffers, pickStarterJodis, starterJodiMessage, type JodiCandidate, type JodiOffer } from "./match";
@@ -14,7 +15,7 @@ export const JODI_OPTIONS = 5;
 /** Times one creator can be shown as an option in a night, so nobody is flooded. */
 const MAX_SHOWN = 4;
 /** Rows saved before this were two-way pairs (both people messaged); after it, user_a is the person messaged. */
-const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
+export const LISTS_FROM = Date.parse("2026-11-28T00:00:00Z");
 /** Days before someone can get their next Jodi. */
 export const JODI_WAIT_DAYS = 7;
 /** New members get their first Jodis right after the welcome chat. Off until checked on Admin. */
@@ -38,6 +39,10 @@ export type JodiPlan = {
   sample: string | null;
   eligible: number;
   past: { a: string; b: string; at: string; connected: boolean }[];
+  /** Every Jodi suggested so far: how many pairs connected, and how many have a request waiting. */
+  stats: { suggested: number; connected: number; requested: number };
+  /** Members held back from a list this run because they hit the weekly chat limit. */
+  capped: number;
 };
 
 /** Works out the next run's Jodi lists without sending anything. `newIds` are tonight's welcome recipients. */
@@ -56,6 +61,13 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
   const stats = new Map((rows.data ?? []).map((r) => [r.user_id as string, r]));
   const cityName = new Map((cities.data ?? []).map((c) => [c.slug as string, c.name as string]));
   const accepted = new Set((links.data ?? []).filter((l) => l.status === "accepted").map((l) => pairKey(l.from_user, l.to_user)));
+  const requested = new Set((links.data ?? []).filter((l) => l.status === "pending").map((l) => pairKey(l.from_user, l.to_user)));
+  const suggestedPairs = new Set((past.data ?? []).map((s) => pairKey(s.user_a, s.user_b)));
+  const jodiStats = {
+    suggested: suggestedPairs.size,
+    connected: [...suggestedPairs].filter((k) => accepted.has(k)).length,
+    requested: [...suggestedPairs].filter((k) => requested.has(k)).length,
+  };
 
   const avoid = new Set<string>([
     ...(links.data ?? []).map((l) => pairKey(l.from_user, l.to_user)),
@@ -96,7 +108,10 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
       };
     });
 
-  const offers = pickJodiOffers(people, { busy, avoid, maxPairs: JODI_PER_DAY, perPerson: JODI_OPTIONS, maxShown: MAX_SHOWN }).map((offer) => ({
+  // The weekly limit on Peerpop chats: people at it wait for next week's list.
+  const chats = official.id ? await recentChats(db, official.id, now) : new Map<string, number>();
+  const capped = people.filter((p) => !busy.has(p.id) && !canSendChat(chats.get(p.id) ?? 0, "list")).map((p) => p.id);
+  const offers = pickJodiOffers(people, { busy: new Set([...busy, ...capped]), avoid, maxPairs: JODI_PER_DAY, perPerson: JODI_OPTIONS, maxShown: MAX_SHOWN }).map((offer) => ({
     ...offer,
     message: jodiOfferMessage(offer),
   }));
@@ -129,6 +144,8 @@ export async function planJodis(now: number, newIds?: string[]): Promise<JodiPla
   return {
     ready,
     offers,
+    stats: jodiStats,
+    capped: capped.length,
     starters,
     sample: sampleOffer ? starterJodiMessage(sampleOffer) : null,
     eligible: people.filter((p) => p.niches.length && p.followers > 0).length,
